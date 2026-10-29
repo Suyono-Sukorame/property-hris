@@ -54,6 +54,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const lateCount = attendanceRecords.filter((a) => a.status === 'Terlambat').length;
   const pendingApprovals = approvals.filter((a) => a.status.includes('Menunggu'));
 
+  // Live KPI calculations
+  const totalCheckedIn = attendanceRecords.filter((a) => a.status === 'Hadir' || a.status === 'Terlambat').length;
+  const attendanceRate =
+    totalHeadcount > 0 ? Math.round((totalCheckedIn / totalHeadcount) * 1000) / 10 : 0;
+  const ppeCompliantCount = attendanceRecords.filter((a) => a.ppeCompliance).length;
+  const ppeRate =
+    totalCheckedIn > 0 ? Math.round((ppeCompliantCount / totalCheckedIn) * 100) : 100;
+  const criticalApprovals = approvals.filter(
+    (a) => a.status.includes('Menunggu') && a.priority === 'Kritis'
+  );
+
   return (
     <div className="space-y-6">
       {/* Executive KPI Tiles */}
@@ -88,7 +99,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-slate-900 tabular-nums">
-              96.4%
+              {attendanceRate}%
             </span>
             <span className="text-xs text-emerald-700 font-medium">Hadir Tepat Waktu</span>
           </div>
@@ -114,7 +125,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-xs text-slate-500">Menunggu</span>
           </div>
           <div className="mt-2.5 flex items-center justify-between text-[11px]">
-            <span className="text-rose-700 font-semibold">1 Prioritas Kritis (Cor Beton)</span>
+            <span className="text-rose-700 font-semibold">
+              {criticalApprovals.length > 0
+                ? `${criticalApprovals.length} Prioritas Kritis`
+                : 'Tidak ada prioritas kritis'}
+            </span>
             <button
               onClick={() => onNavigateModule('approvals')}
               className="text-[#0f766e] font-semibold hover:underline inline-flex items-center gap-0.5"
@@ -134,13 +149,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-[#065f46] tabular-nums">
-              100%
+              {ppeRate}%
             </span>
             <span className="text-xs text-emerald-700 font-medium">SMK3 Terverifikasi</span>
           </div>
           <div className="mt-2.5 text-[11px] text-slate-500 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>Nol Insiden Kerja (Zero Accident)</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${ppeRate === 100 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+            <span>{ppeRate === 100 ? 'Nol Insiden Kerja (Zero Accident)' : `${ppeCompliantCount} dari ${totalCheckedIn} terverifikasi APD`}</span>
           </div>
         </div>
       </div>

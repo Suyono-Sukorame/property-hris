@@ -20,11 +20,13 @@ import {
   ApprovalDetailModal,
   LiveCheckInModal,
   AddEmployeeModal,
+  EditAttendanceModal,
 } from '@/components/modals';
 
 function HRISApp() {
   const { currentUser, isLoading: isAuthLoading } = useAuth();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [editingAttendanceRecord, setEditingAttendanceRecord] = useState<import('@/types/hris').AttendanceRecord | null>(null);
 
   const {
     activeModule,
@@ -49,6 +51,8 @@ function HRISApp() {
     setIsAddEmployeeOpen,
     handleOpenPaySlipByEmployee,
     handleCheckInSuccess,
+    handleCheckOut,
+    handleEditAttendance,
     handleAddEmployee,
     handleUpdateApprovalStatus,
     handleQuickApprove,
@@ -159,6 +163,8 @@ function HRISApp() {
               sites={sites}
               selectedSiteFilter={selectedSiteFilter}
               onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
+              onCheckOut={handleCheckOut}
+              onEditAttendance={(record) => setEditingAttendanceRecord(record)}
             />
           )}
 
@@ -240,6 +246,15 @@ function HRISApp() {
         onClose={() => setIsAddEmployeeOpen(false)}
         sites={sites}
         onAddEmployee={handleAddEmployee}
+      />
+
+      <EditAttendanceModal
+        record={editingAttendanceRecord}
+        onClose={() => setEditingAttendanceRecord(null)}
+        onSave={(recordId, updates) => {
+          handleEditAttendance(recordId, updates);
+          setEditingAttendanceRecord(null);
+        }}
       />
     </div>
   );

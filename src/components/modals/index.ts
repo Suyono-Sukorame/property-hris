@@ -3,3 +3,4 @@ export { PaySlipModal } from './PaySlipModal';
 export { ApprovalDetailModal } from './ApprovalDetailModal';
 export { LiveCheckInModal } from './LiveCheckInModal';
 export { AddEmployeeModal } from './AddEmployeeModal';
+export { EditAttendanceModal } from './EditAttendanceModal';

@@ -51,6 +51,8 @@ interface HRISContextType {
   // Actions
   handleOpenPaySlipByEmployee: (emp: Employee) => void;
   handleCheckInSuccess: (newRecord: AttendanceRecord) => void;
+  handleCheckOut: (recordId: string) => void;
+  handleEditAttendance: (recordId: string, updates: Partial<AttendanceRecord>) => void;
   handleAddEmployee: (newEmp: Employee) => void;
   handleUpdateApprovalStatus: (itemId: string, newStatus: 'Disetujui' | 'Ditolak', reviewNote: string) => void;
   handleQuickApprove: (id: string) => void;
@@ -305,6 +307,86 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Check-Out Callback — update checkOutTime, calculate lembur
+  const handleCheckOut = async (recordId: string) => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const checkOutTime = `${hh}:${mm} WITA`;
+
+    // Shift ends at 16:00 → lembur if checkout after that
+    const shiftEndHour = 16;
+    const lemburHours =
+      now.getHours() > shiftEndHour
+        ? Math.round(((now.getHours() - shiftEndHour) * 60 + now.getMinutes()) / 60 * 10) / 10
+        : 0;
+    // Rp 25.000 per overtime hour (approximation)
+    const upahLemburPerJam = 25000;
+    const upahLembur = Math.round(lemburHours * upahLemburPerJam);
+
+    setAttendanceRecords((prev) =>
+      prev.map((r) =>
+        r.id === recordId
+          ? { ...r, checkOutTime }
+          : r
+      )
+    );
+
+    // Sync payroll overtime if > 0
+    if (lemburHours > 0) {
+      setPayrollRecords((prev) =>
+        prev.map((p) => {
+          const rec = attendanceRecords.find((a) => a.id === recordId);
+          if (rec && p.employeeId === rec.employeeId) {
+            const newLemburHours = p.lemburHours + lemburHours;
+            const newUpahLembur = p.upahLembur + upahLembur;
+            const newTotalEarnings = p.totalEarnings + upahLembur;
+            const newGajiBersih = p.gajiBersih + upahLembur;
+            return {
+              ...p,
+              lemburHours: newLemburHours,
+              upahLembur: newUpahLembur,
+              totalEarnings: newTotalEarnings,
+              gajiBersih: newGajiBersih,
+            };
+          }
+          return p;
+        })
+      );
+    }
+
+    try {
+      await supabase
+        .from('attendance_records')
+        .update({ check_out_time: checkOutTime, updated_at: now.toISOString() })
+        .eq('id', recordId);
+    } catch (e) {
+      console.error('Failed to sync check-out to Supabase:', e);
+    }
+  };
+
+  // Edit / Koreksi Manual Absensi oleh Admin
+  const handleEditAttendance = async (recordId: string, updates: Partial<AttendanceRecord>) => {
+    setAttendanceRecords((prev) =>
+      prev.map((r) => (r.id === recordId ? { ...r, ...updates } : r))
+    );
+
+    // Build Supabase column map for known updatable fields
+    const dbUpdates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (updates.checkInTime !== undefined) dbUpdates.check_in_time = updates.checkInTime;
+    if (updates.checkOutTime !== undefined) dbUpdates.check_out_time = updates.checkOutTime;
+    if (updates.status !== undefined) dbUpdates.status = updates.status;
+    if (updates.lateMinutes !== undefined) dbUpdates.late_minutes = updates.lateMinutes;
+    if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
+    if (updates.ppeCompliance !== undefined) dbUpdates.ppe_compliance = updates.ppeCompliance;
+
+    try {
+      await supabase.from('attendance_records').update(dbUpdates).eq('id', recordId);
+    } catch (e) {
+      console.error('Failed to sync attendance edit to Supabase:', e);
+    }
+  };
+
   // Add Employee Callback
   const handleAddEmployee = async (newEmp: Employee) => {
     setEmployees((prev) => [newEmp, ...prev]);
@@ -470,12 +552,29 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   };
 
   const handleBatchProcessPayroll = async () => {
+    // Calculate late deductions from attendance records before batch processing
+    const LATE_DEDUCTION_PER_MINUTE = 5000; // Rp 5.000 per menit keterlambatan
+
     setPayrollRecords((prev) =>
-      prev.map((r) => ({
-        ...r,
-        status: 'Dibayar',
-        disbursementDate: 'Hari Ini, 29 Okt 2026',
-      }))
+      prev.map((r) => {
+        // Sum all late minutes for this employee from current attendance data
+        const totalLateMinutes = attendanceRecords
+          .filter((a) => a.employeeId === r.employeeId && a.lateMinutes > 0)
+          .reduce((sum, a) => sum + a.lateMinutes, 0);
+
+        const potonganKeterlambatan = totalLateMinutes * LATE_DEDUCTION_PER_MINUTE;
+        const newTotalDeductions = r.potonganBPJSTK + r.potonganBPJSKes + r.potonganPPh21 + potonganKeterlambatan;
+        const newGajiBersih = r.totalEarnings - newTotalDeductions;
+
+        return {
+          ...r,
+          potonganKeterlambatan,
+          totalDeductions: newTotalDeductions,
+          gajiBersih: newGajiBersih > 0 ? newGajiBersih : 0,
+          status: 'Dibayar' as const,
+          disbursementDate: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        };
+      })
     );
 
     try {
@@ -483,7 +582,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
         .from('payroll_records')
         .update({
           status: 'Dibayar',
-          disbursement_date: 'Hari Ini, 29 Okt 2026',
+          disbursement_date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
         })
         .neq('status', 'Dibayar');
     } catch (e) {
@@ -530,6 +629,8 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     setIsAddEmployeeOpen,
     handleOpenPaySlipByEmployee,
     handleCheckInSuccess,
+    handleCheckOut,
+    handleEditAttendance,
     handleAddEmployee,
     handleUpdateApprovalStatus,
     handleQuickApprove,

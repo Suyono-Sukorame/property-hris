@@ -35,6 +35,17 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     0
   );
 
+  // Live attendance statistics
+  const totalAttendance = attendanceRecords.length;
+  const hadirCount = attendanceRecords.filter((a) => a.status === 'Hadir').length;
+  const terlambatCount = attendanceRecords.filter((a) => a.status === 'Terlambat').length;
+  const cutiCount = attendanceRecords.filter((a) => a.status === 'Cuti' || a.status === 'Izin Lapangan').length;
+  const alpaCount = attendanceRecords.filter((a) => a.status === 'Alpa').length;
+  const ppeCompliantCount = attendanceRecords.filter((a) => a.ppeCompliance).length;
+  const ppeRate = totalAttendance > 0 ? Math.round((ppeCompliantCount / totalAttendance) * 100) : 100;
+  const totalLateMinutes = attendanceRecords.reduce((sum, a) => sum + (a.lateMinutes || 0), 0);
+  const avgLateMinutes = terlambatCount > 0 ? Math.round(totalLateMinutes / terlambatCount) : 0;
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -202,6 +213,51 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <p>
               • Jaminan BPJS Ketenagakerjaan Konstruksi diwajibkan aktif 100% sebelum mobilisasi ke area lapangan.
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Live Attendance Summary from actual records */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-[#0f766e]" />
+            Rekap Kehadiran & Kepatuhan APD — Data Aktual
+          </h3>
+          <span className="text-[11px] text-slate-400 font-mono">Live dari {totalAttendance} rekaman</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#065f46] block">Hadir Tepat Waktu</span>
+            <span className="text-2xl font-extrabold font-mono text-[#065f46] block">{hadirCount}</span>
+            <span className="text-[11px] text-emerald-700 font-semibold">
+              {totalAttendance > 0 ? `${Math.round((hadirCount / totalAttendance) * 100)}%` : '-'}
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-center space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">Terlambat</span>
+            <span className="text-2xl font-extrabold font-mono text-amber-700 block">{terlambatCount}</span>
+            <span className="text-[11px] text-amber-700 font-semibold">
+              {terlambatCount > 0 ? `Rata-rata ${avgLateMinutes} menit` : 'Tidak ada'}
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block">Cuti & Izin</span>
+            <span className="text-2xl font-extrabold font-mono text-slate-700 block">{cutiCount}</span>
+            <span className="text-[11px] text-slate-600 font-semibold">
+              Alpa: {alpaCount} rekaman
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#065f46] block">Kepatuhan APD</span>
+            <span className="text-2xl font-extrabold font-mono text-[#065f46] block">{ppeRate}%</span>
+            <span className="text-[11px] text-emerald-700 font-semibold">
+              {ppeCompliantCount} dari {totalAttendance} terverifikasi
+            </span>
           </div>
         </div>
       </div>
