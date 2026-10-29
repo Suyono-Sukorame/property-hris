@@ -103,7 +103,7 @@ function HRISApp() {
     : payrollRecords;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex antialiased">
+    <div className="h-screen bg-[#f8fafc] flex antialiased overflow-hidden">
       {/* Sidebar Navigation */}
       <Sidebar
         activeModule={activeModule}
@@ -112,7 +112,7 @@ function HRISApp() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <Header
           activeModule={activeModule}
           selectedSiteFilter={selectedSiteFilter}
