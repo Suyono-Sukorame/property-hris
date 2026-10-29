@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { ApprovalItem, PropertySite, Employee } from '@/types/hris';
+import { ApprovalItem, PropertySite, Employee, ApprovalType } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
 import { StatusBadge } from '@/components/ui';
 import {
@@ -40,7 +40,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
   const [isCreating, setIsCreating] = useState(false);
 
   // Form states for new ticket
-  const [newType, setNewType] = useState<any>('Lembur Konstruksi Cor Beton');
+  const [newType, setNewType] = useState<ApprovalType>('Lembur Konstruksi Cor Beton');
   const [newEmpId, setNewEmpId] = useState(employees[0]?.id || '');
   const [newSiteId, setNewSiteId] = useState(sites[0]?.id || '');
   const [newDesc, setNewDesc] = useState('');
@@ -206,7 +206,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
               </label>
               <select
                 value={newType}
-                onChange={(e) => setNewType(e.target.value)}
+                onChange={(e) => setNewType(e.target.value as ApprovalType)}
                 className="w-full h-[36px] px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
               >
                 <option value="Lembur Konstruksi Cor Beton">Lembur Konstruksi Cor Beton</option>
@@ -239,7 +239,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
               </label>
               <select
                 value={newPriority}
-                onChange={(e) => setNewPriority(e.target.value as any)}
+                onChange={(e) => setNewPriority(e.target.value as 'Biasa' | 'Penting' | 'Kritis')}
                 className="w-full h-[36px] px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
               >
                 <option value="Biasa">Biasa</option>

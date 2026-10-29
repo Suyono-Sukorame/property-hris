@@ -184,7 +184,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </label>
               <select
                 value={contractType}
-                onChange={(e) => setContractType(e.target.value as any)}
+                onChange={(e) => setContractType(e.target.value as 'PKWTT (Tetap)' | 'PKWT (Kontrak Proyek)')}
                 className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               >
                 <option value="PKWTT (Tetap)">PKWTT (Karyawan Tetap)</option>
@@ -224,7 +224,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </label>
               <select
                 value={bloodType}
-                onChange={(e) => setBloodType(e.target.value as any)}
+                onChange={(e) => setBloodType(e.target.value as 'A+' | 'B+' | 'AB+' | 'O+' | 'O-')}
                 className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               >
                 <option value="A+">A+</option>

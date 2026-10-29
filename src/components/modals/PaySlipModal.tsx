@@ -62,7 +62,7 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
                 </h1>
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
-                Kawasan Gedung Menara Bumi Raya Lt. 32-35, Jl. Jend. Sudirman Kav. 21, Jakarta Selatan
+                Kawasan Gedung Menara Bumi Raya Lt. 3-5, Jl. Jend. Ahmad Yani Km. 4.5 No. 21, Banjarmasin, Kalimantan Selatan 70238
               </p>
               <p className="text-[10px] text-slate-400">
                 Divisi Human Capital & Payroll Operasional Properti · Dokumen Rahasia (Confidential)

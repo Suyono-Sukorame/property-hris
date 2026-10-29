@@ -154,7 +154,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/70 flex justify-between items-center">
               <div>
-                <span className="font-bold text-slate-900 block">Shift Kantor & Direksi (Sudirman HQ)</span>
+                <span className="font-bold text-slate-900 block">Shift Kantor & Direksi (Banjarmasin HQ)</span>
                 <span className="text-[11px] text-slate-500">Legal, perizinan tanah, finansial, HR</span>
               </div>
               <span className="font-mono font-semibold px-2.5 py-1 rounded bg-white border border-slate-200 text-slate-800">

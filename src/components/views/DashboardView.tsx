@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { PropertySite, Employee, AttendanceRecord, ApprovalItem } from '@/types/hris';
+import { PropertySite, Employee, AttendanceRecord, ApprovalItem, ActiveNavModule } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
 import { StatusBadge } from '@/components/ui';
 import {
@@ -24,7 +24,7 @@ interface DashboardViewProps {
   attendanceRecords: AttendanceRecord[];
   approvals: ApprovalItem[];
   selectedSiteFilter: string;
-  onNavigateModule: (module: any) => void;
+  onNavigateModule: (module: ActiveNavModule) => void;
   onOpenEmployeeCard: (emp: Employee) => void;
   onOpenApproval: (item: ApprovalItem) => void;
 }
