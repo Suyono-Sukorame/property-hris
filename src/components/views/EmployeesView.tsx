@@ -110,7 +110,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
             }`}
           >
             <Users className="w-4 h-4 text-[#0f766e]" />
-            <span>Daftar Personil Karyawan ({filteredEmployees.length})</span>
+            <span>Daftar Karyawan ({filteredEmployees.length})</span>
           </button>
 
           <button
@@ -123,7 +123,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
             }`}
           >
             <Briefcase className="w-4 h-4 text-[#0f766e]" />
-            <span>Katalog Jobdesc & Standar Jabatan (8 Posisi)</span>
+            <span>Katalog Jabatan & Jobdesk (8 Posisi)</span>
           </button>
         </div>
 
@@ -131,7 +131,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
           <div className="flex items-center gap-2 px-2">
             <button
               onClick={exportCSV}
-              className="h-[36px] inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+              className="h-9 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
               <span className="hidden sm:inline">Ekspor CSV</span>
@@ -154,8 +154,8 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama, NIK, atau kode jabatan..."
-                className="w-full h-[36px] pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
+                placeholder="Cari nama, NIK, atau jabatan..."
+                className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
               />
             </div>
 
@@ -165,7 +165,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 value={divisionFilter}
                 onChange={(e) => setDivisionFilter(e.target.value)}
                 aria-label="Filter Divisi"
-                className="h-[36px] px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
+                className="h-9 px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
               >
                 <option value="ALL">Semua Divisi</option>
                 {divisions.map((div) => (
@@ -179,7 +179,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 aria-label="Filter Status Karyawan"
-                className="h-[36px] px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
+                className="h-9 px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
               >
                 <option value="ALL">Semua Status</option>
                 <option value="Aktif">Aktif</option>
@@ -215,16 +215,16 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
           {viewMode === 'table' ? (
             <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left min-w-[750px]">
+                <table className="w-full text-xs text-left min-w-187.5">
                   <thead>
                     <tr className="h-10 bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] tracking-wider font-semibold">
                       <th className="px-4">Karyawan & NIK</th>
                       <th className="px-4">Jabatan & Kode</th>
                       <th className="px-4">Divisi</th>
-                      <th className="px-4">Penempatan Site</th>
+                      <th className="px-4">Lokasi Penempatan</th>
                       <th className="px-4">Status & K3</th>
-                      <th className="px-4 text-right">Gaji Pokok (IDR)</th>
-                      <th className="px-4 text-center">Tindakan</th>
+                      <th className="px-4 text-right">Gaji Pokok</th>
+                      <th className="px-4 text-center">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -260,7 +260,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                           <td className="px-4 text-slate-600">{emp.division}</td>
 
                           <td className="px-4">
-                            <span className="font-medium text-slate-700 truncate block max-w-[150px]">
+                            <span className="font-medium text-slate-700 truncate block max-w-37.5">
                               {emp.siteName}
                             </span>
                           </td>
@@ -341,7 +341,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Penempatan:</span>
-                        <span className="text-slate-700 text-right truncate max-w-[180px]">{emp.siteName}</span>
+                        <span className="text-slate-700 text-right truncate max-w-45">{emp.siteName}</span>
                       </div>
                     </div>
                   </div>
@@ -376,7 +376,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
       {mainTab === 'JOBDESCS' && (
         <div className="space-y-4">
           {/* Header Banner & Selector */}
-          <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-4 sm:p-6 rounded-2xl text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="bg-linear-to-r from-slate-900 to-slate-800 p-4 sm:p-6 rounded-2xl text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/30">
@@ -385,10 +385,10 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 <span className="text-xs text-slate-400">Wilayah Kalimantan Selatan</span>
               </div>
               <h3 className="text-base sm:text-lg font-bold tracking-tight text-white">
-                Katalog Job Description, Wewenang & Matriks KPI Jabatan
+                Katalog Jobdesk, Wewenang & Target KPI
               </h3>
               <p className="text-xs text-slate-300 mt-0.5 max-w-xl">
-                Standar uraian tugas pokok operasional lapangan, kepatuhan K3, sertifikasi keahlian LPJK/Kemenaker, dan tolok ukur KPI untuk seluruh personil properti & konstruksi.
+                Standar uraian tugas operasional, kepatuhan K3, sertifikasi keahlian, dan tolok ukur KPI untuk seluruh karyawan properti & konstruksi.
               </p>
             </div>
 
@@ -469,7 +469,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
 
                   {/* Key Authorities */}
                   <div className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200/80 text-[11px] mb-3">
-                    <span className="font-bold text-amber-900 block mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider">
+                    <span className="font-bold text-amber-900 mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider">
                       <Lock className="w-3 h-3 text-amber-700" />
                       <span>Wewenang & Batas Otorisasi:</span>
                     </span>

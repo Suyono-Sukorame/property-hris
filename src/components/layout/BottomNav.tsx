@@ -62,7 +62,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <Smartphone className="w-5 h-5 text-emerald-100" />
         </button>
         <span className="text-[9px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider">
-          Absen GPS
+          Presensi GPS
         </span>
       </div>
 

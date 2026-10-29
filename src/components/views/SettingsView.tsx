@@ -54,7 +54,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2 text-xs">
           <CheckCircle className="w-4 h-4 text-emerald-600" />
           <span className="font-semibold">
-            Pengaturan Kebijakan Properti & Geofence GPS Berhasil Disimpan ke Sistem Terpusat.
+            Pengaturan proyek dan radius presensi berhasil disimpan.
           </span>
         </div>
       )}
@@ -65,10 +65,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div>
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#0f766e]" />
-              Konfigurasi Titik Koordinat & Radius Geofence Proyek
+              Pengaturan Lokasi & Radius Presensi Proyek
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Menentukan batas jarak maksimum presensi mobile/tablet personil lapangan dari titik tengah site.
+              Atur batas radius maksimal presensi karyawan dari titik tengah proyek.
             </p>
           </div>
         </div>
@@ -98,7 +98,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
                   <div className="flex justify-between items-center text-[11px]">
                     <span className="font-semibold text-slate-700">
-                      Radius Toleransi Presensi Lapangan
+                      Batas Radius Presensi
                     </span>
                     <span className="font-mono font-bold text-[#065f46]">
                       {currentRadius} meter
@@ -134,7 +134,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="pb-3 border-b border-slate-100">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <Clock className="w-4 h-4 text-[#0f766e]" />
-              Master Shift Kerja Lapangan & Kantor
+              Jadwal Shift Kerja
             </h3>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Jadwal operasional yang digunakan dalam validasi keterlambatan presensi.
@@ -181,7 +181,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               type="number"
               value={toleranceMinutes}
               onChange={(e) => setToleranceMinutes(Number(e.target.value))}
-              className="w-full h-[36px] px-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20"
+              className="w-full h-9 px-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20"
             />
           </div>
         </div>
@@ -192,10 +192,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <div className="pb-3 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                 <Shield className="w-4 h-4 text-[#0f766e]" />
-                Kebijakan Tunjangan & Potongan Wajib
+                Pengaturan Tunjangan & Potongan
               </h3>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                Pengaturan parameter otomatisasi ledger penggajian properti.
+                Pengaturan parameter perhitungan penggajian.
               </p>
             </div>
 
@@ -209,7 +209,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   step="0.1"
                   value={bpjsRate}
                   onChange={(e) => setBpjsRate(Number(e.target.value))}
-                  className="w-full h-[36px] px-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20"
+                  className="w-full h-9 px-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20"
                 />
               </div>
 
@@ -222,7 +222,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   step="100000"
                   value={k3BonusRate}
                   onChange={(e) => setK3BonusRate(Number(e.target.value))}
-                  className="w-full h-[36px] px-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20"
+                  className="w-full h-9 px-3 bg-slate-50 border border-slate-300 rounded-lg font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20"
                 />
               </div>
 
@@ -238,7 +238,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs"
             >
               <Save className="w-3.5 h-3.5" />
-              <span>Simpan Perubahan Kebijakan</span>
+              <span>Simpan Perubahan</span>
             </button>
           </div>
         </div>

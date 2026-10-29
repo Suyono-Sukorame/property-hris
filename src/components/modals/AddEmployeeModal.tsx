@@ -85,7 +85,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           <div className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-emerald-200" />
             <h2 className="text-sm font-bold tracking-tight text-white">
-              Tambah Karyawan Baru & Penugasan Proyek
+              Tambah Karyawan Baru
             </h2>
           </div>
           <button
@@ -109,7 +109,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Contoh: Ir. Muhammad Ridwan, S.T."
-                className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               />
             </div>
 
@@ -124,7 +124,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 onChange={(e) => setNik(e.target.value)}
                 placeholder="16 Digit NIK KTP"
                 maxLength={16}
-                className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               />
             </div>
 
@@ -138,7 +138,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Contoh: Site QA/QC Inspector"
-                className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               />
             </div>
 
@@ -149,7 +149,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               <select
                 value={division}
                 onChange={(e) => setDivision(e.target.value)}
-                className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               >
                 <option value="Teknik Sipil & Struktur">Teknik Sipil & Struktur</option>
                 <option value="Arsitektur & Desain Masterplan">Arsitektur & Desain Masterplan</option>
@@ -168,7 +168,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               <select
                 value={siteId}
                 onChange={(e) => setSiteId(e.target.value)}
-                className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               >
                 {sites.map((site) => (
                   <option key={site.id} value={site.id}>
@@ -185,7 +185,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               <select
                 value={contractType}
                 onChange={(e) => setContractType(e.target.value as 'PKWTT (Tetap)' | 'PKWT (Kontrak Proyek)')}
-                className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               >
                 <option value="PKWTT (Tetap)">PKWTT (Karyawan Tetap)</option>
                 <option value="PKWT (Kontrak Proyek)">PKWT (Kontrak Proyek)</option>
@@ -201,7 +201,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 step="500000"
                 value={baseSalary}
                 onChange={(e) => setBaseSalary(Number(e.target.value))}
-                className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               />
             </div>
 
@@ -214,7 +214,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 step="250000"
                 value={siteAllowance}
                 onChange={(e) => setSiteAllowance(Number(e.target.value))}
-                className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               />
             </div>
 
@@ -225,7 +225,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               <select
                 value={bloodType}
                 onChange={(e) => setBloodType(e.target.value as 'A+' | 'B+' | 'AB+' | 'O+' | 'O-')}
-                className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               >
                 <option value="A+">A+</option>
                 <option value="B+">B+</option>

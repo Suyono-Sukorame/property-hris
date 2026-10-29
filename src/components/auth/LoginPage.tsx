@@ -35,8 +35,8 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4 relative overflow-hidden antialiased">
       {/* Background Decorative Gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#0f766e]/20 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-600/15 blur-[140px] pointer-events-none" />
+      <div className="absolute top-[-20%] left-[-10%] w-125 h-125 rounded-full bg-[#0f766e]/20 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-125 h-125 rounded-full bg-emerald-600/15 blur-[140px] pointer-events-none" />
 
       {/* Main Container */}
       <div className="relative w-full max-w-md z-10">
@@ -61,7 +61,7 @@ export const LoginPage: React.FC = () => {
             Property HRIS & Construction Field Operations
           </p>
           <p className="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto">
-            Sistem Manajemen SDM, Presensi Geofence GPS & Proyek Konstruksi (Kalimantan Selatan)
+            Sistem Manajemen SDM, Presensi GPS & Proyek Konstruksi
           </p>
         </div>
 
@@ -69,10 +69,10 @@ export const LoginPage: React.FC = () => {
         <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 shadow-2xl p-6 sm:p-7">
           <div className="mb-5">
             <h2 className="text-base font-bold text-white tracking-tight">
-              Masuk ke Akun Portal
+              Masuk ke Akun
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Gunakan email korporat atau pilih simulasi role instan di bawah
+              Gunakan email perusahaan atau pilih akun simulasi di bawah
             </p>
           </div>
 
@@ -121,7 +121,7 @@ export const LoginPage: React.FC = () => {
               disabled={isSubmitting}
               className="w-full h-10 mt-2 bg-[#0f766e] hover:bg-[#115e59] text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
             >
-              <span>{isSubmitting ? 'Memproses Verifikasi...' : 'Masuk ke Sistem'}</span>
+              <span>{isSubmitting ? 'Memproses...' : 'Masuk'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </form>
@@ -133,7 +133,7 @@ export const LoginPage: React.FC = () => {
             </div>
             <div className="relative flex justify-center text-[10px] uppercase tracking-wider font-semibold">
               <span className="bg-slate-900 px-3 text-slate-500">
-                Atau Masuk Cepat Sebagai (Multi-Role Demo)
+                Atau Masuk Menggunakan Akun Demo
               </span>
             </div>
           </div>

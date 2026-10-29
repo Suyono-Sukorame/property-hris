@@ -83,22 +83,22 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <span className="text-2xl font-bold font-mono text-emerald-800 tabular-nums">
               {countHadir}
             </span>
-            <span className="text-xs text-slate-500">Personil</span>
+            <span className="text-xs text-slate-500">Karyawan</span>
           </div>
           <p className="text-[11px] text-slate-500 mt-2">
-            Check-in di dalam zona geofence
+            Check-in di dalam radius lokasi
           </p>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-amber-500 shadow-xs">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Terlambat Masuk Site
+            Terlambat
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-amber-700 tabular-nums">
               {countTerlambat}
             </span>
-            <span className="text-xs text-slate-500">Staf Lapangan</span>
+            <span className="text-xs text-slate-500">Karyawan</span>
           </div>
           <p className="text-[11px] text-amber-800 font-medium mt-2">
             Rata-rata selisih 14 menit
@@ -107,7 +107,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-slate-400 shadow-xs">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Cuti / Izin Lapangan
+            Cuti & Izin
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-slate-700 tabular-nums">
@@ -122,7 +122,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-emerald-600 shadow-xs">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Kepatuhan APD K3 Site
+            Kepatuhan APD & K3
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-[#065f46] tabular-nums">
@@ -144,8 +144,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari personil, site, atau jabatan..."
-            className="w-full h-[36px] pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
+            placeholder="Cari nama, proyek, atau jabatan..."
+            className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
           />
         </div>
 
@@ -154,7 +154,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             aria-label="Filter Status Kehadiran"
-            className="h-[36px] px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
+            className="h-9 px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
           >
             <option value="ALL">Semua Status Presensi</option>
             <option value="Hadir">Hadir</option>
@@ -164,7 +164,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
           <button
             onClick={exportAttendanceCSV}
-            className="h-[36px] inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            className="h-9 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Ekspor Log CSV</span>
@@ -172,10 +172,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
           <button
             onClick={onOpenLiveCheckIn}
-            className="h-[36px] inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs"
+            className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs"
           >
             <Smartphone className="w-3.5 h-3.5" />
-            <span>Simulasi Check-In GPS</span>
+            <span>Presensi GPS Sekarang</span>
           </button>
         </div>
       </div>
@@ -186,13 +186,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           <table className="w-full text-xs text-left">
             <thead>
               <tr className="h-10 bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] tracking-wider font-semibold">
-                <th className="px-4">Personil Karyawan</th>
-                <th className="px-4">Lokasi Kawasan Site</th>
+                <th className="px-4">Karyawan</th>
+                <th className="px-4">Lokasi Proyek</th>
                 <th className="px-4">Waktu Presensi</th>
                 <th className="px-4">Shift Kerja</th>
                 <th className="px-4">Status & Telat</th>
-                <th className="px-4">Geofence GPS</th>
-                <th className="px-4">K3 APD & Perangkat</th>
+                <th className="px-4">Radius GPS</th>
+                <th className="px-4">Kelengkapan APD</th>
                 <th className="px-4">Keterangan</th>
               </tr>
             </thead>
@@ -204,7 +204,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     <div className="font-mono text-[10px] text-slate-400">{record.jobCode}</div>
                   </td>
 
-                  <td className="px-4 text-slate-700 truncate max-w-[170px]">
+                  <td className="px-4 text-slate-700 truncate max-w-42.5">
                     <div className="font-medium text-slate-800 truncate">{record.siteName}</div>
                     <span className="text-[10px] text-slate-400">Area Proyek</span>
                   </td>
@@ -216,7 +216,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     )}
                   </td>
 
-                  <td className="px-4 text-slate-600 text-[11px] truncate max-w-[150px]">
+                  <td className="px-4 text-slate-600 text-[11px] truncate max-w-37.5">
                     {record.shift}
                   </td>
 
@@ -256,12 +256,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         <span className="text-slate-400">Non-Site</span>
                       )}
                     </div>
-                    <span className="text-[10px] font-mono text-slate-400 block truncate max-w-[130px]">
+                    <span className="text-[10px] font-mono text-slate-400 block truncate max-w-32.5">
                       {record.deviceInfo}
                     </span>
                   </td>
 
-                  <td className="px-4 text-slate-600 text-[11px] max-w-[180px] truncate" title={record.notes}>
+                  <td className="px-4 text-slate-600 text-[11px] max-w-45 truncate" title={record.notes}>
                     {record.notes || '-'}
                   </td>
                 </tr>
@@ -272,7 +272,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
           <span>Menampilkan {filteredRecords.length} rekaman presensi harian</span>
-          <span className="font-mono text-[11px]">Pusat Data Sinkronisasi Satelit GPS & Biometrik K3</span>
+          <span className="font-mono text-[11px]">Verifikasi Radius GPS & Standar K3 Lapangan</span>
         </div>
       </div>
     </div>

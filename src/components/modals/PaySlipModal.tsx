@@ -38,7 +38,7 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
           <div className="flex items-center gap-2 min-w-0">
             <Building2 className="w-4 h-4 text-[#80d5cb] shrink-0" />
             <h2 className="text-xs uppercase tracking-wider font-semibold text-slate-200 truncate">
-              Pratinjau Dokumen Resmi · Slip Gaji Karyawan
+              Pratinjau Slip Gaji Karyawan
             </h2>
           </div>
           <button
@@ -229,7 +229,7 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
           </div>
 
           {/* Net Pay Highlight Banner */}
-          <div className="my-5 p-4 sm:p-5 rounded-xl bg-gradient-to-r from-[#0f766e] to-[#115e59] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
+          <div className="my-5 p-4 sm:p-5 rounded-xl bg-linear-to-r from-[#0f766e] to-[#115e59] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
             <div>
               <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-200 block">
                 Total Gaji Bersih Diterima (Take Home Pay)

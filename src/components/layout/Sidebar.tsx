@@ -24,13 +24,13 @@ const allNavItems: {
   badge?: boolean;
   roles: ('SUPER_ADMIN' | 'SITE_MANAGER' | 'EMPLOYEE')[];
 }[] = [
-  { id: 'dashboard', label: 'Ringkasan Eksekutif', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
-  { id: 'employees', label: 'Data Karyawan & Site', icon: Users, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
-  { id: 'attendance', label: 'Absensi & Presensi Lapangan', icon: Clock, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
-  { id: 'payroll', label: 'Penggajian & Slip Gaji', icon: Banknote, roles: ['SUPER_ADMIN', 'EMPLOYEE'] },
-  { id: 'approvals', label: 'Matriks Persetujuan', icon: CheckSquare, badge: true, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
-  { id: 'reports', label: 'Laporan & K3 Properti', icon: BarChart3, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
-  { id: 'settings', label: 'Pengaturan Proyek & Geofence', icon: Building, roles: ['SUPER_ADMIN'] },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
+  { id: 'employees', label: 'Data Karyawan', icon: Users, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
+  { id: 'attendance', label: 'Presensi Lapangan', icon: Clock, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
+  { id: 'payroll', label: 'Penggajian', icon: Banknote, roles: ['SUPER_ADMIN', 'EMPLOYEE'] },
+  { id: 'approvals', label: 'Persetujuan', icon: CheckSquare, badge: true, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
+  { id: 'reports', label: 'Laporan & K3', icon: BarChart3, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
+  { id: 'settings', label: 'Pengaturan Proyek', icon: Building, roles: ['SUPER_ADMIN'] },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -100,7 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="p-2.5 sm:p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-semibold tracking-wider uppercase text-slate-400">
-                {userRole === 'SUPER_ADMIN' ? 'Sistem Terpusat' : 'Kawasan Proyek'}
+                {userRole === 'SUPER_ADMIN' ? 'Kantor Pusat' : 'Kawasan Proyek'}
               </span>
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
             </div>
@@ -120,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ========================================================================= */}
       <div className="px-3 py-2 flex-1 overflow-y-auto space-y-1">
         <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-          Modul Akses ({userRole})
+          Menu Navigasi
         </p>
 
         {visibleNavItems.map((item) => {

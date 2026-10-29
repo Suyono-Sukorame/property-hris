@@ -83,7 +83,7 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
                 PT Bumi Raya Propertindo Tbk
               </p>
               <h2 className="text-xs sm:text-sm font-bold tracking-tight text-white truncate">
-                Profil Jabatan, Jobdesc & Site Pass
+                Profil Karyawan & Jobdesk
               </h2>
             </div>
           </div>
@@ -109,7 +109,7 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5 text-[#0f766e]" />
-            <span>ID Card & Site Pass</span>
+            <span>ID Card Karyawan</span>
           </button>
 
           <button
@@ -122,7 +122,7 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
             }`}
           >
             <Briefcase className="w-3.5 h-3.5 text-[#0f766e]" />
-            <span>Uraian Tugas (Jobdesc)</span>
+            <span>Uraian Tugas (Jobdesk)</span>
           </button>
 
           <button
@@ -135,7 +135,7 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
             }`}
           >
             <Target className="w-3.5 h-3.5 text-[#0f766e]" />
-            <span>Target Kinerja & KPI</span>
+            <span>Target KPI</span>
           </button>
         </div>
 

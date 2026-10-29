@@ -16,21 +16,21 @@ interface HeaderProps {
 }
 
 const MODULE_TITLES: Record<ActiveNavModule, string> = {
-  dashboard: 'Ringkasan Eksekutif & Operasional Properti',
-  employees: 'Data Karyawan & Personil Proyek',
-  attendance: 'Absensi & Presensi Lapangan',
-  payroll: 'Ledger Penggajian & Slip Gaji',
-  approvals: 'Matriks Persetujuan Berjenjang',
-  reports: 'Laporan & K3 Compliance Properti',
-  settings: 'Pengaturan Proyek & Geofence',
+  dashboard: 'Dashboard & Ringkasan Proyek',
+  employees: 'Data Karyawan & Proyek',
+  attendance: 'Presensi Lapangan & Lokasi GPS',
+  payroll: 'Penggajian & Slip Gaji',
+  approvals: 'Persetujuan Tiket & Dokumen',
+  reports: 'Laporan & K3 Properti',
+  settings: 'Pengaturan Proyek & Lokasi',
 };
 
 const MODULE_TITLES_SHORT: Record<ActiveNavModule, string> = {
   dashboard: 'Dashboard',
   employees: 'Karyawan',
-  attendance: 'Absensi',
-  payroll: 'Slip Gaji',
-  approvals: 'Approval',
+  attendance: 'Presensi',
+  payroll: 'Gaji',
+  approvals: 'Persetujuan',
   reports: 'Laporan K3',
   settings: 'Pengaturan',
 };
@@ -90,15 +90,15 @@ export const Header: React.FC<HeaderProps> = ({
             value={selectedSiteFilter}
             onChange={(e) => onSelectSiteFilter(e.target.value)}
             aria-label="Filter Berdasarkan Lokasi Properti"
-            className="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer pr-1 max-w-[200px] truncate"
+            className="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer pr-1 max-w-50 truncate"
           >
-            <option value="ALL">Semua Kawasan (4 Site Kalsel)</option>
+            <option value="ALL">Semua Kawasan (4 Lokasi Kalsel)</option>
             {sites.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
         ) : (
-          <span className="text-xs font-bold text-[#0f766e] max-w-[200px] truncate">
+          <span className="text-xs font-bold text-[#0f766e] max-w-50 truncate">
             {currentUser?.siteName || 'Site Terdaftar'}
           </span>
         )}

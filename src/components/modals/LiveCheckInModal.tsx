@@ -88,10 +88,10 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
             <Smartphone className="w-5 h-5 text-emerald-200 shrink-0" />
             <div className="min-w-0">
               <h2 className="text-xs sm:text-sm font-bold tracking-tight text-white truncate">
-                Presensi GPS Lapangan & Verifikasi K3
+                Presensi GPS & Cek APD Lapangan
               </h2>
               <p className="text-[10px] sm:text-[11px] text-emerald-100 truncate">
-                Geofence Radar & Standar Keselamatan Proyek (Kalsel)
+                Verifikasi Radius Lokasi & Standar K3 Proyek
               </p>
             </div>
           </div>
@@ -109,12 +109,12 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
           {/* Employee Selection */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-              Personil yang Melakukan Presensi
+              Nama Karyawan
             </label>
             <select
               value={selectedEmpId}
               onChange={(e) => setSelectedEmpId(e.target.value)}
-              className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+              className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
             >
               {employees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
@@ -127,12 +127,12 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
           {/* Project Site Selection */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-              Titik Kawasan Proyek Penugasan
+              Lokasi Proyek
             </label>
             <select
               value={selectedSiteId}
               onChange={(e) => setSelectedSiteId(e.target.value)}
-              className="w-full h-[38px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+              className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
             >
               {sites.map((site) => (
                 <option key={site.id} value={site.id}>
@@ -147,7 +147,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
             <div className="flex items-center justify-between mb-2">
               <span className="font-semibold text-slate-800 flex items-center gap-1.5 text-xs">
                 <MapPin className="w-4 h-4 text-[#0f766e] shrink-0" />
-                <span>Radius Geofence GPS</span>
+                <span>Jarak dari Titik Proyek</span>
               </span>
               <span className="font-mono font-bold text-xs sm:text-sm text-slate-900 tabular-nums">
                 {simulatedDistance} meter
@@ -193,7 +193,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
           {/* PPE K3 Compliance Checklist */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1.5">
-              Checklist Wajib APD K3 Konstruksi (Safety First)
+              Pemeriksaan Kelengkapan APD (K3)
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs">
@@ -231,14 +231,14 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
           {/* Notes */}
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-              Catatan Penugasan / Zona Kerja
+              Catatan / Area Kerja
             </label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Contoh: Pengecoran slab lantai 2 zona barat"
-              className="w-full h-[36px] px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+              className="w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
             />
           </div>
         </div>

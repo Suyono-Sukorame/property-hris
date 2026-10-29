@@ -132,7 +132,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Menunggu Tindakan ({approvals.filter((a) => a.status.includes('Menunggu')).length})
+            Menunggu Persetujuan ({approvals.filter((a) => a.status.includes('Menunggu')).length})
           </button>
           <button
             onClick={() => setTabFilter('ALL')}
@@ -165,13 +165,13 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari tiket, nama, tipe..."
-              className="w-full h-[36px] pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white"
+              className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white"
             />
           </div>
 
           <button
             onClick={() => setIsCreating(!isCreating)}
-            className="h-[36px] inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs whitespace-nowrap shrink-0"
+            className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs whitespace-nowrap shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Buat Pengajuan Baru</span>
@@ -188,7 +188,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <h3 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-[#0f766e]" />
-              Formulir Pengajuan Surat Perintah Lembur / Izin Lapangan
+              Formulir Pengajuan Baru
             </h3>
             <button
               type="button"
@@ -207,7 +207,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value as ApprovalType)}
-                className="w-full h-[36px] px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                className="w-full h-9 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
               >
                 <option value="Lembur Konstruksi Cor Beton">Lembur Konstruksi Cor Beton</option>
                 <option value="Cuti Tahunan">Cuti Tahunan</option>
@@ -218,12 +218,12 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
 
             <div>
               <label className="text-[11px] font-semibold uppercase text-slate-500 block mb-1">
-                Pemohon Karyawan
+                Nama Karyawan
               </label>
               <select
                 value={newEmpId}
                 onChange={(e) => setNewEmpId(e.target.value)}
-                className="w-full h-[36px] px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                className="w-full h-9 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
               >
                 {employees.map((e) => (
                   <option key={e.id} value={e.id}>
@@ -240,7 +240,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
               <select
                 value={newPriority}
                 onChange={(e) => setNewPriority(e.target.value as 'Biasa' | 'Penting' | 'Kritis')}
-                className="w-full h-[36px] px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                className="w-full h-9 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
               >
                 <option value="Biasa">Biasa</option>
                 <option value="Penting">Penting</option>
@@ -251,7 +251,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
 
           <div>
             <label className="text-[11px] font-semibold uppercase text-slate-500 block mb-1">
-              Rincian Kebutuhan Lapangan
+              Keterangan / Keperluan
             </label>
             <textarea
               required
@@ -275,7 +275,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
               type="submit"
               className="px-4 py-1.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59]"
             >
-              Kirim Pengajuan ke Matriks
+              Kirim Pengajuan
             </button>
           </div>
         </form>
@@ -341,7 +341,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
                       onClick={() => onOpenApproval(app)}
                       className="px-3 py-1.5 font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors inline-flex items-center gap-1"
                     >
-                      <span>Detail Matriks</span>
+                      <span>Lihat Detail</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
 

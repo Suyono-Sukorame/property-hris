@@ -25,7 +25,7 @@ export const Select: React.FC<SelectProps> = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       aria-label={ariaLabel}
-      className={`h-[36px] px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer ${className}`}
+      className={`h-9 px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer ${className}`}
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>

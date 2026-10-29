@@ -44,7 +44,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
               {item.ticketNumber}
             </span>
             <h2 className="text-base font-bold tracking-tight text-white mt-0.5">
-              Workflow Matriks Persetujuan & Dokumen Lapangan
+              Detail Pengajuan & Persetujuan Proyek
             </h2>
           </div>
           <button
@@ -78,7 +78,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
             {item.costEstimate && (
               <div className="bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 text-right">
                 <span className="text-[10px] text-emerald-700 font-semibold uppercase block">
-                  Estimasi Biaya / Alokasi
+                  Estimasi Biaya
                 </span>
                 <span className="font-mono font-bold text-sm text-[#065f46] tabular-nums">
                   {FORMAT_IDR(item.costEstimate)}
@@ -103,7 +103,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
 
             <div>
               <span className="text-[10px] uppercase font-semibold text-slate-400 block">
-                Divisi & Departemen
+                Divisi
               </span>
               <span className="font-medium text-slate-800 text-xs block">
                 {item.division}
@@ -112,7 +112,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
 
             <div>
               <span className="text-[10px] uppercase font-semibold text-slate-400 block">
-                Lokasi Penugasan Proyek
+                Lokasi Proyek
               </span>
               <span className="font-medium text-slate-800 text-xs block truncate">
                 {item.siteName}
@@ -128,7 +128,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
           {/* Detail Description */}
           <div className="mb-6">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
-              Deskripsi & Rincian Teknis Pekerjaan
+              Rincian Pengajuan
             </span>
             <div className="p-3 bg-white border border-slate-200 rounded-lg text-slate-700 leading-relaxed">
               {item.description}
@@ -138,10 +138,10 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
           {/* Step-by-Step Approval Progress Trail */}
           <div className="mb-6">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-3">
-              Jejak Tahapan Persetujuan Berjenjang (Audit Trail)
+              Alur Persetujuan
             </span>
 
-            <div className="space-y-4 relative before:absolute before:top-2 before:bottom-2 before:left-[17px] before:w-0.5 before:bg-slate-200">
+            <div className="space-y-4 relative before:absolute before:top-2 before:bottom-2 before:left-4.25 before:w-0.5 before:bg-slate-200">
               {item.steps.map((step, idx) => {
                 const isDone = step.status === 'completed';
                 const isRejected = step.status === 'rejected';
@@ -194,7 +194,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
           {item.status.includes('Menunggu') && (
             <div className="pt-3 border-t border-slate-200">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-700 block mb-1">
-                Catatan Peninjauan / Verifikasi Lapangan (Opsional)
+                Catatan Peninjauan (Opsional)
               </label>
               <textarea
                 value={reviewNote}
@@ -211,7 +211,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
             <FileText className="w-3.5 h-3.5" />
-            <span>Dokumen tersinkronisasi otomatis dengan SOP HR Properti</span>
+            <span>Persetujuan tercatat otomatis sesuai SOP perusahaan</span>
           </div>
 
           <div className="flex items-center gap-2">

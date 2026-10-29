@@ -41,13 +41,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <span className="text-[11px] font-mono uppercase text-[#0f766e] font-bold tracking-wider block">
-            Laporan Kepatuhan & Analitik Operasional Triwulan IV 2026
+            Laporan SDM & Operasional Proyek Triwulan IV 2026
           </span>
           <h2 className="text-lg font-bold text-slate-900 tracking-tight mt-0.5">
-            Audit Sumber Daya Manusia & Keselamatan Kerja Properti (SMK3)
+            Laporan Ketenagakerjaan & Keselamatan Kerja (K3)
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Data terintegrasi dari seluruh site proyek konstruksi dan operasional korporat.
+            Data terintegrasi dari seluruh lokasi proyek konstruksi dan kantor pusat.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
           >
             <Printer className="w-3.5 h-3.5 text-slate-500" />
-            <span>Cetak Dokumen Audit</span>
+            <span>Cetak Laporan</span>
           </button>
         </div>
       </div>
@@ -82,7 +82,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div className="p-5 rounded-xl border border-slate-200 bg-white space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Sertifikasi Personil K3 Proyek
+              Sertifikasi K3 Karyawan
             </span>
             <HardHat className="w-5 h-5 text-amber-500" />
           </div>
@@ -90,14 +90,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             {k3Count} / {totalEmployees}
           </div>
           <p className="text-[11px] text-slate-500">
-            Personil memegang sertifikat Ahli K3 Konstruksi Kemenaker RI aktif
+            Karyawan bersertifikasi Ahli K3 Konstruksi aktif
           </p>
         </div>
 
         <div className="p-5 rounded-xl border border-slate-200 bg-white space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Estimasi Komitmen Payroll Bulanan
+              Estimasi Total Payroll Bulanan
             </span>
             <FileCheck2 className="w-5 h-5 text-[#0f766e]" />
           </div>
@@ -117,7 +117,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <Building className="w-4 h-4 text-[#0f766e]" />
-              Sebaran Tenaga Kerja Lapangan Menurut Proyek
+              Sebaran Tenaga Kerja per Proyek
             </h3>
             <span className="text-[11px] text-slate-400 font-mono">Real-time</span>
           </div>
@@ -133,12 +133,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     <div>
                       <span className="font-bold text-slate-800">{site.name}</span>
                       <span className="text-[10px] text-slate-400 block font-mono">
-                        {site.category} · Radius Geofence {site.geofenceRadiusMeters}m
+                        {site.category} · Radius Lokasi {site.geofenceRadiusMeters}m
                       </span>
                     </div>
                     <div className="text-right">
                       <span className="font-mono font-bold text-slate-900">
-                        {site.activeWorkforce} Personil
+                        {site.activeWorkforce} Pekerja
                       </span>
                       <span className="text-[10px] text-slate-400 block font-mono">
                         ({percent}%)

@@ -133,7 +133,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Tunjangan Site & K3 Lapangan
+            Tunjangan Proyek & K3
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-xl sm:text-2xl font-bold font-mono text-slate-900 tabular-nums">
@@ -161,7 +161,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-amber-500 shadow-xs">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Pencairan Payroll Mandiri/BCA
+            Status Pembayaran Gaji
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-xl sm:text-2xl font-bold font-mono text-slate-900 tabular-nums">
@@ -170,7 +170,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
             <span className="text-xs text-slate-500">Terselesaikan</span>
           </div>
           <p className="text-[11px] text-emerald-700 font-semibold mt-2">
-            Host-to-Host Corporate Active
+            Transfer Rekening Payroll
           </p>
         </div>
       </div>
@@ -183,7 +183,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
             <div>
               <strong className="font-bold">Proses Payroll Massal Berhasil Dijalankan!</strong>
               <p className="text-emerald-700 text-[11px]">
-                Semua catatan payroll periode Oktober 2026 telah disetujui & disinkronisasi ke gerbang perbankan.
+                Seluruh data gaji periode Oktober 2026 telah disetujui dan siap ditransfer.
               </p>
             </div>
           </div>
@@ -199,7 +199,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari karyawan, NIK, atau slip..."
-            className="w-full h-[36px] pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
+            className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
           />
         </div>
 
@@ -208,7 +208,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             aria-label="Filter Status Payroll"
-            className="h-[36px] px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
+            className="h-9 px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
           >
             <option value="ALL">Semua Status Payroll</option>
             <option value="Dibayar">Dibayar</option>
@@ -218,18 +218,18 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
 
           <button
             onClick={exportPayrollCSV}
-            className="h-[36px] inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            className="h-9 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Ekspor Ledger CSV</span>
+            <span>Ekspor Payroll CSV</span>
           </button>
 
           <button
             onClick={handleBatch}
-            className="h-[36px] inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs"
+            className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs"
           >
             <Banknote className="w-3.5 h-3.5" />
-            <span>Proses Payroll Massal</span>
+            <span>Jalankan Payroll Massal</span>
           </button>
         </div>
       </div>
@@ -241,9 +241,9 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
             <thead>
               <tr className="h-10 bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] tracking-wider font-semibold">
                 <th className="px-4">Karyawan & NIK</th>
-                <th className="px-4">Penempatan Site</th>
+                <th className="px-4">Lokasi Proyek</th>
                 <th className="px-4 text-right">Gaji Pokok</th>
-                <th className="px-4 text-right">Tunjangan Site & K3</th>
+                <th className="px-4 text-right">Tunjangan Proyek & K3</th>
                 <th className="px-4 text-right">Lembur Proyek</th>
                 <th className="px-4 text-right">Potongan Pajak/BPJS</th>
                 <th className="px-4 text-right">Gaji Bersih (THP)</th>
@@ -259,7 +259,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
                     <div className="font-mono text-[10px] text-slate-400">{rec.nik}</div>
                   </td>
 
-                  <td className="px-4 text-slate-700 truncate max-w-[150px]">
+                  <td className="px-4 text-slate-700 truncate max-w-37.5">
                     <div className="font-medium text-slate-800 truncate">{rec.siteName}</div>
                     <span className="text-[10px] font-mono text-slate-400">{rec.jobCode}</span>
                   </td>
@@ -308,7 +308,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
 
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
           <span>Menampilkan {filteredRecords.length} slip gaji periode berjalan</span>
-          <span className="font-mono text-[11px]">Formula Penghitungan Payroll Terintegrasi Peraturan Ketenagakerjaan</span>
+          <span className="font-mono text-[11px]">Perhitungan PPh 21, BPJS Ketenagakerjaan & BPJS Kesehatan</span>
         </div>
       </div>
     </div>
