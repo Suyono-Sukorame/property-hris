@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { HRISProvider, useHRIS } from '@/context/HRISContext';
+import { LoginPage } from '@/components/auth/LoginPage';
 import { Sidebar, Header } from '@/components/layout';
 import {
   DashboardView,
@@ -21,6 +23,7 @@ import {
 } from '@/components/modals';
 
 function HRISApp() {
+  const { currentUser, isLoading: isAuthLoading } = useAuth();
   const {
     activeModule,
     setActiveModule,
@@ -52,6 +55,53 @@ function HRISApp() {
     handleUpdateSiteRadius,
   } = useHRIS();
 
+  // Enforce role-based module restrictions
+  useEffect(() => {
+    if (currentUser?.role === 'EMPLOYEE') {
+      if (['dashboard', 'employees', 'reports', 'settings'].includes(activeModule)) {
+        setActiveModule('attendance');
+      }
+    } else if (currentUser?.role === 'SITE_MANAGER') {
+      if (['settings', 'payroll'].includes(activeModule)) {
+        setActiveModule('dashboard');
+      }
+      if (currentUser.siteId) {
+        setSelectedSiteFilter(currentUser.siteId);
+      }
+    }
+  }, [currentUser, activeModule, setActiveModule, setSelectedSiteFilter]);
+
+  // Loading Screen
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+        <div className="w-10 h-10 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4" />
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+          Memuat Sistem HRIS...
+        </p>
+      </div>
+    );
+  }
+
+  // Not logged in -> Show Login Page
+  if (!currentUser) {
+    return <LoginPage />;
+  }
+
+  // Filter records if Employee role
+  const filteredEmployees = currentUser.role === 'SITE_MANAGER' && currentUser.siteId
+    ? employees.filter((e) => e.siteId === currentUser.siteId)
+    : employees;
+
+  const filteredPayroll = currentUser.role === 'EMPLOYEE' && currentUser.employeeId
+    ? payrollRecords.filter((p) => p.employeeId === currentUser.employeeId)
+    : currentUser.role === 'SITE_MANAGER' && currentUser.siteId
+    ? payrollRecords.filter((p) => {
+        const emp = employees.find((e) => e.id === p.employeeId);
+        return emp?.siteId === currentUser.siteId;
+      })
+    : payrollRecords;
+
   return (
     <div className="min-h-screen bg-[#f8fafc] flex antialiased">
       {/* Sidebar Navigation */}
@@ -76,7 +126,7 @@ function HRISApp() {
           {activeModule === 'dashboard' && (
             <DashboardView
               sites={sites}
-              employees={employees}
+              employees={filteredEmployees}
               attendanceRecords={attendanceRecords}
               approvals={approvals}
               selectedSiteFilter={selectedSiteFilter}
@@ -88,7 +138,7 @@ function HRISApp() {
 
           {activeModule === 'employees' && (
             <EmployeesView
-              employees={employees}
+              employees={filteredEmployees}
               sites={sites}
               selectedSiteFilter={selectedSiteFilter}
               onOpenEmployeeCard={setSelectedEmployeeForCard}
@@ -108,7 +158,7 @@ function HRISApp() {
 
           {activeModule === 'payroll' && (
             <PayrollView
-              payrollRecords={payrollRecords}
+              payrollRecords={filteredPayroll}
               sites={sites}
               selectedSiteFilter={selectedSiteFilter}
               onOpenPaySlip={setSelectedPayrollForSlip}
@@ -120,7 +170,7 @@ function HRISApp() {
             <ApprovalsView
               approvals={approvals}
               sites={sites}
-              employees={employees}
+              employees={filteredEmployees}
               selectedSiteFilter={selectedSiteFilter}
               onOpenApproval={setSelectedApprovalItem}
               onQuickApprove={handleQuickApprove}
@@ -131,7 +181,7 @@ function HRISApp() {
           {activeModule === 'reports' && (
             <ReportsView
               sites={sites}
-              employees={employees}
+              employees={filteredEmployees}
               attendanceRecords={attendanceRecords}
             />
           )}
@@ -183,8 +233,10 @@ function HRISApp() {
 
 export default function Page() {
   return (
-    <HRISProvider>
-      <HRISApp />
-    </HRISProvider>
+    <AuthProvider>
+      <HRISProvider>
+        <HRISApp />
+      </HRISProvider>
+    </AuthProvider>
   );
 }

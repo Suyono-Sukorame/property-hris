@@ -1,10 +1,12 @@
 'use client';
+
 import Image from 'next/image';
 import React from 'react';
 import { ActiveNavModule } from '@/types/hris';
+import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard, Users, Clock, Banknote, CheckSquare,
-  BarChart3, Building, HardHat, ShieldCheck,
+  BarChart3, Building, HardHat, ShieldCheck, LogOut,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -13,14 +15,20 @@ interface SidebarProps {
   pendingApprovalsCount: number;
 }
 
-const navItems: { id: ActiveNavModule; label: string; icon: React.FC<{ className?: string }>; badge?: boolean }[] = [
-  { id: 'dashboard', label: 'Ringkasan Eksekutif', icon: LayoutDashboard },
-  { id: 'employees', label: 'Data Karyawan & Site', icon: Users },
-  { id: 'attendance', label: 'Absensi & Presensi Lapangan', icon: Clock },
-  { id: 'payroll', label: 'Penggajian & Slip Gaji', icon: Banknote },
-  { id: 'approvals', label: 'Matriks Persetujuan', icon: CheckSquare, badge: true },
-  { id: 'reports', label: 'Laporan & K3 Properti', icon: BarChart3 },
-  { id: 'settings', label: 'Pengaturan Proyek & Geofence', icon: Building },
+const allNavItems: {
+  id: ActiveNavModule;
+  label: string;
+  icon: React.FC<{ className?: string }>;
+  badge?: boolean;
+  roles: ('SUPER_ADMIN' | 'SITE_MANAGER' | 'EMPLOYEE')[];
+}[] = [
+  { id: 'dashboard', label: 'Ringkasan Eksekutif', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
+  { id: 'employees', label: 'Data Karyawan & Site', icon: Users, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
+  { id: 'attendance', label: 'Absensi & Presensi Lapangan', icon: Clock, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
+  { id: 'payroll', label: 'Penggajian & Slip Gaji', icon: Banknote, roles: ['SUPER_ADMIN', 'EMPLOYEE'] },
+  { id: 'approvals', label: 'Matriks Persetujuan', icon: CheckSquare, badge: true, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
+  { id: 'reports', label: 'Laporan & K3 Properti', icon: BarChart3, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
+  { id: 'settings', label: 'Pengaturan Proyek & Geofence', icon: Building, roles: ['SUPER_ADMIN'] },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -28,6 +36,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectModule,
   pendingApprovalsCount,
 }) => {
+  const { currentUser, logout } = useAuth();
+  const userRole = currentUser?.role || 'SUPER_ADMIN';
+
+  // Filter menu items based on active role
+  const visibleNavItems = allNavItems.filter((item) => item.roles.includes(userRole));
+
   return (
     <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 min-h-screen border-r border-slate-800">
       {/* Brand Header */}
@@ -56,24 +70,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 mx-3 my-3 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[10px] font-semibold tracking-wider uppercase text-slate-400">
-            Sistem Terpusat
+            {userRole === 'SUPER_ADMIN' ? 'Sistem Terpusat' : 'Kawasan Proyek'}
           </span>
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
         </div>
-        <p className="font-semibold text-white truncate">4 Kawasan Properti Aktif</p>
+        <p className="font-semibold text-white truncate">
+          {currentUser?.siteName || '4 Kawasan Properti Aktif'}
+        </p>
         <div className="flex items-center gap-1.5 mt-2 text-[11px] text-slate-400">
           <HardHat className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span>660 Total Tenaga Kerja</span>
+          <span>Wilayah Kalimantan Selatan</span>
         </div>
       </div>
 
       {/* Navigation List */}
       <div className="px-3 py-2 flex-1 space-y-1">
         <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-          Modul Operasional
+          Modul Akses ({userRole})
         </p>
 
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeModule === item.id;
           const badgeCount = item.badge ? pendingApprovalsCount : 0;
@@ -82,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               key={item.id}
               onClick={() => onSelectModule(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 isActive
                   ? 'bg-[#0f766e] text-white shadow-xs font-bold'
                   : 'text-slate-300 hover:bg-slate-800 hover:text-white'
@@ -114,15 +130,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Current Operator Profile */}
-      <div className="p-4 border-t border-slate-800 bg-slate-950/50 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-[#0f766e] text-white font-bold text-xs flex items-center justify-center shrink-0 border border-emerald-400/30">
-          HG
+      {/* Current User Profile & Logout Button */}
+      <div className="p-3.5 border-t border-slate-800 bg-slate-950/70 flex items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div
+            className="w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 border border-white/20"
+            style={{ backgroundColor: currentUser?.avatarColor || '#0f766e' }}
+          >
+            {currentUser?.initials || 'U'}
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-white truncate">
+              {currentUser?.name || 'Pengguna'}
+            </p>
+            <p className="text-[10px] text-emerald-400 font-medium truncate">
+              {currentUser?.roleLabel || 'Operator'}
+            </p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold text-white truncate">Ir. Hendra Gunawan</p>
-          <p className="text-[10px] text-slate-400 truncate">VP Human Capital & Sites</p>
-        </div>
+
+        <button
+          type="button"
+          onClick={logout}
+          title="Keluar dari Akun"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0 cursor-pointer"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </aside>
   );
