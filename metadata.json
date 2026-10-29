@@ -1,0 +1,6 @@
+{
+  "name": "Property HRIS",
+  "description": "High-precision corporate human resource and workforce management system for property development and construction sites.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
