@@ -1,4 +1,4 @@
-import { PropertySite, Employee, AttendanceRecord, PayrollRecord, ApprovalItem } from '../types/hris';
+import { PropertySite, Employee, AttendanceRecord, PayrollRecord, ApprovalItem } from '@/types/hris';
 
 export const INITIAL_PROPERTY_SITES: PropertySite[] = [
   {

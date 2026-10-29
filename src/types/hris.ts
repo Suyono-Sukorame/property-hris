@@ -67,7 +67,7 @@ export interface AttendanceRecord {
   geofenceDistanceMeters: number;
   geofenceVerified: boolean;
   biometricVerified: boolean;
-  ppeCompliance: boolean; // Alat Pelindung Diri (K3 Helmet & Vest)
+  ppeCompliance: boolean;
   deviceInfo: string;
   notes?: string;
 }
@@ -127,7 +127,7 @@ export interface ApprovalItem {
   steps: ApprovalStep[];
 }
 
-export type ActiveNavModule = 
+export type ActiveNavModule =
   | 'dashboard'
   | 'employees'
   | 'attendance'
