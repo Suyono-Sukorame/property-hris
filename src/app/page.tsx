@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { HRISProvider, useHRIS } from '@/context/HRISContext';
 import { LoginPage } from '@/components/auth/LoginPage';
-import { Sidebar, Header } from '@/components/layout';
+import { Sidebar, Header, BottomNav } from '@/components/layout';
 import {
   DashboardView,
   EmployeesView,
@@ -24,6 +24,8 @@ import {
 
 function HRISApp() {
   const { currentUser, isLoading: isAuthLoading } = useAuth();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
   const {
     activeModule,
     setActiveModule,
@@ -74,9 +76,9 @@ function HRISApp() {
   // Loading Screen
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-4">
         <div className="w-10 h-10 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4" />
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest text-center">
           Memuat Sistem HRIS...
         </p>
       </div>
@@ -104,11 +106,13 @@ function HRISApp() {
 
   return (
     <div className="h-screen bg-[#f8fafc] flex antialiased overflow-hidden">
-      {/* Sidebar Navigation */}
+      {/* Sidebar Navigation (Desktop + Mobile Drawer) */}
       <Sidebar
         activeModule={activeModule}
         onSelectModule={setActiveModule}
         pendingApprovalsCount={pendingApprovalsCount}
+        isOpenMobile={isMobileNavOpen}
+        onCloseMobile={() => setIsMobileNavOpen(false)}
       />
 
       {/* Main Content Area */}
@@ -120,9 +124,11 @@ function HRISApp() {
           sites={sites}
           onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
           onOpenAddEmployee={() => setIsAddEmployeeOpen(true)}
+          onToggleMobileNav={() => setIsMobileNavOpen((prev) => !prev)}
         />
 
-        <main className="p-6 lg:p-8 flex-1 overflow-y-auto">
+        {/* Scrollable Main Area with extra bottom padding for Mobile BottomNav */}
+        <main className="p-3.5 sm:p-6 lg:p-8 pb-24 md:pb-8 flex-1 overflow-y-auto">
           {activeModule === 'dashboard' && (
             <DashboardView
               sites={sites}
@@ -194,6 +200,14 @@ function HRISApp() {
           )}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation Bar (Phone Only) */}
+      <BottomNav
+        activeModule={activeModule}
+        onSelectModule={setActiveModule}
+        onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
+        onToggleMobileDrawer={() => setIsMobileNavOpen((prev) => !prev)}
+      />
 
       {/* Global Modals */}
       <EmployeeIDCardModal

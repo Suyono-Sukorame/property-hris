@@ -6,13 +6,15 @@ import { ActiveNavModule } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard, Users, Clock, Banknote, CheckSquare,
-  BarChart3, Building, HardHat, ShieldCheck, LogOut,
+  BarChart3, Building, HardHat, ShieldCheck, LogOut, X,
 } from 'lucide-react';
 
 interface SidebarProps {
   activeModule: ActiveNavModule;
   onSelectModule: (module: ActiveNavModule) => void;
   pendingApprovalsCount: number;
+  isOpenMobile?: boolean;
+  onCloseMobile?: () => void;
 }
 
 const allNavItems: {
@@ -35,6 +37,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeModule,
   onSelectModule,
   pendingApprovalsCount,
+  isOpenMobile = false,
+  onCloseMobile,
 }) => {
   const { currentUser, logout } = useAuth();
   const userRole = currentUser?.role || 'SUPER_ADMIN';
@@ -42,37 +46,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Filter menu items based on active role
   const visibleNavItems = allNavItems.filter((item) => item.roles.includes(userRole));
 
-  return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 h-screen sticky top-0 border-r border-slate-800 z-40 select-none overflow-hidden">
+  const handleItemClick = (id: ActiveNavModule) => {
+    onSelectModule(id);
+    if (onCloseMobile) {
+      onCloseMobile();
+    }
+  };
+
+  const sidebarContent = (
+    <aside className="w-64 max-w-[85vw] bg-slate-900 text-slate-300 flex flex-col shrink-0 h-screen border-r border-slate-800 select-none overflow-hidden">
       {/* =========================================================================
           ZONA 1: KOP ATAS (PERMANENTLY FIXED & TIDAK IKUT TERGESER)
           ========================================================================= */}
       <div className="shrink-0 bg-slate-900 border-b border-slate-800/80">
         {/* Brand Header */}
-        <div className="p-4 sm:p-5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/10 flex items-center justify-center shrink-0 border border-slate-700/80 shadow-md">
-            <Image
-              src="/property-hris.png"
-              alt="Logo PT Bumi Raya Propertindo"
-              width={40}
-              height={40}
-              priority
-              className="w-full h-full object-cover"
-            />
+        <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-white/10 flex items-center justify-center shrink-0 border border-slate-700/80 shadow-md">
+              <Image
+                src="/property-hris.png"
+                alt="Logo PT Bumi Raya Propertindo"
+                width={40}
+                height={40}
+                priority
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xs sm:text-sm font-bold tracking-tight text-white uppercase truncate">
+                Property HRIS
+              </h1>
+              <p className="text-[10px] sm:text-[11px] text-emerald-400 font-semibold truncate">
+                Bumi Raya Propertindo
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h1 className="text-sm font-bold tracking-tight text-white uppercase truncate">
-              Property HRIS
-            </h1>
-            <p className="text-[11px] text-emerald-400 font-semibold truncate">
-              Bumi Raya Propertindo
-            </p>
-          </div>
+
+          {/* Close button for mobile drawer */}
+          {onCloseMobile && (
+            <button
+              type="button"
+              onClick={onCloseMobile}
+              className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              aria-label="Tutup Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Corporate Site Status Card */}
         <div className="px-3 pb-3">
-          <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs">
+          <div className="p-2.5 sm:p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-semibold tracking-wider uppercase text-slate-400">
                 {userRole === 'SUPER_ADMIN' ? 'Sistem Terpusat' : 'Kawasan Proyek'}
@@ -82,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <p className="font-semibold text-white truncate text-[11px]">
               {currentUser?.siteName || '4 Kawasan Properti Aktif'}
             </p>
-            <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-slate-400">
+            <div className="flex items-center gap-1.5 mt-1 text-[10px] text-slate-400">
               <HardHat className="w-3 h-3 text-amber-400 shrink-0" />
               <span>Wilayah Kalimantan Selatan</span>
             </div>
@@ -106,7 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return (
             <button
               key={item.id}
-              onClick={() => onSelectModule(item.id)}
+              onClick={() => handleItemClick(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 isActive
                   ? 'bg-[#0f766e] text-white shadow-xs font-bold'
@@ -135,7 +160,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ========================================================================= */}
       <div className="shrink-0 bg-slate-900 border-t border-slate-800/80">
         {/* Safety Compliance Mini Badge */}
-        <div className="p-2.5 mx-3 my-2 bg-emerald-950/40 border border-emerald-800/40 rounded-lg text-[10px] text-emerald-300 flex items-center gap-2">
+        <div className="p-2 mx-3 my-1.5 bg-emerald-950/40 border border-emerald-800/40 rounded-lg text-[10px] text-emerald-300 flex items-center gap-2">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
           <div className="truncate">
             <span className="font-semibold block text-emerald-200 truncate">K3 Zero Accident</span>
@@ -145,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Current User Profile & Logout Button */}
         <div className="p-3 border-t border-slate-800/80 bg-slate-950/70 flex items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <div
               className="w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 border border-white/20"
               style={{ backgroundColor: currentUser?.avatarColor || '#0f766e' }}
@@ -173,5 +198,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar (Always Visible on md and up) */}
+      <div className="hidden md:flex shrink-0 sticky top-0 h-screen z-40">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile Drawer (Only Visible on mobile when toggled) */}
+      {isOpenMobile && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div
+            onClick={onCloseMobile}
+            className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+          />
+          {/* Drawer Body */}
+          <div className="relative z-10 flex h-full animate-in slide-in-from-left duration-200 shadow-2xl">
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
   );
 };

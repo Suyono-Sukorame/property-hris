@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -15,6 +15,14 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500', '600'],
   display: 'swap',
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0f172a',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://property-hris.vercel.app'),
@@ -43,7 +51,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`}>
-      <body className="bg-[#f8fafc] text-[#0f172a] antialiased selection:bg-[#0f766e] selection:text-white font-sans">
+      <body className="bg-[#f8fafc] text-[#0f172a] antialiased selection:bg-[#0f766e] selection:text-white font-sans overflow-x-hidden">
         {children}
       </body>
     </html>
