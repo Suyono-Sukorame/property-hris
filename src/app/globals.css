@@ -1,8 +1,6 @@
 @import "tailwindcss";
 
 :root {
-  --font-sans: 'Public Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
   --color-brand: #0f766e;
   --color-brand-dark: #115e59;
 }
@@ -12,7 +10,13 @@
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-sans), 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code, kbd, samp, pre {
+  font-family: var(--font-mono), 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* Accent color for range inputs */

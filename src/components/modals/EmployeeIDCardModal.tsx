@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import React from 'react';
 import { Employee } from '@/types/hris';
 import { StatusBadge } from '@/components/ui';
@@ -27,8 +28,14 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
         {/* Top Header Bar */}
         <div className="bg-[#0f766e] px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-white/15 border border-white/20 flex items-center justify-center font-bold text-white text-xs tracking-wider">
-              BRP
+            <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/20 border border-white/30 flex items-center justify-center shrink-0 shadow-xs">
+              <Image
+                src="/property-hris.png"
+                alt="Logo PT Bumi Raya Propertindo"
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <p className="text-xs uppercase tracking-wider font-semibold text-emerald-100">

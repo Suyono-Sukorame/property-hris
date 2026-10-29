@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import React, { useState } from 'react';
 import { PayrollRecord } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
@@ -54,8 +55,14 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b-2 border-slate-900 gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded bg-[#0f766e] text-white flex items-center justify-center font-bold text-xs tracking-wider">
-                  BRP
+                <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-slate-200 shadow-xs">
+                  <Image
+                    src="/property-hris.png"
+                    alt="Logo PT Bumi Raya Propertindo"
+                    width={36}
+                    height={36}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <h1 className="text-base font-extrabold tracking-tight text-slate-900 uppercase">
                   PT Bumi Raya Propertindo Tbk

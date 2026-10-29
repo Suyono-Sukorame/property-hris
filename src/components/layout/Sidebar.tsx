@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import React from 'react';
 import { ActiveNavModule } from '@/types/hris';
 import {
@@ -31,8 +32,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 min-h-screen border-r border-slate-800">
       {/* Brand Header */}
       <div className="p-5 border-b border-slate-800 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-[#0f766e] text-white flex items-center justify-center font-bold text-sm tracking-widest shadow-inner border border-emerald-400/20">
-          BRP
+        <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/10 flex items-center justify-center shrink-0 border border-slate-700/80 shadow-md">
+          <Image
+            src="/property-hris.png"
+            alt="Logo PT Bumi Raya Propertindo"
+            width={40}
+            height={40}
+            priority
+            className="w-full h-full object-cover"
+          />
         </div>
         <div className="min-w-0">
           <h1 className="text-sm font-bold tracking-tight text-white uppercase truncate">
