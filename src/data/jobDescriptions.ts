@@ -323,4 +323,164 @@ export const JOB_DESCRIPTIONS: Record<string, JobDescription> = {
       experience: 'Minimal 5 tahun mengoperasikan Tower Crane dan koordinasi alat berat proyek',
     },
   },
+
+  'LEG-LND-01': {
+    jobCode: 'LEG-LND-01',
+    title: 'Senior Legal & Land Acquisition Specialist',
+    division: 'Legalitas, Pertanahan & Perizinan',
+    level: 'Spesialis Ahli',
+    reportsTo: 'Corporate Secretary & Direktur Utama',
+    purpose: 'Memastikan kepatuhan hukum korporasi, penyelesaian legalitas pembebasan lahan perumahan dan komersial, perizinan PBG/SLF, serta koordinasi ke Kantor Pertanahan BPN di wilayah Kalimantan Selatan.',
+    responsibilities: [
+      {
+        category: 'Legalitas Lahan & Agraria',
+        items: [
+          'Melakukan audit riwayat kepemilikan tanah (Due Diligence) dan keaslian sertifikat SHM/HGB bersama PPAT & BPN.',
+          'Menyusun perjanjian pengikatan jual beli (PPJB) dan akta pelepasan hak atas tanah kawasan pengembangan properti.',
+          'Menangani mediasi dan penyelesaian sengketa batas tapal tanah secara musyawarah dan litigasi.',
+        ],
+      },
+      {
+        category: 'Perizinan & Kepatuhan Regulasi',
+        items: [
+          'Mengurus perizinan Persetujuan Bangunan Gedung (PBG), Sertifikat Laik Fungsi (SLF), dan izin tata ruang Pemda.',
+          'Memastikan seluruh klausul kontrak kerjasama vendor dan subkontraktor melindungi aset perusahaan.',
+        ],
+      },
+    ],
+    authorities: [
+      'Persetujuan legal draft perjanjian kerjasama dan akta notariil hingga Rp 10.000.000.000,-',
+      'Pemberian legal opinion kepada Dewan Direksi sebelum akuisisi lahan baru',
+    ],
+    kpiTargets: [
+      { metric: 'Kecepatan Penyelesaian Sertifikasi Induk HGB', target: '<= 90 Hari Kerja per Kawasan', weight: 40, frequency: 'Semester' },
+      { metric: 'Kelengkapan Legalitas Perizinan PBG/SLF', target: '100% Sesuai Jadwal Launching', weight: 35, frequency: 'Bulanan' },
+      { metric: 'Mitigasi Risiko Litigasi Korporasi', target: '0 Kasus Sengketa Tidak Tertangani', weight: 25, frequency: 'Tahunan' },
+    ],
+    qualifications: {
+      education: 'S1/S2 Ilmu Hukum (Spesialisasi Hukum Agraria / Notariat)',
+      certifications: ['Sertifikasi Advokat (PERADI) atau Sertifikat Ahli Hukum Kontrak Bisnis'],
+      experience: 'Minimal 6 tahun di industri pengembang properti atau corporate legal real estate',
+    },
+  },
+
+  'FIN-ACC-01': {
+    jobCode: 'FIN-ACC-01',
+    title: 'Finance, Accounting & Tax Lead',
+    division: 'Keuangan, Pengadaan & HR',
+    level: 'Manajemen Proyek',
+    reportsTo: 'Finance Director',
+    purpose: 'Mengelola arus kas korporasi dan pembiayaan proyek konstruksi (KYG Bank), akuntansi biaya pengembangan, pelaporan perpajakan properti (PPh Final 4 ayat 2, PPh 21, PPN), dan audit keuangan berkala.',
+    responsibilities: [
+      {
+        category: 'Manajemen Keuangan & Cashflow Proyek',
+        items: [
+          'Memantau likuiditas kas operasional proyek dan Kantor Pusat Menara Bumi Raya.',
+          'Mempersiapkan drawdown kredit konstruksi perbankan mitra (BTN, Mandiri, BRI, BCA).',
+          'Melakukan rekonsiliasi pembayaran angsuran konsumen dan termin pencairan KPR/KPA.',
+        ],
+      },
+      {
+        category: 'Perpajakan & Laporan Finansial',
+        items: [
+          'Menyusun laporan SPT Masa PPN, PPh Pasal 21 pegawai proyek, dan PPh Final 2.5% peralihan hak tanah/bangunan.',
+          'Menyusun Laporan Keuangan Neraca dan Laba Rugi sesuai PSAK 72 (Pendapatan Kontrak Konstruksi).',
+        ],
+      },
+    ],
+    authorities: [
+      'Otorisasi verifikasi voucher pembayaran vendor dan payroll staf hingga Rp 500.000.000,-',
+      'Persetujuan rekonsiliasi bank dan laporan kepatuhan pajak bulanan',
+    ],
+    kpiTargets: [
+      { metric: 'Akurasi & Ketepatan Waktu Closing Bulanan', target: '<= Tanggal 5 Setiap Bulan', weight: 35, frequency: 'Bulanan' },
+      { metric: 'Kepatuhan Pelaporan Pajak Nol Denda', target: '100% Nihil Surat Teguran Pajak', weight: 35, frequency: 'Bulanan' },
+      { metric: 'Efisiensi Biaya Operasional Back Office', target: 'Varian Anggaran <= 98%', weight: 30, frequency: 'Triwulan' },
+    ],
+    qualifications: {
+      education: 'S1 Akuntansi / Keuangan Perbankan dari universitas terakreditasi',
+      certifications: ['Brevet Pajak A & B Terverifikasi', 'Certified Public Accountant (CPA) / CA'],
+      experience: 'Minimal 5 tahun mengelola finance & tax developer properti',
+    },
+  },
+
+  'HR-PPL-01': {
+    jobCode: 'HR-PPL-01',
+    title: 'HR & People Development Specialist',
+    division: 'Keuangan, Pengadaan & HR',
+    level: 'Spesialis Ahli',
+    reportsTo: 'Head of People & Operations',
+    purpose: 'Mengawal siklus SDM korporasi kantor pusat dan personil proyek, kepatuhan hubungan industrial ketenagakerjaan (PKWTT/PKWT Proyek), BPJS Ketenagakerjaan Konstruksi, evaluasi KPI, dan kultur keselamatan kerja.',
+    responsibilities: [
+      {
+        category: 'Operasional SDM & Kepersonaliaan',
+        items: [
+          'Mengelola database HRIS, absensi WFO/WFH/Site, dan sinkronisasi data keterlambatan ke modul payroll.',
+          'Menerbitkan Perjanjian Kerja Waktu Tertentu (PKWT) untuk seluruh tenaga ahli dan mandor lapangan.',
+          'Memastikan kepatuhan jaminan BPJS Ketenagakerjaan Konstruksi aktif sebelum mobilisasi pekerjaan fisik.',
+        ],
+      },
+      {
+        category: 'Pengembangan Kompetensi & Budaya Kerja',
+        items: [
+          'Memfasilitasi sertifikasi profesi LPJK, SKA Ahli Teknik, dan sertifikasi AK3 Umum untuk staf teknis.',
+          'Menyelenggarakan penilaian kinerja tahunan dan program retensi talenta kunci perusahaan.',
+        ],
+      },
+    ],
+    authorities: [
+      'Persetujuan administrasi cuti tahunan, izin sakit, dan verifikasi klaim asuransi tenaga kerja',
+      'Rekomendasi promosi jabatan dan penyesuaian grading gaji internal',
+    ],
+    kpiTargets: [
+      { metric: 'Kepuasan & Retensi Talenta Kunci Korporat', target: 'Retensi >= 92% per Tahun', weight: 35, frequency: 'Tahunan' },
+      { metric: 'Ketepatan Waktu Penerbitan Slip Payroll', target: '100% Tepat Tanggal 28-30', weight: 35, frequency: 'Bulanan' },
+      { metric: 'Kepatuhan Regulasi Kemenaker & BPJS', target: '100% Terdaftar Resmi & Nihil Sanksi', weight: 30, frequency: 'Semester' },
+    ],
+    qualifications: {
+      education: 'S1 Psikologi / Manajemen SDM / Hukum Ketenagakerjaan',
+      certifications: ['Certified Human Resources Professional (CHRP)'],
+      experience: 'Minimal 4 tahun menangani manajemen SDM korporasi properti/konstruksi',
+    },
+  },
+
+  'SLS-PRP-01': {
+    jobCode: 'SLS-PRP-01',
+    title: 'Commercial Property Sales Lead',
+    division: 'Pemasaran & Penjualan Properti',
+    level: 'Spesialis Ahli',
+    reportsTo: 'Commercial Director',
+    purpose: 'Memimpin tim sales dalam pemasaran unit komersial ruko, kavling perumahan township, dan lantai kantor sewa The Sovereign Tower, menjalin kemitraan agen properti (broker), dan mencapai target closing penjualan.',
+    responsibilities: [
+      {
+        category: 'Strategi Penjualan & Kemitraan Broker',
+        items: [
+          'Menyusun skema promo penjualan, diskon uang muka (DP), dan program subsidi KPR bekerjasama dengan bank mitra.',
+          'Mengkoordinasikan agen properti eksternal (AREBI) dalam memasarkan proyek properti unggulan.',
+          'Menyelenggarakan Customer Gathering, Open House Show Unit, dan pameran properti mall berkala.',
+        ],
+      },
+      {
+        category: 'Pelayanan Konsumen & Closing KPR',
+        items: [
+          'Mendampingi konsumen VIP dari tahap penandatanganan Surat Pesanan (SP) hingga Akad Kredit Notaris.',
+          'Memantau proses BI Checking / SLIK OJK konsumen guna memastikan persetujuan KPR lancar.',
+        ],
+      },
+    ],
+    authorities: [
+      'Otorisasi booking fee unit dan persetujuan jadwal pembayaran uang muka bertahap konsumen',
+      'Persetujuan komisi agen penjualan eksternal sesuai plafon yang ditetapkan',
+    ],
+    kpiTargets: [
+      { metric: 'Pencapaian Target Nilai Penjualan (Marketing Sales)', target: '>= 100% Target Kuartalan', weight: 50, frequency: 'Triwulan' },
+      { metric: 'Tingkat Konversi Lead ke SP Booking Fee', target: '>= 12% Conversion Rate', weight: 30, frequency: 'Bulanan' },
+      { metric: 'Indeks Kepuasan Konsumen Pembeli Unit', target: 'Skor >= 4.7 / 5.0', weight: 20, frequency: 'Semester' },
+    ],
+    qualifications: {
+      education: 'S1 Manajemen Bisnis / Pemasaran / Komunikasi',
+      certifications: ['Sertifikasi Manajemen Penjualan Properti (AREBI / BNSP)'],
+      experience: 'Minimal 5 tahun sebagai sales lead di properti residensial / high-rise commercial',
+    },
+  },
 };

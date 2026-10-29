@@ -314,12 +314,18 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     const mm = String(now.getMinutes()).padStart(2, '0');
     const checkOutTime = `${hh}:${mm} WITA`;
 
-    // Shift ends at 16:00 → lembur if checkout after that
-    const shiftEndHour = 16;
-    const lemburHours =
-      now.getHours() > shiftEndHour
-        ? Math.round(((now.getHours() - shiftEndHour) * 60 + now.getMinutes()) / 60 * 10) / 10
-        : 0;
+    // Office shift ends at 17:30, Field shift ends at 16:00
+    const rec = attendanceRecords.find((a) => a.id === recordId);
+    const isOffice = rec?.siteId === 'SITE-HQ' || (rec?.shift && rec.shift.includes('Kantor'));
+    const shiftEndHour = isOffice ? 17 : 16;
+    const shiftEndMinute = isOffice ? 30 : 0;
+
+    let lemburHours = 0;
+    if (now.getHours() > shiftEndHour || (now.getHours() === shiftEndHour && now.getMinutes() > shiftEndMinute)) {
+      const diffMinutes = (now.getHours() - shiftEndHour) * 60 + (now.getMinutes() - shiftEndMinute);
+      lemburHours = Math.round((diffMinutes / 60) * 10) / 10;
+    }
+
     // Rp 25.000 per overtime hour (approximation)
     const upahLemburPerJam = 25000;
     const upahLembur = Math.round(lemburHours * upahLemburPerJam);

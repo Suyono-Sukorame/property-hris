@@ -41,8 +41,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   const terlambatCount = attendanceRecords.filter((a) => a.status === 'Terlambat').length;
   const cutiCount = attendanceRecords.filter((a) => a.status === 'Cuti' || a.status === 'Izin Lapangan').length;
   const alpaCount = attendanceRecords.filter((a) => a.status === 'Alpa').length;
-  const ppeCompliantCount = attendanceRecords.filter((a) => a.ppeCompliance).length;
-  const ppeRate = totalAttendance > 0 ? Math.round((ppeCompliantCount / totalAttendance) * 100) : 100;
+  const fieldRecords = attendanceRecords.filter((a) => a.siteId !== 'SITE-HQ' && !a.shift.includes('Kantor'));
+  const ppeCompliantCount = fieldRecords.filter((a) => a.ppeCompliance).length;
+  const ppeRate = fieldRecords.length > 0 ? Math.round((ppeCompliantCount / fieldRecords.length) * 100) : 100;
   const totalLateMinutes = attendanceRecords.reduce((sum, a) => sum + (a.lateMinutes || 0), 0);
   const avgLateMinutes = terlambatCount > 0 ? Math.round(totalLateMinutes / terlambatCount) : 0;
 
@@ -253,10 +254,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </div>
 
           <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#065f46] block">Kepatuhan APD</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#065f46] block">Kepatuhan APD Proyek</span>
             <span className="text-2xl font-extrabold font-mono text-[#065f46] block">{ppeRate}%</span>
             <span className="text-[11px] text-emerald-700 font-semibold">
-              {ppeCompliantCount} dari {totalAttendance} terverifikasi
+              {ppeCompliantCount} dari {fieldRecords.length} personil lapangan
             </span>
           </div>
         </div>

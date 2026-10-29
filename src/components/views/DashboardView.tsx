@@ -58,9 +58,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const totalCheckedIn = attendanceRecords.filter((a) => a.status === 'Hadir' || a.status === 'Terlambat').length;
   const attendanceRate =
     totalHeadcount > 0 ? Math.round((totalCheckedIn / totalHeadcount) * 1000) / 10 : 0;
-  const ppeCompliantCount = attendanceRecords.filter((a) => a.ppeCompliance).length;
+  
+  // Field vs Office split for safety metrics
+  const fieldAttendance = attendanceRecords.filter((a) => a.siteId !== 'SITE-HQ' && !a.shift.includes('Kantor'));
+  const fieldCheckedIn = fieldAttendance.filter((a) => a.status === 'Hadir' || a.status === 'Terlambat').length;
+  const ppeCompliantCount = fieldAttendance.filter((a) => a.ppeCompliance).length;
   const ppeRate =
-    totalCheckedIn > 0 ? Math.round((ppeCompliantCount / totalCheckedIn) * 100) : 100;
+    fieldCheckedIn > 0 ? Math.round((ppeCompliantCount / fieldCheckedIn) * 100) : 100;
   const criticalApprovals = approvals.filter(
     (a) => a.status.includes('Menunggu') && a.priority === 'Kritis'
   );
@@ -143,7 +147,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="bg-white p-5 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Kepatuhan APD & K3
+              Kepatuhan APD Proyek Lapangan
             </span>
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
           </div>
@@ -155,7 +159,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="mt-2.5 text-[11px] text-slate-500 flex items-center gap-1">
             <span className={`w-1.5 h-1.5 rounded-full ${ppeRate === 100 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-            <span>{ppeRate === 100 ? 'Nol Insiden Kerja (Zero Accident)' : `${ppeCompliantCount} dari ${totalCheckedIn} terverifikasi APD`}</span>
+            <span>{ppeRate === 100 ? 'Nol Insiden Kerja (Zero Accident)' : `${ppeCompliantCount} dari ${fieldCheckedIn} personil lapangan terverifikasi APD`}</span>
           </div>
         </div>
       </div>

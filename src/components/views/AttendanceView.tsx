@@ -14,6 +14,7 @@ import {
   Calendar,
   ClipboardEdit,
   LogOut,
+  Building2,
 } from 'lucide-react';
 
 interface AttendanceViewProps {
@@ -89,7 +90,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   const countHadir = filteredRecords.filter((r) => r.status === 'Hadir').length;
   const countTerlambat = filteredRecords.filter((r) => r.status === 'Terlambat').length;
   const countCuti = filteredRecords.filter((r) => r.status === 'Cuti' || r.status === 'Izin Lapangan').length;
-  const countPpeValid = filteredRecords.filter((r) => r.ppeCompliance).length;
+  
+  // PPE Compliance is evaluated strictly for field site personnel
+  const fieldRecords = filteredRecords.filter((r) => r.siteId !== 'SITE-HQ' && !r.shift.includes('Kantor'));
+  const countPpeValid = fieldRecords.filter((r) => r.ppeCompliance).length;
+  const ppeRate = fieldRecords.length > 0 ? Math.round((countPpeValid / fieldRecords.length) * 100) : 100;
+  const officeRecords = filteredRecords.filter((r) => r.siteId === 'SITE-HQ' || r.shift.includes('Kantor'));
+
   const avgLateMinutes =
     countTerlambat > 0
       ? Math.round(
@@ -100,7 +107,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       : 0;
 
   const exportAttendanceCSV = () => {
-    const headers = ['ID', 'Nama', 'Site', 'Tanggal', 'Jam Masuk', 'Jam Pulang', 'Status', 'Terlambat (m)', 'Jarak GPS (m)', 'APD K3'];
+    const headers = ['ID', 'Nama', 'Site', 'Tanggal', 'Jam Masuk', 'Jam Pulang', 'Status', 'Terlambat (m)', 'Jarak GPS (m)', 'APD K3 / Mode'];
     const rows = filteredRecords.map((r) => [
       r.id,
       `"${r.employeeName}"`,
@@ -111,7 +118,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       r.status,
       r.lateMinutes,
       r.geofenceDistanceMeters,
-      r.ppeCompliance ? 'Lengkap' : 'Tidak',
+      r.siteId === 'SITE-HQ' || r.shift.includes('Kantor')
+        ? (r.workMode || 'Kantor Pusat')
+        : (r.ppeCompliance ? 'Lengkap' : 'Tidak Lengkap'),
     ]);
     const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(x => x.join(','))].join('\n');
     const encoded = encodeURI(csv);
@@ -136,7 +145,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <span className="text-xs text-slate-500">Karyawan</span>
           </div>
           <p className="text-[11px] text-slate-500 mt-2">
-            Check-in di dalam radius lokasi
+            Presensi di lokasi kerja terdaftar
           </p>
         </div>
 
@@ -172,20 +181,20 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-emerald-600 shadow-xs">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Kepatuhan APD & K3
+            Kepatuhan APD Proyek Lapangan
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-[#065f46] tabular-nums">
-              {countPpeValid}
+              {ppeRate}%
             </span>
             <span className="text-xs text-emerald-700 font-semibold">
-              {filteredRecords.length > 0
-                ? `(${Math.round((countPpeValid / filteredRecords.length) * 100)}%)`
-                : '(0%)'}
+              ({countPpeValid}/{fieldRecords.length} Personil)
             </span>
           </div>
           <p className="text-[11px] text-slate-500 mt-2">
-            Helm + Rompi Reflektif diverifikasi
+            {officeRecords.length > 0
+              ? `${officeRecords.length} staf kantor Menara HQ aktif`
+              : 'Helm + Rompi Reflektif diverifikasi'}
           </p>
         </div>
       </div>
@@ -339,19 +348,28 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     </td>
 
                     <td className="px-4">
-                      <div className="flex items-center gap-1 text-[11px]">
-                        {record.ppeCompliance ? (
-                          <span className="text-emerald-700 font-semibold flex items-center gap-0.5">
-                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                            Lengkap
+                      {record.siteId === 'SITE-HQ' || record.shift.includes('Kantor') ? (
+                        <div className="flex items-center gap-1 text-[11px]">
+                          <span className="text-slate-700 font-semibold flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                            <Building2 className="w-3.5 h-3.5 text-[#0f766e]" />
+                            {record.workMode || 'Kantor Pusat'}
                           </span>
-                        ) : (
-                          <span className="text-rose-600 font-semibold flex items-center gap-0.5">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            Tidak Lengkap
-                          </span>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-[11px]">
+                          {record.ppeCompliance ? (
+                            <span className="text-emerald-700 font-semibold flex items-center gap-0.5">
+                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                              Lengkap
+                            </span>
+                          ) : (
+                            <span className="text-rose-600 font-semibold flex items-center gap-0.5">
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              Tidak Lengkap
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <span className="text-[10px] font-mono text-slate-400 block truncate max-w-32.5">
                         {record.deviceInfo}
                       </span>

@@ -68,6 +68,7 @@ export interface AttendanceRecord {
   geofenceVerified: boolean;
   biometricVerified: boolean;
   ppeCompliance: boolean;
+  workMode?: 'WFO' | 'WFH' | 'Dinas Luar' | 'Site Proyek';
   deviceInfo: string;
   notes?: string;
 }
