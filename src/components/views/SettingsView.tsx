@@ -148,7 +148,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <span className="text-[11px] text-slate-500">Pekerjaan struktur, pembesian, bekisting</span>
               </div>
               <span className="font-mono font-semibold px-2.5 py-1 rounded bg-white border border-slate-200 text-slate-800">
-                07:00 - 16:00 WIB
+                07:00 - 16:00 WITA
               </span>
             </div>
 
@@ -158,7 +158,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <span className="text-[11px] text-slate-500">Legal, perizinan tanah, finansial, HR</span>
               </div>
               <span className="font-mono font-semibold px-2.5 py-1 rounded bg-white border border-slate-200 text-slate-800">
-                08:30 - 17:30 WIB
+                08:30 - 17:30 WITA
               </span>
             </div>
 
@@ -168,7 +168,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <span className="text-[11px] text-slate-500">Khusus penuangan ready-mix beton & pompa</span>
               </div>
               <span className="font-mono font-semibold px-2.5 py-1 rounded bg-white border border-slate-200 text-slate-800">
-                19:00 - 04:00 WIB
+                19:00 - 04:00 WITA
               </span>
             </div>
           </div>
