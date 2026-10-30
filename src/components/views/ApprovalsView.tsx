@@ -24,6 +24,8 @@ interface ApprovalsViewProps {
   onOpenApproval: (item: ApprovalItem) => void;
   onQuickApprove: (id: string) => void;
   onAddNewApproval: (item: ApprovalItem) => void;
+  canApprove?: boolean;
+  currentEmployeeId?: string;
 }
 
 export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
@@ -34,18 +36,22 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
   onOpenApproval,
   onQuickApprove,
   onAddNewApproval,
+  canApprove = true,
+  currentEmployeeId,
 }) => {
   const [tabFilter, setTabFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
+  const effectiveEmpId = currentEmployeeId || employees[0]?.id || '';
+
   // Form states for new ticket
-  const [newType, setNewType] = useState<ApprovalType>('Lembur Konstruksi Cor Beton');
-  const [newEmpId, setNewEmpId] = useState(employees[0]?.id || '');
+  const [newType, setNewType] = useState<ApprovalType>('Cuti Tahunan');
+  const [newEmpId, setNewEmpId] = useState(effectiveEmpId);
   const [newSiteId, setNewSiteId] = useState(sites[0]?.id || '');
   const [newDesc, setNewDesc] = useState('');
-  const [newCost, setNewCost] = useState(1500000);
-  const [newPriority, setNewPriority] = useState<'Biasa' | 'Penting' | 'Kritis'>('Penting');
+  const [newCost, setNewCost] = useState(1000000);
+  const [newPriority, setNewPriority] = useState<'Biasa' | 'Penting' | 'Kritis'>('Biasa');
 
   const filteredApprovals = approvals.filter((item) => {
     const matchSite =
@@ -209,28 +215,35 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
                 onChange={(e) => setNewType(e.target.value as ApprovalType)}
                 className="w-full h-9 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
               >
-                <option value="Lembur Konstruksi Cor Beton">Lembur Konstruksi Cor Beton</option>
                 <option value="Cuti Tahunan">Cuti Tahunan</option>
+                <option value="Kasbon Karyawan">Kasbon Karyawan</option>
+                <option value="Izin Sakit">Izin Sakit</option>
                 <option value="Klaim Operasional Lapangan">Klaim Operasional Lapangan</option>
-                <option value="Surat Tugas K3">Surat Tugas K3</option>
+                <option value="Lembur Konstruksi Cor Beton">Lembur Lapangan</option>
               </select>
             </div>
 
             <div>
               <label className="text-[11px] font-semibold uppercase text-slate-500 block mb-1">
-                Nama Karyawan
+                Nama Pemohon
               </label>
-              <select
-                value={newEmpId}
-                onChange={(e) => setNewEmpId(e.target.value)}
-                className="w-full h-9 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
-              >
-                {employees.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.name} ({e.jobCode})
-                  </option>
-                ))}
-              </select>
+              {canApprove ? (
+                <select
+                  value={newEmpId}
+                  onChange={(e) => setNewEmpId(e.target.value)}
+                  className="w-full h-9 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                >
+                  {employees.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.name} ({e.jobCode})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="w-full h-9 px-3 bg-slate-100 border border-slate-200 rounded-lg text-slate-800 flex items-center font-bold text-xs">
+                  {employees.find((e) => e.id === (currentEmployeeId || newEmpId))?.name || 'Saya Sendiri'}
+                </div>
+              )}
             </div>
 
             <div>
@@ -345,7 +358,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
 
-                    {app.status.includes('Menunggu') && (
+                    {canApprove && app.status.includes('Menunggu') && (
                       <button
                         onClick={() => onQuickApprove(app.id)}
                         className="px-3.5 py-1.5 font-semibold text-white bg-[#0f766e] hover:bg-[#115e59] rounded-lg transition-colors shadow-2xs"

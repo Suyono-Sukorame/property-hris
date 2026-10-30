@@ -9,12 +9,14 @@ interface ApprovalDetailModalProps {
   item: ApprovalItem | null;
   onClose: () => void;
   onUpdateStatus: (itemId: string, newStatus: 'Disetujui' | 'Ditolak', reviewNote: string) => void;
+  canApprove?: boolean;
 }
 
 export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
   item,
   onClose,
   onUpdateStatus,
+  canApprove = true,
 }) => {
   const [reviewNote, setReviewNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -190,8 +192,8 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Action note input if pending */}
-          {item.status.includes('Menunggu') && (
+          {/* Action note input if pending and user has authority */}
+          {item.status.includes('Menunggu') && canApprove && (
             <div className="pt-3 border-t border-slate-200">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-700 block mb-1">
                 Catatan Peninjauan (Opsional)
@@ -224,7 +226,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
               Tutup
             </button>
 
-            {item.status.includes('Menunggu') && (
+            {item.status.includes('Menunggu') && canApprove && (
               <>
                 <button
                   type="button"

@@ -163,7 +163,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full h-9 px-3 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#0f766e]"
-                  placeholder="Contoh: Suyono"
+                  placeholder="Contoh: Navyzar"
                 />
               </div>
 

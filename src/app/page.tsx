@@ -102,12 +102,23 @@ function HRISApp() {
     return <LoginPage />;
   }
 
-  // Filter records if Employee role
+  // Role helpers
+  const isEmployee = currentUser.role === 'EMPLOYEE';
+
+  // Filter records based on role
   const filteredEmployees = currentUser.role === 'SITE_MANAGER' && currentUser.siteId
     ? employees.filter((e) => e.siteId === currentUser.siteId)
     : employees;
 
-  const filteredPayroll = currentUser.role === 'EMPLOYEE' && currentUser.employeeId
+  const filteredAttendance = isEmployee && currentUser.employeeId
+    ? attendanceRecords.filter((r) => r.employeeId === currentUser.employeeId)
+    : attendanceRecords;
+
+  const filteredApprovals = isEmployee && currentUser.employeeId
+    ? approvals.filter((a) => a.employeeId === currentUser.employeeId)
+    : approvals;
+
+  const filteredPayroll = isEmployee && currentUser.employeeId
     ? payrollRecords.filter((p) => p.employeeId === currentUser.employeeId)
     : currentUser.role === 'SITE_MANAGER' && currentUser.siteId
     ? payrollRecords.filter((p) => {
@@ -169,12 +180,14 @@ function HRISApp() {
 
           {activeModule === 'attendance' && (
             <AttendanceView
-              attendanceRecords={attendanceRecords}
+              attendanceRecords={filteredAttendance}
               sites={sites}
               selectedSiteFilter={selectedSiteFilter}
               onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
               onCheckOut={handleCheckOut}
               onEditAttendance={(record) => setEditingAttendanceRecord(record)}
+              isEmployeeView={isEmployee}
+              canEditAttendance={!isEmployee}
             />
           )}
 
@@ -185,18 +198,21 @@ function HRISApp() {
               selectedSiteFilter={selectedSiteFilter}
               onOpenPaySlip={setSelectedPayrollForSlip}
               onBatchProcessPayroll={handleBatchProcessPayroll}
+              isEmployeeView={isEmployee}
             />
           )}
 
           {activeModule === 'approvals' && (
             <ApprovalsView
-              approvals={approvals}
+              approvals={filteredApprovals}
               sites={sites}
               employees={filteredEmployees}
               selectedSiteFilter={selectedSiteFilter}
               onOpenApproval={setSelectedApprovalItem}
               onQuickApprove={handleQuickApprove}
               onAddNewApproval={handleAddNewApproval}
+              canApprove={!isEmployee}
+              currentEmployeeId={isEmployee ? currentUser.employeeId : undefined}
             />
           )}
 
@@ -241,6 +257,7 @@ function HRISApp() {
         item={selectedApprovalItem}
         onClose={() => setSelectedApprovalItem(null)}
         onUpdateStatus={handleUpdateApprovalStatus}
+        canApprove={!isEmployee}
       />
 
       <LiveCheckInModal

@@ -24,6 +24,8 @@ interface AttendanceViewProps {
   onOpenLiveCheckIn: () => void;
   onCheckOut: (recordId: string) => void;
   onEditAttendance: (record: AttendanceRecord) => void;
+  isEmployeeView?: boolean;
+  canEditAttendance?: boolean;
 }
 
 type DateRangeFilter = 'today' | 'week' | 'month' | 'all';
@@ -66,6 +68,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   onOpenLiveCheckIn,
   onCheckOut,
   onEditAttendance,
+  isEmployeeView = false,
+  canEditAttendance = true,
 }) => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -278,7 +282,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 <th className="px-4">Radius GPS</th>
                 <th className="px-4">APD K3</th>
                 <th className="px-4">Keterangan</th>
-                <th className="px-4 text-center">Aksi Admin</th>
+                <th className="px-4 text-center">{canEditAttendance ? 'Aksi Admin' : 'Aksi'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -379,27 +383,33 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                       {record.notes || '-'}
                     </td>
 
-                    {/* Admin Action Column */}
+                    {/* Action Column */}
                     <td className="px-4 text-center">
                       <div className="flex items-center justify-center gap-1.5">
-                        {/* Check-Out button — only show if no checkout yet */}
+                        {/* Check-Out button — show if no checkout yet */}
                         {!record.checkOutTime && (
                           <button
                             onClick={() => onCheckOut(record.id)}
                             title="Catat Absen Pulang Sekarang"
-                            className="p-1.5 rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
+                            className="px-2 py-1 rounded-md text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer flex items-center gap-1"
                           >
                             <LogOut className="w-3.5 h-3.5" />
+                            <span>Pulang</span>
                           </button>
                         )}
-                        {/* Edit button */}
-                        <button
-                          onClick={() => onEditAttendance(record)}
-                          title="Koreksi Data Presensi"
-                          className="p-1.5 rounded-md text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
-                        >
-                          <ClipboardEdit className="w-3.5 h-3.5" />
-                        </button>
+                        {/* Edit button — ONLY for Admin */}
+                        {canEditAttendance && (
+                          <button
+                            onClick={() => onEditAttendance(record)}
+                            title="Koreksi Data Presensi (Admin)"
+                            className="p-1.5 rounded-md text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+                          >
+                            <ClipboardEdit className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {!canEditAttendance && record.checkOutTime && (
+                          <span className="text-[11px] text-emerald-600 font-medium">Selesai</span>
+                        )}
                       </div>
                     </td>
                   </tr>
