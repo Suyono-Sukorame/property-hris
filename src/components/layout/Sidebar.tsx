@@ -95,6 +95,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
+        {/* User Identity & Logout Button (Ditempatkan di Atas agar Terlihat Jelas & Bebas dari Potongan Layar HP) */}
+        <div className="px-3 pb-2.5">
+          <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/90 flex items-center justify-between gap-2 shadow-xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className="w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 border border-white/20 shadow-xs"
+                style={{ backgroundColor: currentUser?.avatarColor || '#0f766e' }}
+              >
+                {currentUser?.initials || 'U'}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-white truncate">
+                  {currentUser?.name || 'Pengguna'}
+                </p>
+                <p className="text-[10px] text-emerald-400 font-medium truncate">
+                  {currentUser?.roleLabel || 'Operator'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={logout}
+              title="Keluar dari Akun"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-200 bg-rose-950/70 hover:bg-rose-900 border border-rose-800/80 hover:text-white transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-400" />
+              <span>Keluar</span>
+            </button>
+          </div>
+        </div>
+
         {/* Corporate Site Status Card */}
         <div className="px-3 pb-3">
           <div className="p-2.5 sm:p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs">
@@ -156,41 +188,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* =========================================================================
-          ZONA 3: FOOTER PROFIL & K3 (PERMANENTLY STICKY BOTTOM)
+          ZONA 3: FOOTER K3 (STICKY BOTTOM DENGAN PADDING AMAN NAV-BAR HP)
           ========================================================================= */}
-      <div className="shrink-0 bg-slate-900 border-t border-slate-800/80 pb-6 md:pb-2">
-        {/* Current User Profile & Logout Button (Utama: Tampil Langsung & Tidak Tertutup Navigation Bar) */}
-        <div className="p-3 bg-slate-950/80 border-b border-slate-800/60 flex items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2 min-w-0">
-            <div
-              className="w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 border border-white/20 shadow-xs"
-              style={{ backgroundColor: currentUser?.avatarColor || '#0f766e' }}
-            >
-              {currentUser?.initials || 'U'}
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">
-                {currentUser?.name || 'Pengguna'}
-              </p>
-              <p className="text-[10px] text-emerald-400 font-medium truncate">
-                {currentUser?.roleLabel || 'Operator'}
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={logout}
-            title="Keluar dari Akun"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-200 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/80 hover:text-white transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
-          >
-            <LogOut className="w-3.5 h-3.5 text-rose-400" />
-            <span>Keluar</span>
-          </button>
-        </div>
-
+      <div className="shrink-0 bg-slate-900 border-t border-slate-800/80 p-3 pb-8 md:pb-3">
         {/* Safety Compliance Mini Badge */}
-        <div className="p-2 mx-3 mt-2 bg-emerald-950/40 border border-emerald-800/40 rounded-lg text-[10px] text-emerald-300 flex items-center gap-2">
+        <div className="p-2 bg-emerald-950/40 border border-emerald-800/40 rounded-lg text-[10px] text-emerald-300 flex items-center gap-2">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
           <div className="truncate">
             <span className="font-semibold block text-emerald-200 truncate">K3 Zero Accident</span>

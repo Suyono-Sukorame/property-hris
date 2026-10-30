@@ -21,6 +21,12 @@ import {
   Building2,
   Briefcase,
   Laptop,
+  Calendar,
+  FileText,
+  LogOut,
+  CalendarCheck,
+  HeartPulse,
+  Send,
 } from 'lucide-react';
 
 interface LiveCheckInModalProps {
@@ -28,7 +34,9 @@ interface LiveCheckInModalProps {
   onClose: () => void;
   employees: Employee[];
   sites: PropertySite[];
+  attendanceRecords?: AttendanceRecord[];
   onCheckInSuccess: (record: AttendanceRecord) => void;
+  onCheckOut?: (recordId: string) => void;
 }
 
 export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
@@ -36,7 +44,9 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
   onClose,
   employees,
   sites,
+  attendanceRecords = [],
   onCheckInSuccess,
+  onCheckOut,
 }) => {
   const { currentUser } = useAuth();
   const isEmployeeUser = currentUser?.role === 'EMPLOYEE';
@@ -48,25 +58,31 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
       (currentUser?.email && e.email.toLowerCase() === currentUser.email.toLowerCase())
   ) || employees[0];
 
+  const [modalTab, setModalTab] = useState<'ATTENDANCE' | 'LEAVE'>('ATTENDANCE');
   const [selectedEmpId, setSelectedEmpId] = useState(initialEmp?.id || employees[0]?.id || '');
   const [selectedSiteId, setSelectedSiteId] = useState(
     currentUser?.siteId || initialEmp?.siteId || sites[0]?.id || ''
   );
-  const [simulatedDistance, setSimulatedDistance] = useState<number>(38); // 38 meters default (inside site)
+  const [simulatedDistance, setSimulatedDistance] = useState<number>(38); // 38 meters default
   const [helmetChecked, setHelmetChecked] = useState(true);
   const [vestChecked, setVestChecked] = useState(true);
   const [bootsChecked, setBootsChecked] = useState(true);
   const [workMode, setWorkMode] = useState<'WFO' | 'Dinas Luar' | 'WFH'>('WFO');
-  const [notes, setNotes] = useState('Presensi harian proyek konstruksi');
+  const [notes, setNotes] = useState('Presensi harian kerja');
   const [isProcessing, setIsProcessing] = useState(false);
   const [submittedRecord, setSubmittedRecord] = useState<AttendanceRecord | null>(null);
   const [isKioskMode, setIsKioskMode] = useState(false);
+
+  // Leave / Permission Form States
+  const [leaveType, setLeaveType] = useState<'Izin' | 'Sakit' | 'Cuti' | 'Dinas Luar'>('Izin');
+  const [leaveReason, setLeaveReason] = useState('');
 
   // Sync state whenever modal opens or current user changes
   useEffect(() => {
     if (isOpen) {
       setSubmittedRecord(null);
       setIsProcessing(false);
+      setModalTab('ATTENDANCE');
       if (initialEmp) {
         setSelectedEmpId(initialEmp.id);
         const targetSiteId = currentUser?.siteId || initialEmp.siteId || sites[0]?.id;
@@ -76,6 +92,8 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
       }
       setIsKioskMode(false);
       setWorkMode('WFO');
+      setLeaveType('Izin');
+      setLeaveReason('');
     }
   }, [isOpen, currentUser, initialEmp, sites]);
 
@@ -87,10 +105,21 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
   const isOffice = currentSite?.category === 'Corporate Head Office' || currentSite?.id === 'SITE-HQ';
   const maxRadius = currentSite?.geofenceRadiusMeters || 200;
 
+  // Detect today's existing attendance for currentEmp
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayRecord = attendanceRecords.find(
+    (r) => r.employeeId === currentEmp.id && r.date === todayStr
+  );
+
+  const hasCheckedIn = !!todayRecord && todayRecord.status !== 'Cuti' && todayRecord.status !== 'Izin Lapangan';
+  const hasCheckedOut = !!todayRecord?.checkOutTime && todayRecord.checkOutTime !== '-';
+  const isLeaveToday = todayRecord?.status === 'Cuti' || todayRecord?.status === 'Izin Lapangan';
+
   // For office Dinas Luar or WFH, geofence radius requirement is relaxed
   const isWithinGeofence = isOffice && workMode !== 'WFO' ? true : simulatedDistance <= maxRadius;
   const isPpeComplete = isOffice ? true : (helmetChecked && vestChecked && bootsChecked);
 
+  // Action: Check-In (Absen Masuk)
   const handleExecuteCheckIn = () => {
     if (!isWithinGeofence) return;
 
@@ -133,7 +162,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
       division: currentEmp.division,
       siteId: currentSite.id,
       siteName: currentSite.name,
-      date: new Date().toISOString().slice(0, 10),
+      date: todayStr,
       checkInTime: `${currentTime} WITA`,
       shift: shiftLabel,
       status: isLate ? 'Terlambat' : 'Hadir',
@@ -158,6 +187,74 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
     }, 450);
   };
 
+  // Action: Check-Out (Absen Pulang)
+  const handleExecuteCheckOut = () => {
+    if (!todayRecord) return;
+    setIsProcessing(true);
+
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const currentTime = `${hours}:${minutes} WITA`;
+
+    setTimeout(() => {
+      if (onCheckOut) {
+        onCheckOut(todayRecord.id);
+      }
+      setIsProcessing(false);
+      setSubmittedRecord({
+        ...todayRecord,
+        checkOutTime: currentTime,
+      });
+    }, 450);
+  };
+
+  // Action: Submit Leave / Permission (Izin, Sakit, Cuti)
+  const handleExecuteLeave = () => {
+    if (!leaveReason.trim()) return;
+
+    setIsProcessing(true);
+
+    const shiftLabel =
+      leaveType === 'Cuti'
+        ? 'Cuti Tahunan Terjadwal'
+        : leaveType === 'Sakit'
+        ? 'Sakit (Izin Istirahat Medis)'
+        : leaveType === 'Dinas Luar'
+        ? 'Dinas Luar / Koordinasi Eksternal'
+        : 'Izin Keperluan Pribadi/Mendesak';
+
+    const statusValue = leaveType === 'Cuti' ? 'Cuti' : 'Izin Lapangan';
+
+    const leaveRecord: AttendanceRecord = {
+      id: `ATT-${Date.now()}`,
+      employeeId: currentEmp.id,
+      employeeName: currentEmp.name,
+      jobCode: currentEmp.jobCode,
+      division: currentEmp.division,
+      siteId: currentSite.id,
+      siteName: currentSite.name,
+      date: todayStr,
+      checkInTime: '-',
+      checkOutTime: '-',
+      shift: shiftLabel,
+      status: statusValue,
+      lateMinutes: 0,
+      geofenceDistanceMeters: 0,
+      geofenceVerified: true,
+      biometricVerified: true,
+      ppeCompliance: true,
+      deviceInfo: 'Form Lapor Izin & Cuti Mobile HRIS',
+      notes: `[${leaveType.toUpperCase()}]: ${leaveReason}`,
+    };
+
+    setTimeout(() => {
+      onCheckInSuccess(leaveRecord);
+      setIsProcessing(false);
+      setSubmittedRecord(leaveRecord);
+    }, 450);
+  };
+
   const handleCloseModal = () => {
     setSubmittedRecord(null);
     onClose();
@@ -173,7 +270,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
         {/* =========================================================================
             HEADER BAR
             ========================================================================= */}
-        <div className="bg-[#0f766e] px-4 sm:px-6 py-3.5 sm:py-4 text-white flex items-center justify-between shrink-0">
+        <div className="bg-[#0f766e] px-4 sm:px-6 py-3 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             {isOffice ? (
               <Building2 className="w-5 h-5 text-emerald-200 shrink-0" />
@@ -183,21 +280,15 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
             <div className="min-w-0">
               <h2 className="text-xs sm:text-sm font-bold tracking-tight text-white truncate">
                 {submittedRecord
-                  ? isOffice
-                    ? 'Bukti Presensi Kantor Terverifikasi'
-                    : 'Bukti Presensi Lapangan Terverifikasi'
-                  : isOffice
-                  ? 'Presensi Karyawan Kantor Pusat'
-                  : 'Presensi GPS & Cek APD Lapangan'}
+                  ? submittedRecord.checkOutTime && submittedRecord.checkOutTime !== '-'
+                    ? 'Bukti Absen Pulang Terverifikasi'
+                    : submittedRecord.status === 'Cuti' || submittedRecord.status === 'Izin Lapangan'
+                    ? 'Pengajuan Izin / Cuti Diterima'
+                    : 'Bukti Absen Masuk Terverifikasi'
+                  : 'Layanan Presensi & Kehadiran Karyawan'}
               </h2>
               <p className="text-[10px] sm:text-[11px] text-emerald-100 truncate">
-                {submittedRecord
-                  ? isOffice
-                    ? 'Tersimpan ke Sistem HRIS · Menara Bumi Raya Banjarmasin'
-                    : 'Tersimpan ke Sistem HRIS · Wilayah Kalsel'
-                  : isOffice
-                  ? 'Verifikasi Kehadiran WFO / Dinas Luar / WFH'
-                  : 'Verifikasi Radius Lokasi & Standar K3 Proyek'}
+                PT Bumi Raya Propertindo · Sistem Presensi Real-Time
               </p>
             </div>
           </div>
@@ -211,28 +302,62 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
         </div>
 
         {/* =========================================================================
-            VIEW A: SUCCESS RECEIPT SCREEN (Jika Presensi Berhasil Dikonfirmasi)
+            TOP TABS: [ 🏢 Presensi Kerja ] vs [ 📝 Izin / Sakit / Cuti ]
+            (Hanya tampil saat form aktif sebelum submit)
+            ========================================================================= */}
+        {!submittedRecord && (
+          <div className="flex items-center border-b border-slate-200 bg-slate-50/80 px-4 shrink-0 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setModalTab('ATTENDANCE')}
+              className={`py-2.5 px-3 border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
+                modalTab === 'ATTENDANCE'
+                  ? 'border-[#0f766e] text-[#0f766e] font-bold'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>Presensi Kerja (Masuk / Pulang)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setModalTab('LEAVE')}
+              className={`py-2.5 px-3 border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
+                modalTab === 'LEAVE'
+                  ? 'border-[#0f766e] text-[#0f766e] font-bold'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Izin / Sakit / Cuti</span>
+            </button>
+          </div>
+        )}
+
+        {/* =========================================================================
+            VIEW A: SUCCESS RECEIPT SCREEN
             ========================================================================= */}
         {submittedRecord ? (
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 text-slate-800 text-xs space-y-4">
-            {/* Top Success Banner */}
-            <div className="text-center py-3">
-              <div className="w-14 h-14 bg-emerald-100 border border-emerald-300 rounded-full flex items-center justify-center mx-auto mb-2.5 shadow-xs">
-                <CheckCircle2 className="w-8 h-8 text-[#0f766e]" />
+            <div className="text-center py-2">
+              <div className="w-13 h-13 bg-emerald-100 border border-emerald-300 rounded-full flex items-center justify-center mx-auto mb-2 shadow-xs">
+                <CheckCircle2 className="w-7 h-7 text-[#0f766e]" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Presensi Berhasil Dikonfirmasi!
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+                {submittedRecord.checkOutTime && submittedRecord.checkOutTime !== '-'
+                  ? 'Absen Pulang Berhasil Dicatat!'
+                  : submittedRecord.status === 'Cuti' || submittedRecord.status === 'Izin Lapangan'
+                  ? 'Laporan Izin / Cuti Berhasil Disimpan!'
+                  : 'Absen Masuk Berhasil Dikonfirmasi!'}
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                {isOffice
-                  ? 'Data kehadiran kantor Anda telah diverifikasi dan tercatat di server Menara HQ.'
-                  : 'Data kehadiran dan verifikasi APD Anda telah tercatat di server proyek.'}
+                Data telah tersimpan di sistem HRIS server Menara Bumi Raya.
               </p>
             </div>
 
-            {/* Official Digital Attendance Ticket */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-3.5 shadow-xs">
-              {/* Ticket Header */}
+            {/* Official Digital Ticket */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-3 shadow-xs">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <div className="flex items-center gap-2">
                   <StatusBadge status={submittedRecord.status} size="sm" />
@@ -243,14 +368,17 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                   )}
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] font-mono text-slate-400 block uppercase">Waktu Masuk</span>
-                  <span className="font-mono font-bold text-slate-900 text-xs sm:text-sm">
-                    {submittedRecord.checkInTime}
+                  <span className="text-[10px] font-mono text-slate-400 block uppercase">Waktu Record</span>
+                  <span className="font-mono font-bold text-slate-900 text-xs">
+                    {submittedRecord.checkOutTime && submittedRecord.checkOutTime !== '-'
+                      ? `Pulang: ${submittedRecord.checkOutTime}`
+                      : submittedRecord.checkInTime !== '-'
+                      ? `Masuk: ${submittedRecord.checkInTime}`
+                      : todayStr}
                   </span>
                 </div>
               </div>
 
-              {/* Employee & Job Metadata */}
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
@@ -262,62 +390,29 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
 
                 <div>
                   <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                    Penempatan Kerja
+                    Lokasi / Shift
                   </span>
                   <p className="font-bold text-slate-900 truncate mt-0.5">{submittedRecord.siteName}</p>
-                  <p className="text-[10px] text-emerald-700 font-medium">
-                    {submittedRecord.workMode && submittedRecord.workMode !== 'Site Proyek'
-                      ? `Mode: ${submittedRecord.workMode}`
-                      : `Radius ${submittedRecord.geofenceDistanceMeters}m (Sesuai)`}
-                  </p>
+                  <p className="text-[10px] text-slate-500 truncate">{submittedRecord.shift}</p>
                 </div>
               </div>
 
-              {/* PPE / Office Environment Status Breakdown */}
-              <div className="pt-3 border-t border-slate-200">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
-                  {isOffice ? 'Verifikasi Standar Kerja Perkantoran' : 'Verifikasi Keselamatan Kerja (K3)'}
+              <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-600">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+                  Catatan / Keterangan
                 </span>
-                {isOffice ? (
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                    <div className="flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4 text-[#0f766e] shrink-0" />
-                      <span className="font-semibold text-slate-800">
-                        {submittedRecord.workMode === 'WFO'
-                          ? 'WFO (Menara Bumi Raya HQ)'
-                          : submittedRecord.workMode === 'Dinas Luar'
-                          ? 'Tugas Dinas Luar / Koordinasi Eksternal'
-                          : 'Work From Home (Remote Terjadwal)'}
-                      </span>
-                    </div>
-                    <span className="text-slate-500 text-[10px]">
-                      Akses Gedung & Ergonomi Terpenuhi
-                    </span>
-                  </div>
-                ) : (
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                    <div className="flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="font-semibold text-slate-800">
-                        {submittedRecord.ppeCompliance ? 'APD Lengkap (100%)' : 'Peringatan APD Tidak Lengkap'}
-                      </span>
-                    </div>
-                    <span className="text-slate-500 text-[10px]">
-                      Helm · Rompi · Sepatu Safety
-                    </span>
-                  </div>
-                )}
+                <p className="p-2 bg-white rounded-lg border border-slate-200 italic">
+                  &ldquo;{submittedRecord.notes || 'Presensi terverifikasi'}&rdquo;
+                </p>
               </div>
 
-              {/* Ticket ID Reference */}
               <div className="pt-2 text-[10px] font-mono text-slate-400 flex items-center justify-between">
                 <span>Ref ID: {submittedRecord.id}</span>
-                <span>{isOffice ? 'Kantor Pusat Geotagged' : 'Geotagged Mobile GPS'}</span>
+                <span>{submittedRecord.deviceInfo}</span>
               </div>
             </div>
 
-            {/* Bottom Done Action */}
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-end gap-2.5">
+            <div className="pt-2 flex justify-end">
               <button
                 type="button"
                 onClick={handleCloseModal}
@@ -330,10 +425,10 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
           </div>
         ) : (
           /* =========================================================================
-              VIEW B: ACTIVE CHECK-IN FORM (Formulir Presensi & APD)
+              VIEW B: ACTIVE FORM (TAB 1: ATTENDANCE vs TAB 2: LEAVE)
               ========================================================================= */
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 text-slate-800 text-xs space-y-4">
-            {/* Identity Card: Auto-detection for Employee vs Kiosk Select */}
+            {/* Identity Card: Employee info */}
             {isEmployeeUser && !isKioskMode ? (
               <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
                 <div className="flex items-center gap-3 min-w-0">
@@ -368,12 +463,12 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                 </div>
               </div>
             ) : (
-              /* Kiosk Mode / Admin Selection */
+              /* Kiosk / Admin Switcher */
               <div className="space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-[#0f766e]" />
-                    <span>Pilih Karyawan Lapangan</span>
+                    <span>Pilih Karyawan</span>
                   </label>
                   {isEmployeeUser && (
                     <button
@@ -404,7 +499,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
 
                 <div>
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block mb-1">
-                    Lokasi Proyek Penugasan
+                    Lokasi Penugasan
                   </label>
                   <select
                     value={selectedSiteId}
@@ -413,7 +508,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                   >
                     {sites.map((site) => (
                       <option key={site.id} value={site.id}>
-                        {site.name} (Radius Maksimal: {site.geofenceRadiusMeters}m)
+                        {site.name} (Radius Maks: {site.geofenceRadiusMeters}m)
                       </option>
                     ))}
                   </select>
@@ -421,259 +516,388 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
               </div>
             )}
 
-            {/* Office Work Mode Selector (Only for Office / HQ) */}
-            {isOffice && (
-              <div className="space-y-2">
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block">
-                  Mode Kehadiran Kantor
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setWorkMode('WFO')}
-                    className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-                      workMode === 'WFO'
-                        ? 'bg-[#0f766e] text-white border-[#0f766e] shadow-xs'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Building2 className="w-4 h-4" />
-                    <span>WFO (Menara HQ)</span>
-                  </button>
+            {/* TAB 1: PRESENSI KERJA (MASUK / PULANG) */}
+            {modalTab === 'ATTENDANCE' && (
+              <>
+                {/* SUB-CASE 1: Karyawan Sudah Absen Masuk & Belum Pulang (Tampilkan Mode Absen Pulang) */}
+                {hasCheckedIn && !hasCheckedOut ? (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl border border-emerald-300 bg-emerald-50/70 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                          <CheckCircle className="w-4 h-4 text-[#0f766e]" />
+                          <span>Status Hari Ini: Sedang Bekerja</span>
+                        </span>
+                        <span className="font-mono font-bold text-xs bg-emerald-200/80 text-[#065f46] px-2 py-0.5 rounded">
+                          Masuk: {todayRecord.checkInTime}
+                        </span>
+                      </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setWorkMode('Dinas Luar')}
-                    className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-                      workMode === 'Dinas Luar'
-                        ? 'bg-[#0f766e] text-white border-[#0f766e] shadow-xs'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Briefcase className="w-4 h-4" />
-                    <span>Dinas Luar</span>
-                  </button>
+                      <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-700 pt-1 border-t border-emerald-200/60">
+                        <div>
+                          <span className="text-slate-500 block text-[10px]">Lokasi Kerja:</span>
+                          <span className="font-semibold text-slate-900 truncate block">{todayRecord.siteName}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px]">Jadwal Shift:</span>
+                          <span className="font-semibold text-slate-900 truncate block">{todayRecord.shift}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setWorkMode('WFH')}
-                    className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
-                      workMode === 'WFH'
-                        ? 'bg-[#0f766e] text-white border-[#0f766e] shadow-xs'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Laptop className="w-4 h-4" />
-                    <span>WFH Terjadwal</span>
-                  </button>
-                </div>
-              </div>
-            )}
+                    {/* Geofence checkout location check */}
+                    <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-800 flex items-center gap-1.5 text-xs">
+                          <MapPin className="w-4 h-4 text-[#0f766e]" />
+                          <span>Verifikasi Radius Lokasi Pulang</span>
+                        </span>
+                        <span className="font-mono font-bold text-xs text-slate-900">{simulatedDistance} meter</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="10"
+                        max="400"
+                        step="5"
+                        value={simulatedDistance}
+                        onChange={(e) => setSimulatedDistance(Number(e.target.value))}
+                        className="w-full accent-[#0f766e] cursor-pointer"
+                      />
+                      <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                        <span>Dalam Lokasi</span>
+                        <span className="font-semibold text-slate-700">Toleransi: {maxRadius}m</span>
+                        <span>Luar Radius</span>
+                      </div>
+                    </div>
 
-            {/* Geofence GPS Radar Simulation Box (For Field, or Office WFO) */}
-            {(!isOffice || workMode === 'WFO') ? (
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-800 flex items-center gap-1.5 text-xs">
-                    <MapPin className="w-4 h-4 text-[#0f766e] shrink-0" />
-                    <span>Jarak dari {currentSite.name}</span>
-                  </span>
-                  <span className="font-mono font-bold text-xs sm:text-sm text-slate-900 tabular-nums">
-                    {simulatedDistance} meter
-                  </span>
-                </div>
-
-                {/* Interactive Distance Slider */}
-                <input
-                  type="range"
-                  min="10"
-                  max="400"
-                  step="5"
-                  value={simulatedDistance}
-                  onChange={(e) => setSimulatedDistance(Number(e.target.value))}
-                  className="w-full accent-[#0f766e] cursor-pointer"
-                />
-
-                <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                  <span>0m (Tengah Lokasi)</span>
-                  <span className="font-semibold text-slate-700">Batas Aman: {maxRadius}m</span>
-                  <span>400m (Luar)</span>
-                </div>
-
-                {/* Quick Distance Presets */}
-                <div className="pt-2 border-t border-slate-200/80 flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mr-1">
-                    Pintasan Cepat:
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setSimulatedDistance(25)}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                      simulatedDistance === 25
-                        ? 'bg-[#0f766e] text-white shadow-xs'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    25m (Dalam Lokasi)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSimulatedDistance(85)}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                      simulatedDistance === 85
-                        ? 'bg-[#0f766e] text-white shadow-xs'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    85m (Lobi / Gerbang)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSimulatedDistance(250)}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                      simulatedDistance === 250
-                        ? 'bg-rose-600 text-white shadow-xs'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    250m (Luar Radius)
-                  </button>
-                </div>
-
-                {/* Live Geofence Status Indicator */}
-                <div
-                  className={`p-2.5 rounded-lg border flex items-center gap-2 text-xs font-medium transition-all ${
-                    isWithinGeofence
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                      : 'bg-rose-50 border-rose-200 text-rose-800'
-                  }`}
-                >
-                  {isWithinGeofence ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-xs flex items-start gap-2">
+                      <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                       <span>
-                        Posisi GPS Valid (Dalam radius {simulatedDistance}m / Batas {maxRadius}m)
+                        Pekerjaan selesai? Pastikan seluruh peralatan telah dirapikan sebelum menekan tombol Absen Pulang.
                       </span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                      <span>
-                        Di Luar Radius Kantor ({simulatedDistance}m)! Melebihi batas toleransi {maxRadius}m.
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            ) : (
-              /* Dynamic Remote Check-in Info for Dinas Luar / WFH */
-              <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-2 text-xs text-emerald-900">
-                <div className="flex items-center gap-2 font-bold">
-                  {workMode === 'Dinas Luar' ? (
-                    <Briefcase className="w-4 h-4 text-[#0f766e] shrink-0" />
-                  ) : (
-                    <Laptop className="w-4 h-4 text-[#0f766e] shrink-0" />
-                  )}
-                  <span>
-                    {workMode === 'Dinas Luar'
-                      ? 'Presensi Penugasan Luar Kantor'
-                      : 'Presensi Work From Home (WFH)'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-emerald-800 leading-relaxed">
-                  {workMode === 'Dinas Luar'
-                    ? 'Verifikasi radius tetap di-bypass untuk keperluan koordinasi instansi (BPN, Pemda, Notaris, atau Bank). Titik koordinat GPS seluler otomatis disimpan.'
-                    : 'Presensi remote karyawan kantor pusat. Pastikan jadwal WFH telah disetujui atasan divisi.'}
-                </p>
-                <div className="pt-2 border-t border-emerald-200/80 flex items-center justify-between text-[10px] font-mono text-emerald-700">
-                  <span>Status: Geotagged Otomatis</span>
-                  <span>Shift: 08:30 - 17:30 WITA</span>
-                </div>
-              </div>
-            )}
-
-            {/* Check Requirements: Field APD vs Office Ergonomics */}
-            {isOffice ? (
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-700">
-                <div className="flex items-center gap-2.5">
-                  <Building2 className="w-4 h-4 text-[#0f766e] shrink-0" />
-                  <div>
-                    <span className="font-semibold block text-slate-900">Standar Lingkungan Kerja Kantor</span>
-                    <span className="text-[10px] text-slate-500">ID Card Gedung Menara HQ · Lingkungan Ergonomis Terverifikasi</span>
+                    </div>
                   </div>
-                </div>
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded uppercase tracking-wider">
-                  Sesuai
-                </span>
-              </div>
-            ) : (
-              /* Mandatory PPE / K3 Compliance Checklist for Field */
-              <div className="space-y-2">
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block">
-                  Pemeriksaan Kelengkapan APD (K3 Lapangan)
-                </label>
+                ) : hasCheckedIn && hasCheckedOut ? (
+                  /* SUB-CASE 2: Karyawan Sudah Masuk & Pulang Lengkap */
+                  <div className="p-5 rounded-xl border border-emerald-200 bg-emerald-50/50 text-center space-y-2 py-6">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 border border-emerald-300 text-[#0f766e] flex items-center justify-center mx-auto mb-1">
+                      <CalendarCheck className="w-6 h-6" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900">Presensi Hari Ini Lengkap!</h4>
+                    <p className="text-xs text-slate-600 max-w-xs mx-auto">
+                      Anda telah menyelesaikan presensi harian untuk tanggal {todayStr}.
+                    </p>
+                    <div className="flex items-center justify-center gap-3 pt-2 font-mono text-xs">
+                      <span className="px-2.5 py-1 bg-white border border-slate-200 rounded-md text-slate-800">
+                        Masuk: <strong>{todayRecord?.checkInTime}</strong>
+                      </span>
+                      <span className="px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[#065f46] font-bold">
+                        Pulang: <strong>{todayRecord?.checkOutTime}</strong>
+                      </span>
+                    </div>
+                  </div>
+                ) : isLeaveToday ? (
+                  /* SUB-CASE 3: Sedang Cuti / Izin Hari Ini */
+                  <div className="p-5 rounded-xl border border-slate-200 bg-slate-50 text-center space-y-2 py-6">
+                    <FileText className="w-10 h-10 text-slate-400 mx-auto" />
+                    <h4 className="text-sm font-bold text-slate-900">Status Hari Ini: {todayRecord?.status}</h4>
+                    <p className="text-xs text-slate-600 max-w-xs mx-auto">
+                      {todayRecord?.notes || 'Tercatat izin resmi dari sistem HRIS.'}
+                    </p>
+                  </div>
+                ) : (
+                  /* SUB-CASE 4: Belum Absen (Formulir Absen Masuk Standar) */
+                  <>
+                    {/* Office Work Mode Selector (Only for Office / HQ) */}
+                    {isOffice && (
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block">
+                          Mode Kehadiran Kantor
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setWorkMode('WFO')}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                              workMode === 'WFO'
+                                ? 'bg-[#0f766e] text-white border-[#0f766e] shadow-xs'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            <Building2 className="w-4 h-4" />
+                            <span>WFO (Menara HQ)</span>
+                          </button>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs">
-                    <input
-                      type="checkbox"
-                      checked={helmetChecked}
-                      onChange={(e) => setHelmetChecked(e.target.checked)}
-                      className="rounded text-[#0f766e] focus:ring-[#0f766e]"
-                    />
-                    <span className="font-medium text-slate-800">Helm Proyek</span>
-                  </label>
+                          <button
+                            type="button"
+                            onClick={() => setWorkMode('Dinas Luar')}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                              workMode === 'Dinas Luar'
+                                ? 'bg-[#0f766e] text-white border-[#0f766e] shadow-xs'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            <Briefcase className="w-4 h-4" />
+                            <span>Dinas Luar</span>
+                          </button>
 
-                  <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs">
-                    <input
-                      type="checkbox"
-                      checked={vestChecked}
-                      onChange={(e) => setVestChecked(e.target.checked)}
-                      className="rounded text-[#0f766e] focus:ring-[#0f766e]"
-                    />
-                    <span className="font-medium text-slate-800">Rompi Reflektif</span>
-                  </label>
+                          <button
+                            type="button"
+                            onClick={() => setWorkMode('WFH')}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                              workMode === 'WFH'
+                                ? 'bg-[#0f766e] text-white border-[#0f766e] shadow-xs'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            <Laptop className="w-4 h-4" />
+                            <span>WFH Terjadwal</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
-                  <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs">
-                    <input
-                      type="checkbox"
-                      checked={bootsChecked}
-                      onChange={(e) => setBootsChecked(e.target.checked)}
-                      className="rounded text-[#0f766e] focus:ring-[#0f766e]"
-                    />
-                    <span className="font-medium text-slate-800">Sepatu Safety</span>
-                  </label>
-                </div>
+                    {/* Geofence GPS Radar Simulation Box */}
+                    {(!isOffice || workMode === 'WFO') ? (
+                      <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-slate-800 flex items-center gap-1.5 text-xs">
+                            <MapPin className="w-4 h-4 text-[#0f766e] shrink-0" />
+                            <span>Jarak dari {currentSite.name}</span>
+                          </span>
+                          <span className="font-mono font-bold text-xs sm:text-sm text-slate-900 tabular-nums">
+                            {simulatedDistance} meter
+                          </span>
+                        </div>
 
-                {/* Warning if APD incomplete */}
-                {!isPpeComplete && (
-                  <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 flex items-center gap-2 text-xs">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>
-                      Peringatan K3: Kelengkapan APD belum 100%. Catatan ketidaksesuaian akan diteruskan ke tim pengawas K3.
+                        <input
+                          type="range"
+                          min="10"
+                          max="400"
+                          step="5"
+                          value={simulatedDistance}
+                          onChange={(e) => setSimulatedDistance(Number(e.target.value))}
+                          className="w-full accent-[#0f766e] cursor-pointer"
+                        />
+
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                          <span>0m (Tengah Lokasi)</span>
+                          <span className="font-semibold text-slate-700">Batas Aman: {maxRadius}m</span>
+                          <span>400m (Luar)</span>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-200/80 flex flex-wrap items-center gap-1.5">
+                          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mr-1">
+                            Pintasan:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setSimulatedDistance(25)}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                              simulatedDistance === 25
+                                ? 'bg-[#0f766e] text-white shadow-xs'
+                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                            }`}
+                          >
+                            25m (Dalam Lokasi)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSimulatedDistance(85)}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                              simulatedDistance === 85
+                                ? 'bg-[#0f766e] text-white shadow-xs'
+                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                            }`}
+                          >
+                            85m (Gerbang)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSimulatedDistance(250)}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                              simulatedDistance === 250
+                                ? 'bg-rose-600 text-white shadow-xs'
+                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                            }`}
+                          >
+                            250m (Luar)
+                          </button>
+                        </div>
+
+                        <div
+                          className={`p-2.5 rounded-lg border flex items-center gap-2 text-xs font-medium transition-all ${
+                            isWithinGeofence
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                              : 'bg-rose-50 border-rose-200 text-rose-800'
+                          }`}
+                        >
+                          {isWithinGeofence ? (
+                            <>
+                              <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <span>Posisi GPS Valid (Radius {simulatedDistance}m / Batas {maxRadius}m)</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                              <span>Di Luar Radius ({simulatedDistance}m)! Melebihi batas {maxRadius}m.</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-1.5 text-xs text-emerald-900">
+                        <div className="flex items-center gap-2 font-bold">
+                          {workMode === 'Dinas Luar' ? <Briefcase className="w-4 h-4 text-[#0f766e]" /> : <Laptop className="w-4 h-4 text-[#0f766e]" />}
+                          <span>{workMode === 'Dinas Luar' ? 'Penugasan Luar Kantor' : 'Work From Home (WFH)'}</span>
+                        </div>
+                        <p className="text-[11px] text-emerald-800">
+                          {workMode === 'Dinas Luar'
+                            ? 'Koordinasi instansi luar (BPN/Pemda/Mitra). Titik GPS otomatis disimpan.'
+                            : 'Presensi remote WFH terjadwal.'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Requirements: APD for Field vs Office Ergonomics */}
+                    {isOffice ? (
+                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-700">
+                        <div className="flex items-center gap-2.5">
+                          <Building2 className="w-4 h-4 text-[#0f766e]" />
+                          <div>
+                            <span className="font-semibold block text-slate-900">Standar Lingkungan Kantor</span>
+                            <span className="text-[10px] text-slate-500">ID Card Menara HQ · Lingkungan Ergonomis</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded uppercase">
+                          Sesuai
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block">
+                          Kelengkapan APD K3 Lapangan
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs">
+                            <input
+                              type="checkbox"
+                              checked={helmetChecked}
+                              onChange={(e) => setHelmetChecked(e.target.checked)}
+                              className="rounded text-[#0f766e] focus:ring-[#0f766e]"
+                            />
+                            <span className="font-medium text-slate-800">Helm Proyek</span>
+                          </label>
+                          <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs">
+                            <input
+                              type="checkbox"
+                              checked={vestChecked}
+                              onChange={(e) => setVestChecked(e.target.checked)}
+                              className="rounded text-[#0f766e] focus:ring-[#0f766e]"
+                            />
+                            <span className="font-medium text-slate-800">Rompi Reflektif</span>
+                          </label>
+                          <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs">
+                            <input
+                              type="checkbox"
+                              checked={bootsChecked}
+                              onChange={(e) => setBootsChecked(e.target.checked)}
+                              className="rounded text-[#0f766e] focus:ring-[#0f766e]"
+                            />
+                            <span className="font-medium text-slate-800">Sepatu Safety</span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Notes Input */}
+                    <div>
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block mb-1">
+                        {isOffice ? 'Agenda / Catatan Kerja' : 'Catatan / Area Kerja'}
+                      </label>
+                      <input
+                        type="text"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Contoh: Pekerjaan harian di area penugasan"
+                        className="w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                      />
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* TAB 2: FORM AJUKAN IZIN / SAKIT / CUTI */}
+            {modalTab === 'LEAVE' && (
+              <div className="space-y-3.5">
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2">
+                  <HeartPulse className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block">Pengajuan Izin, Sakit, atau Cuti Hari Ini</span>
+                    <span className="text-[11px] text-amber-800">
+                      Tidak bisa hadir kerja? Laporkan status kehadiran Anda agar tercatat resmi di sistem dan terhindar dari pemotongan alpa.
                     </span>
                   </div>
-                )}
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block mb-1.5">
+                    Kategori Pengajuan
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {(['Izin', 'Sakit', 'Cuti', 'Dinas Luar'] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setLeaveType(type)}
+                        className={`p-2.5 rounded-lg border text-xs font-bold transition-all cursor-pointer text-center ${
+                          leaveType === type
+                            ? 'bg-[#0f766e] text-white border-[#0f766e] shadow-xs'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        {type === 'Izin' ? 'Izin Keperluan' : type === 'Sakit' ? 'Sakit Medis' : type === 'Cuti' ? 'Cuti Tahunan' : 'Dinas Luar'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block mb-1">
+                    Tanggal Efektif
+                  </label>
+                  <input
+                    type="date"
+                    defaultValue={todayStr}
+                    disabled
+                    className="w-full h-9 px-3 bg-slate-100 border border-slate-300 rounded-lg text-xs font-mono text-slate-700 cursor-not-allowed"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">Tanggal presensi: {todayStr} (Hari Ini)</span>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block mb-1">
+                    Alasan / Keterangan Lengkap *
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={leaveReason}
+                    onChange={(e) => setLeaveReason(e.target.value)}
+                    placeholder={
+                      leaveType === 'Sakit'
+                        ? 'Contoh: Demam dan flu berat, istirahat di rumah sesuai anjuran dokter'
+                        : leaveType === 'Cuti'
+                        ? 'Contoh: Cuti tahunan keluarga yang telah dikoordinasikan dengan site manager'
+                        : leaveType === 'Dinas Luar'
+                        ? 'Contoh: Menghadiri rapat koordinasi tapal batas di Kantor BPN Banjarbaru'
+                        : 'Contoh: Izin mengurus dokumen kependudukan mendesak'
+                    }
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 resize-none focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
+                  />
+                </div>
               </div>
             )}
-
-            {/* Field / Office Notes Input */}
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block mb-1">
-                {isOffice ? 'Agenda Kerja / Catatan Kehadiran' : 'Catatan / Area Kerja Lapangan'}
-              </label>
-              <input
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={
-                  isOffice
-                    ? 'Contoh: Koordinasi berkas legalitas BPN & persiapan audit laporan'
-                    : 'Contoh: Pekerjaan bekisting zona barat lantai 2'
-                }
-                className="w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              />
-            </div>
           </div>
         )}
 
@@ -683,7 +907,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
         {!submittedRecord && (
           <div className="shrink-0 p-3.5 sm:p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-2.5">
             <div>
-              {!isWithinGeofence && (
+              {modalTab === 'ATTENDANCE' && !hasCheckedIn && !isWithinGeofence && (
                 <span className="text-[11px] text-rose-700 font-semibold hidden sm:inline">
                   Presensi ditolak di luar radius
                 </span>
@@ -698,30 +922,65 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
               >
                 Batal
               </button>
-              <button
-                type="button"
-                onClick={handleExecuteCheckIn}
-                disabled={!isWithinGeofence || isProcessing}
-                className={`px-4 py-2 text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ${
-                  isWithinGeofence
-                    ? 'text-white bg-[#0f766e] hover:bg-[#115e59] shadow-emerald-700/20 active:scale-98'
-                    : 'text-slate-400 bg-slate-200 cursor-not-allowed border border-slate-300'
-                }`}
-                title={!isWithinGeofence ? 'Dekati area kerja untuk presensi' : undefined}
-              >
-                <CheckCircle className="w-4 h-4" />
-                <span>
-                  {isProcessing
-                    ? 'Memverifikasi Presensi...'
-                    : !isWithinGeofence
-                    ? 'Posisi di Luar Radius'
-                    : isOffice
-                    ? workMode === 'WFO'
-                      ? 'Konfirmasi Presensi Kantor'
-                      : `Konfirmasi Presensi (${workMode})`
-                    : 'Konfirmasi Presensi GPS Lapangan'}
-                </span>
-              </button>
+
+              {/* ACTION BUTTON BASED ON CONTEXT */}
+              {modalTab === 'LEAVE' ? (
+                <button
+                  type="button"
+                  onClick={handleExecuteLeave}
+                  disabled={!leaveReason.trim() || isProcessing}
+                  className="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isProcessing ? 'Mengirim...' : `Kirim Laporan ${leaveType}`}</span>
+                </button>
+              ) : hasCheckedIn && !hasCheckedOut ? (
+                /* TOMBOL ABSEN PULANG */
+                <button
+                  type="button"
+                  onClick={handleExecuteCheckOut}
+                  disabled={isProcessing}
+                  className="px-4 py-2 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>{isProcessing ? 'Memproses Pulang...' : 'Konfirmasi Absen Pulang (Check-Out)'}</span>
+                </button>
+              ) : hasCheckedIn && hasCheckedOut ? (
+                /* SUDAH LENGKAP */
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 text-xs font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-lg transition-all cursor-pointer"
+                >
+                  Tutup
+                </button>
+              ) : (
+                /* TOMBOL ABSEN MASUK */
+                <button
+                  type="button"
+                  onClick={handleExecuteCheckIn}
+                  disabled={!isWithinGeofence || isProcessing}
+                  className={`px-4 py-2 text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ${
+                    isWithinGeofence
+                      ? 'text-white bg-[#0f766e] hover:bg-[#115e59] shadow-emerald-700/20 active:scale-98'
+                      : 'text-slate-400 bg-slate-200 cursor-not-allowed border border-slate-300'
+                  }`}
+                  title={!isWithinGeofence ? 'Dekati area kerja untuk presensi' : undefined}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  <span>
+                    {isProcessing
+                      ? 'Memverifikasi Presensi...'
+                      : !isWithinGeofence
+                      ? 'Posisi di Luar Radius'
+                      : isOffice
+                      ? workMode === 'WFO'
+                        ? 'Konfirmasi Absen Masuk Kantor'
+                        : `Konfirmasi Masuk (${workMode})`
+                      : 'Konfirmasi Absen Masuk (Check-In)'}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         )}

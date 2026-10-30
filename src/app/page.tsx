@@ -238,7 +238,9 @@ function HRISApp() {
         onClose={() => setIsLiveCheckInOpen(false)}
         employees={employees}
         sites={sites}
+        attendanceRecords={attendanceRecords}
         onCheckInSuccess={handleCheckInSuccess}
+        onCheckOut={handleCheckOut}
       />
 
       <AddEmployeeModal
