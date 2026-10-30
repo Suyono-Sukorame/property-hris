@@ -4,8 +4,8 @@ import { AuthUser } from '@/types/auth';
 export const DEMO_USERS: AuthUser[] = [
   {
     id: 'USR-01',
-    name: 'Suyono',
-    email: 'suyono@bumiraya.co.id',
+    name: 'Navyzar',
+    email: 'nacyzar@bumiraya.co.id',
     role: 'SUPER_ADMIN',
     roleLabel: 'Pemilik / Direktur',
     title: 'Direktur Utama',
