@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const sidebarContent = (
-    <aside className="w-64 max-w-[85vw] bg-slate-900 text-slate-300 flex flex-col shrink-0 h-screen border-r border-slate-800 select-none overflow-hidden">
+    <aside className="w-64 max-w-[85vw] bg-slate-900 text-slate-300 flex flex-col shrink-0 h-dvh max-h-dvh md:h-screen border-r border-slate-800 select-none overflow-hidden">
       {/* =========================================================================
           ZONA 1: KOP ATAS (PERMANENTLY FIXED & TIDAK IKUT TERGESER)
           ========================================================================= */}
@@ -158,21 +158,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* =========================================================================
           ZONA 3: FOOTER PROFIL & K3 (PERMANENTLY STICKY BOTTOM)
           ========================================================================= */}
-      <div className="shrink-0 bg-slate-900 border-t border-slate-800/80">
-        {/* Safety Compliance Mini Badge */}
-        <div className="p-2 mx-3 my-1.5 bg-emerald-950/40 border border-emerald-800/40 rounded-lg text-[10px] text-emerald-300 flex items-center gap-2">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <div className="truncate">
-            <span className="font-semibold block text-emerald-200 truncate">K3 Zero Accident</span>
-            <span className="text-[9px] text-emerald-400/80 truncate">Audit SMK3 Konstruksi Valid</span>
-          </div>
-        </div>
-
-        {/* Current User Profile & Logout Button */}
-        <div className="p-3 border-t border-slate-800/80 bg-slate-950/70 flex items-center justify-between gap-2.5">
+      <div className="shrink-0 bg-slate-900 border-t border-slate-800/80 pb-6 md:pb-2">
+        {/* Current User Profile & Logout Button (Utama: Tampil Langsung & Tidak Tertutup Navigation Bar) */}
+        <div className="p-3 bg-slate-950/80 border-b border-slate-800/60 flex items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 min-w-0">
             <div
-              className="w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 border border-white/20"
+              className="w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 border border-white/20 shadow-xs"
               style={{ backgroundColor: currentUser?.avatarColor || '#0f766e' }}
             >
               {currentUser?.initials || 'U'}
@@ -191,11 +182,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             type="button"
             onClick={logout}
             title="Keluar dari Akun"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-300 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 hover:text-white transition-all shrink-0 cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-200 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/80 hover:text-white transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-3.5 h-3.5 text-rose-400" />
             <span>Keluar</span>
           </button>
+        </div>
+
+        {/* Safety Compliance Mini Badge */}
+        <div className="p-2 mx-3 mt-2 bg-emerald-950/40 border border-emerald-800/40 rounded-lg text-[10px] text-emerald-300 flex items-center gap-2">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <div className="truncate">
+            <span className="font-semibold block text-emerald-200 truncate">K3 Zero Accident</span>
+            <span className="text-[9px] text-emerald-400/80 truncate">Audit SMK3 Konstruksi Valid</span>
+          </div>
         </div>
       </div>
     </aside>
@@ -210,14 +210,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Mobile Drawer (Only Visible on mobile when toggled) */}
       {isOpenMobile && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
+        <div className="fixed inset-0 z-50 md:hidden flex h-dvh max-h-dvh overflow-hidden">
           {/* Backdrop */}
           <div
             onClick={onCloseMobile}
             className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
           />
           {/* Drawer Body */}
-          <div className="relative z-10 flex h-full animate-in slide-in-from-left duration-200 shadow-2xl">
+          <div className="relative z-10 flex h-full max-h-dvh animate-in slide-in-from-left duration-200 shadow-2xl">
             {sidebarContent}
           </div>
         </div>
