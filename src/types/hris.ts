@@ -1,19 +1,31 @@
 /**
  * Types and interfaces for Property HRIS
- * High-precision enterprise human resource management for property development & construction sites
+ * Mode Rintisan — disederhanakan untuk usaha properti skala kecil (4 karyawan)
  */
 
 export type EmployeeStatus = 'Aktif' | 'Cuti' | 'Nonaktif';
 export type AttendanceStatus = 'Hadir' | 'Terlambat' | 'Cuti' | 'Izin Lapangan' | 'Alpa';
 export type PayrollStatus = 'Dibayar' | 'Disetujui' | 'Draft' | 'Ditolak';
-export type ApprovalStatus = 'Disetujui' | 'Menunggu Approval HR' | 'Menunggu Pengawas Lapangan' | 'Ditolak';
-export type ApprovalType = 'Cuti Tahunan' | 'Lembur Konstruksi Cor Beton' | 'Klaim Operasional Lapangan' | 'Surat Tugas K3';
+export type ApprovalStatus =
+  | 'Disetujui'
+  | 'Menunggu Approval Pimpinan'
+  | 'Menunggu Approval HR'
+  | 'Menunggu Pengawas Lapangan'
+  | 'Menunggu Approval Keuangan'
+  | 'Ditolak';
+export type ApprovalType =
+  | 'Cuti Tahunan'
+  | 'Kasbon Karyawan'
+  | 'Izin Sakit'
+  | 'Klaim Operasional Lapangan'
+  | 'Lembur Konstruksi Cor Beton'
+  | 'Surat Tugas K3';
 
 export interface PropertySite {
   id: string;
   name: string;
   code: string;
-  category: 'Mixed-Use Residential' | 'High-Rise Commercial' | 'Township Masterplan' | 'Corporate Head Office';
+  category: 'Perumahan' | 'Ruko / Komersial' | 'Tanah Kavling' | 'Kantor' | 'Mixed-Use Residential' | 'High-Rise Commercial' | 'Township Masterplan' | 'Corporate Head Office';
   location: string;
   latitude: number;
   longitude: number;
@@ -21,7 +33,7 @@ export interface PropertySite {
   activeWorkforce: number;
   siteManager: string;
   projectProgressPercentage: number;
-  status: 'Konstruksi Aktif' | 'Finishing & Handover' | 'Operasional Kantor';
+  status: 'Pemasaran Aktif' | 'Konstruksi Aktif' | 'Finishing & Handover' | 'Operasional Kantor';
 }
 
 export interface Employee {
@@ -39,7 +51,7 @@ export interface Employee {
   status: EmployeeStatus;
   contractType: 'PKWTT (Tetap)' | 'PKWT (Kontrak Proyek)' | 'Konsultan Ahli';
   k3Certified: boolean;
-  bloodType: 'A+' | 'B+' | 'AB+' | 'O+' | 'O-';
+  bloodType?: 'A+' | 'B+' | 'AB+' | 'O+' | 'O-';
   emergencyContact: string;
   baseSalary: number;
   siteAllowance: number;

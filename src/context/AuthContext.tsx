@@ -47,17 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: true };
     }
 
-    // Default fallback to super admin if arbitrary enterprise email used
+    // Default fallback: masuk sebagai Direktur / Pemilik
     const genericUser: AuthUser = {
       id: `USR-${Date.now()}`,
-      name: email.split('@')[0].toUpperCase(),
+      name: email.split('@')[0],
       email: email,
       role: 'SUPER_ADMIN',
-      roleLabel: 'Direksi / Head of Human Capital',
-      title: 'Enterprise Administrator',
-      division: 'Direksi & Human Capital',
-      siteId: 'SITE-HQ',
-      siteName: 'Kantor Pusat - Menara Bumi Raya Banjarmasin',
+      roleLabel: 'Pemilik / Direktur',
+      title: 'Direktur Utama',
+      division: 'Manajemen',
+      siteId: 'SITE-01',
+      siteName: 'Griya Bumi Raya',
       avatarColor: '#0f766e',
       initials: email.substring(0, 2).toUpperCase(),
     };

@@ -93,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
             aria-label="Filter Berdasarkan Lokasi Properti"
             className="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer pr-1 max-w-50 truncate"
           >
-            <option value="ALL">Semua Kawasan (4 Lokasi Kalsel)</option>
+            <option value="ALL">Semua Proyek Aktif</option>
             {sites.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}

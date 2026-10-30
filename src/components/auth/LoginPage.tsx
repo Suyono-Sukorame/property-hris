@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { DEMO_USERS } from '@/data/authUsers';
-import { ShieldCheck, Lock, Mail, ArrowRight, Building2, HardHat, UserCheck, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, ArrowRight, Building2, DollarSign, Megaphone, HardHat, UserCheck, AlertCircle } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login, loginAsDemo } = useAuth();
@@ -55,13 +55,13 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
           <h1 className="text-xl font-extrabold tracking-tight text-white uppercase">
-            PT Bumi Raya Propertindo Tbk
+            Griya Bumi Raya
           </h1>
           <p className="text-xs text-emerald-400 font-semibold mt-0.5">
-            Property HRIS & Construction Field Operations
+            Property HRIS — Mode Rintisan
           </p>
           <p className="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto">
-            Sistem Manajemen SDM, Presensi GPS & Proyek Konstruksi
+            Sistem Manajemen Tim & Presensi Properti
           </p>
         </div>
 
@@ -143,7 +143,12 @@ export const LoginPage: React.FC = () => {
             {DEMO_USERS.map((user) => {
               const isSuper = user.role === 'SUPER_ADMIN';
               const isSite = user.role === 'SITE_MANAGER';
-              const Icon = isSuper ? Building2 : isSite ? HardHat : UserCheck;
+              // Ikon berdasarkan divisi
+              let Icon = UserCheck;
+              if (isSuper) Icon = Building2;
+              else if (isSite) Icon = DollarSign;
+              else if (user.division?.includes('Pemasaran')) Icon = Megaphone;
+              else if (user.division?.includes('Lapangan') || user.division?.includes('Teknis')) Icon = HardHat;
 
               return (
                 <button
@@ -176,16 +181,14 @@ export const LoginPage: React.FC = () => {
             })}
           </div>
 
-          {/* Security Notice */}
           <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-center gap-2 text-[11px] text-slate-500">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Koneksi Aman TLS 1.3 · Dokumen Rahasia Korporat</span>
+            <span>Griya Bumi Raya · Mode Rintisan v1</span>
           </div>
         </div>
 
-        {/* Footer address */}
         <p className="text-center text-[10px] text-slate-600 mt-4">
-          Menara Bumi Raya Lt. 3-5, Jl. Jend. A. Yani Km. 4.5 No. 21, Banjarmasin, Kalimantan Selatan
+          Griya Bumi Raya · Kalimantan Selatan
         </p>
       </div>
     </div>

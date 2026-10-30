@@ -1,6 +1,171 @@
 import { JobDescription } from '@/types/jobdesc';
 
 export const JOB_DESCRIPTIONS: Record<string, JobDescription> = {
+  // =========================================================================
+  // MODE RINTISAN: 4 Job Code Tim Properti Rintisan
+  // =========================================================================
+  'DIR-UT-01': {
+    jobCode: 'DIR-UT-01',
+    title: 'Pemilik / Direktur Utama',
+    division: 'Manajemen',
+    level: 'Direksi / Eksekutif',
+    reportsTo: '-',
+    purpose: 'Memimpin keseluruhan operasional perusahaan properti rintisan, mulai dari pengambilan keputusan strategis, pengelolaan keuangan, negosiasi lahan, hingga pengawasan tim.',
+    responsibilities: [
+      {
+        category: 'Kepemimpinan & Strategi',
+        items: [
+          'Menetapkan arah dan target bisnis perusahaan properti.',
+          'Mengawasi seluruh karyawan dan memastikan target tercapai.',
+          'Melakukan negosiasi dengan pemilik lahan, kontraktor, dan mitra bisnis.',
+        ],
+      },
+      {
+        category: 'Keuangan & Operasional',
+        items: [
+          'Mengelola arus kas dan permodalan usaha.',
+          'Menyetujui pengeluaran operasional, kasbon, dan pembayaran karyawan.',
+          'Memantau progres proyek dan pemasaran secara rutin.',
+        ],
+      },
+    ],
+    authorities: [
+      'Otorisasi seluruh pengeluaran perusahaan',
+      'Keputusan rekrutmen dan pemberhentian karyawan',
+      'Persetujuan harga jual unit properti',
+    ],
+    kpiTargets: [
+      { metric: 'Unit Terjual per Kuartal', target: '≥ 5 unit', weight: 40, frequency: 'Triwulan' },
+      { metric: 'Arus Kas Positif', target: 'Tidak defisit > 2 bulan berturut', weight: 40, frequency: 'Bulanan' },
+      { metric: 'Kepuasan Tim', target: 'Tidak ada turnover', weight: 20, frequency: 'Semester' },
+    ],
+    qualifications: {
+      education: 'Minimal SMA / sederajat, diutamakan S1 Ekonomi / Teknik / Hukum',
+      experience: 'Berpengalaman di bidang properti / bisnis',
+      certifications: [],
+    },
+  },
+  'ADM-KEU-01': {
+    jobCode: 'ADM-KEU-01',
+    title: 'Admin & Keuangan',
+    division: 'Administrasi & Keuangan',
+    level: 'Spesialis Ahli',
+    reportsTo: 'Direktur Utama',
+    purpose: 'Mengelola administrasi harian kantor, pencatatan keuangan, penggajian, dan kelengkapan dokumen legal properti.',
+    responsibilities: [
+      {
+        category: 'Administrasi Kantor',
+        items: [
+          'Mengelola surat menyurat, arsip, dan dokumen perusahaan.',
+          'Menyiapkan perjanjian jual beli, kwitansi, dan dokumen AJB.',
+          'Mengelola jadwal dan agenda pimpinan.',
+        ],
+      },
+      {
+        category: 'Keuangan & Pembukuan',
+        items: [
+          'Mencatat pemasukan dan pengeluaran harian.',
+          'Menyusun laporan keuangan bulanan sederhana.',
+          'Mengelola pembayaran gaji, kasbon, dan tagihan operasional.',
+        ],
+      },
+    ],
+    authorities: [
+      'Pengeluaran operasional rutin sesuai anggaran',
+    ],
+    kpiTargets: [
+      { metric: 'Ketepatan Laporan Keuangan Bulanan', target: 'Selesai sebelum tanggal 5', weight: 50, frequency: 'Bulanan' },
+      { metric: 'Kelengkapan Dokumen', target: '100% arsip rapi dan terindeks', weight: 50, frequency: 'Bulanan' },
+    ],
+    qualifications: {
+      education: 'D3 / S1 Akuntansi, Manajemen, atau Ekonomi',
+      experience: '1+ tahun administrasi / keuangan',
+      certifications: [],
+    },
+  },
+  'MKT-PNJ-01': {
+    jobCode: 'MKT-PNJ-01',
+    title: 'Marketing & Penjualan',
+    division: 'Pemasaran & Penjualan',
+    level: 'Spesialis Ahli',
+    reportsTo: 'Direktur Utama',
+    purpose: 'Memasarkan dan menjual unit properti kepada calon pembeli, mengelola prospek, serta membangun jaringan agen dan media sosial.',
+    responsibilities: [
+      {
+        category: 'Pemasaran',
+        items: [
+          'Mengelola promosi properti melalui media sosial, marketplace, dan event pameran.',
+          'Membuat konten pemasaran (foto, video, brosur digital).',
+          'Menjaga hubungan baik dengan agen dan mitra referral.',
+        ],
+      },
+      {
+        category: 'Penjualan',
+        items: [
+          'Melakukan presentasi dan negosiasi dengan calon pembeli.',
+          'Mendampingi survei lokasi dan mengurus kelengkapan dokumen KPR.',
+          'Mencatat prospek dan pipeline penjualan secara rutin.',
+        ],
+      },
+    ],
+    authorities: [
+      'Memberikan diskon marketing sesuai kebijakan pimpinan',
+    ],
+    kpiTargets: [
+      { metric: 'Closing Penjualan Unit', target: '≥ 2 unit/bulan', weight: 50, frequency: 'Bulanan' },
+      { metric: 'Prospek Aktif', target: '≥ 20 prospek baru/bulan', weight: 30, frequency: 'Bulanan' },
+      { metric: 'Follower / Engagement Media Sosial', target: '+5% per bulan', weight: 20, frequency: 'Bulanan' },
+    ],
+    qualifications: {
+      education: 'Minimal SMA, diutamakan D3/S1 Marketing / Komunikasi',
+      experience: '1+ tahun di bidang penjualan / properti',
+      certifications: [],
+    },
+  },
+  'LPG-PWS-01': {
+    jobCode: 'LPG-PWS-01',
+    title: 'Pengawas Lapangan',
+    division: 'Teknis Lapangan',
+    level: 'Teknis & Lapangan',
+    reportsTo: 'Direktur Utama',
+    purpose: 'Mengawasi pelaksanaan pekerjaan konstruksi di lapangan, memastikan kualitas bangunan sesuai spesifikasi, mengkoordinasikan mandor dan tukang.',
+    responsibilities: [
+      {
+        category: 'Pengawasan Konstruksi',
+        items: [
+          'Memantau progres pekerjaan harian di lapangan.',
+          'Mengawasi kualitas material dan hasil pengerjaan tukang / mandor.',
+          'Melaporkan kendala dan kemajuan kepada pimpinan secara rutin.',
+        ],
+      },
+      {
+        category: 'Koordinasi & Logistik',
+        items: [
+          'Berkoordinasi dengan kontraktor dan supplier material.',
+          'Memastikan ketersediaan material sesuai kebutuhan pekerjaan.',
+          'Mendokumentasikan progres fisik dengan foto dan catatan harian.',
+        ],
+      },
+    ],
+    authorities: [
+      'Instruksi pekerjaan kepada mandor dan tukang di lapangan',
+      'Penolakan material yang tidak sesuai spesifikasi',
+    ],
+    kpiTargets: [
+      { metric: 'Progres Fisik vs Rencana', target: 'Deviasi < 5%', weight: 50, frequency: 'Mingguan' },
+      { metric: 'Laporan Harian Lapangan', target: '100% terisi setiap hari kerja', weight: 30, frequency: 'Harian' },
+      { metric: 'Cacat / Rework', target: '< 3% dari volume pekerjaan', weight: 20, frequency: 'Bulanan' },
+    ],
+    qualifications: {
+      education: 'Minimal STM / SMK Bangunan, diutamakan D3/S1 Teknik Sipil',
+      experience: '2+ tahun pengawas lapangan perumahan',
+      certifications: [],
+    },
+  },
+
+  // =========================================================================
+  // ARSIP: Job code lama (dipertahankan agar tidak error jika masih direferensikan)
+  // =========================================================================
   'DIR-PRJ-01': {
     jobCode: 'DIR-PRJ-01',
     title: 'Senior Project Director',

@@ -6,7 +6,7 @@ import { ActiveNavModule } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard, Users, Clock, Banknote, CheckSquare,
-  BarChart3, Building, HardHat, ShieldCheck, LogOut, X,
+  BarChart3, Building, LogOut, X,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,13 +24,13 @@ const allNavItems: {
   badge?: boolean;
   roles: ('SUPER_ADMIN' | 'SITE_MANAGER' | 'EMPLOYEE')[];
 }[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
-  { id: 'employees', label: 'Data Karyawan', icon: Users, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
-  { id: 'attendance', label: 'Presensi Lapangan', icon: Clock, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
-  { id: 'payroll', label: 'Penggajian', icon: Banknote, roles: ['SUPER_ADMIN', 'EMPLOYEE'] },
-  { id: 'approvals', label: 'Persetujuan', icon: CheckSquare, badge: true, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
-  { id: 'reports', label: 'Laporan & K3', icon: BarChart3, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
-  { id: 'settings', label: 'Pengaturan Proyek', icon: Building, roles: ['SUPER_ADMIN'] },
+  { id: 'dashboard',  label: 'Beranda',           icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
+  { id: 'employees',  label: 'Data Tim (4 Orang)', icon: Users,           roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
+  { id: 'attendance', label: 'Presensi & Izin',    icon: Clock,           roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
+  { id: 'payroll',    label: 'Gaji & Kasbon',      icon: Banknote,        roles: ['SUPER_ADMIN', 'EMPLOYEE'] },
+  { id: 'approvals',  label: 'Persetujuan',        icon: CheckSquare,     badge: true, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
+  { id: 'reports',    label: 'Laporan',            icon: BarChart3,       roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
+  { id: 'settings',   label: 'Pengaturan',         icon: Building,        roles: ['SUPER_ADMIN'] },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -77,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 Property HRIS
               </h1>
               <p className="text-[10px] sm:text-[11px] text-emerald-400 font-semibold truncate">
-                Bumi Raya Propertindo
+                Griya Bumi Raya
               </p>
             </div>
           </div>
@@ -137,11 +137,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
             </div>
             <p className="font-semibold text-white truncate text-[11px]">
-              {currentUser?.siteName || '4 Kawasan Properti Aktif'}
+              {currentUser?.siteName || 'Proyek Aktif'}
             </p>
             <div className="flex items-center gap-1.5 mt-1 text-[10px] text-slate-400">
-              <HardHat className="w-3 h-3 text-amber-400 shrink-0" />
-              <span>Wilayah Kalimantan Selatan</span>
+              <span>Tim: 4 Karyawan Aktif</span>
             </div>
           </div>
         </div>
@@ -188,17 +187,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* =========================================================================
-          ZONA 3: FOOTER K3 (STICKY BOTTOM DENGAN PADDING AMAN NAV-BAR HP)
+          ZONA 3: FOOTER SIMPEL (VERSI RINTISAN)
           ========================================================================= */}
       <div className="shrink-0 bg-slate-900 border-t border-slate-800/80 p-3 pb-8 md:pb-3">
-        {/* Safety Compliance Mini Badge */}
-        <div className="p-2 bg-emerald-950/40 border border-emerald-800/40 rounded-lg text-[10px] text-emerald-300 flex items-center gap-2">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <div className="truncate">
-            <span className="font-semibold block text-emerald-200 truncate">K3 Zero Accident</span>
-            <span className="text-[9px] text-emerald-400/80 truncate">Audit SMK3 Konstruksi Valid</span>
-          </div>
-        </div>
+        <p className="text-[10px] text-slate-600 text-center">
+          Property HRIS · Mode Rintisan v1
+        </p>
       </div>
     </aside>
   );

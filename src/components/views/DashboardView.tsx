@@ -9,13 +9,12 @@ import {
   CheckCircle2,
   AlertTriangle,
   Building2,
-  HardHat,
-  ShieldCheck,
   TrendingUp,
   ArrowUpRight,
   MapPin,
   ChevronRight,
   FileCheck,
+  Banknote,
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -49,35 +48,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       ? attendanceRecords
       : attendanceRecords.filter((a) => a.siteId === selectedSiteFilter);
 
-  const totalHeadcount = sites.reduce((acc, s) => acc + s.activeWorkforce, 0);
-  const presentCount = attendanceRecords.filter((a) => a.status === 'Hadir').length;
-  const lateCount = attendanceRecords.filter((a) => a.status === 'Terlambat').length;
+  const totalHeadcount = employees.length;
+  const presentCount = attendanceRecords.filter(
+    (a) => a.status === 'Hadir' && a.date === new Date().toISOString().slice(0, 10)
+  ).length;
+  const lateCount = attendanceRecords.filter(
+    (a) => a.status === 'Terlambat' && a.date === new Date().toISOString().slice(0, 10)
+  ).length;
   const pendingApprovals = approvals.filter((a) => a.status.includes('Menunggu'));
 
   // Live KPI calculations
-  const totalCheckedIn = attendanceRecords.filter((a) => a.status === 'Hadir' || a.status === 'Terlambat').length;
+  const totalCheckedIn = presentCount + lateCount;
   const attendanceRate =
     totalHeadcount > 0 ? Math.round((totalCheckedIn / totalHeadcount) * 1000) / 10 : 0;
-  
-  // Field vs Office split for safety metrics
-  const fieldAttendance = attendanceRecords.filter((a) => a.siteId !== 'SITE-HQ' && !a.shift.includes('Kantor'));
-  const fieldCheckedIn = fieldAttendance.filter((a) => a.status === 'Hadir' || a.status === 'Terlambat').length;
-  const ppeCompliantCount = fieldAttendance.filter((a) => a.ppeCompliance).length;
-  const ppeRate =
-    fieldCheckedIn > 0 ? Math.round((ppeCompliantCount / fieldCheckedIn) * 100) : 100;
+
+  // Kasbon pending
+  const kasbonPending = approvals.filter(
+    (a) => a.type === 'Kasbon Karyawan' && a.status.includes('Menunggu')
+  );
   const criticalApprovals = approvals.filter(
     (a) => a.status.includes('Menunggu') && a.priority === 'Kritis'
   );
 
   return (
     <div className="space-y-6">
-      {/* Executive KPI Tiles */}
+      {/* KPI Tiles — Mode Rintisan 4 Karyawan */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1 */}
+        {/* KPI 1: Tim */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Total Tenaga Kerja
+              Total Tim
             </span>
             <Users className="w-4 h-4 text-[#0f766e]" />
           </div>
@@ -85,40 +86,40 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-2xl font-bold font-mono text-slate-900 tabular-nums">
               {totalHeadcount}
             </span>
-            <span className="text-xs text-slate-500">Karyawan</span>
+            <span className="text-xs text-slate-500">Karyawan Aktif</span>
           </div>
           <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">
             <TrendingUp className="w-3.5 h-3.5" />
-            <span>+14 Pekerja Minggu Ini</span>
+            <span>1 Proyek Aktif</span>
           </div>
         </div>
 
-        {/* KPI 2 */}
+        {/* KPI 2: Kehadiran Hari Ini */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Tingkat Kehadiran Harian
+              Kehadiran Hari Ini
             </span>
             <Clock className="w-4 h-4 text-[#0f766e]" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-slate-900 tabular-nums">
-              {attendanceRate}%
+              {totalCheckedIn}/{totalHeadcount}
             </span>
-            <span className="text-xs text-emerald-700 font-medium">Hadir Tepat Waktu</span>
+            <span className="text-xs text-emerald-700 font-medium">Hadir</span>
           </div>
           <div className="mt-2.5 flex items-center gap-2 text-[11px] text-slate-500">
-            <span>Hadir: <strong className="text-slate-800">{presentCount}</strong></span>
+            <span>Tepat Waktu: <strong className="text-slate-800">{presentCount}</strong></span>
             <span>·</span>
             <span>Terlambat: <strong className="text-amber-700">{lateCount}</strong></span>
           </div>
         </div>
 
-        {/* KPI 3 */}
+        {/* KPI 3: Persetujuan Menunggu */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 border-t-2 border-t-amber-500 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Perlu Persetujuan
+              Perlu Disetujui
             </span>
             <AlertTriangle className="w-4 h-4 text-amber-500" />
           </div>
@@ -129,51 +130,51 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-xs text-slate-500">Menunggu</span>
           </div>
           <div className="mt-2.5 flex items-center justify-between text-[11px]">
-            <span className="text-rose-700 font-semibold">
-              {criticalApprovals.length > 0
-                ? `${criticalApprovals.length} Prioritas Kritis`
-                : 'Tidak ada prioritas kritis'}
-            </span>
+            <span className="text-slate-500">Izin, kasbon, lembur</span>
             <button
               onClick={() => onNavigateModule('approvals')}
               className="text-[#0f766e] font-semibold hover:underline inline-flex items-center gap-0.5"
             >
-              Lihat Semua <ArrowUpRight className="w-3 h-3" />
+              Lihat <ArrowUpRight className="w-3 h-3" />
             </button>
           </div>
         </div>
 
-        {/* KPI 4 */}
+        {/* KPI 4: Progres Proyek */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-[11px] font-semibold uppercase tracking-wider">
-              Kepatuhan APD Proyek Lapangan
+              Progres Proyek
             </span>
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <Building2 className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-[#065f46] tabular-nums">
-              {ppeRate}%
+              {filteredSites[0]?.projectProgressPercentage ?? 0}%
             </span>
-            <span className="text-xs text-emerald-700 font-medium">SMK3 Terverifikasi</span>
+            <span className="text-xs text-emerald-700 font-medium">Selesai</span>
           </div>
-          <div className="mt-2.5 text-[11px] text-slate-500 flex items-center gap-1">
-            <span className={`w-1.5 h-1.5 rounded-full ${ppeRate === 100 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-            <span>{ppeRate === 100 ? 'Nol Insiden Kerja (Zero Accident)' : `${ppeCompliantCount} dari ${fieldCheckedIn} personil lapangan terverifikasi APD`}</span>
+          <div className="mt-2.5">
+            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-[#0f766e] h-full rounded-full"
+                style={{ width: `${filteredSites[0]?.projectProgressPercentage ?? 0}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Property Sites Operational Grid */}
+      {/* Proyek Aktif */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100">
           <div>
             <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <Building2 className="w-5 h-5 text-[#0f766e]" />
-              Status Proyek & Tenaga Kerja
+              Proyek Aktif
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Pemantauan jumlah tenaga kerja dan progres konstruksi di setiap lokasi aktif.
+              Status proyek properti aktif yang sedang berjalan.
             </p>
           </div>
 
@@ -181,7 +182,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             onClick={() => onNavigateModule('settings')}
             className="text-xs font-semibold text-[#0f766e] hover:text-[#115e59] inline-flex items-center gap-1"
           >
-            Kelola Radius Proyek <ChevronRight className="w-3.5 h-3.5" />
+            Kelola Proyek <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -200,7 +201,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {site.name}
                   </h3>
                 </div>
-                <StatusBadge status={site.status === 'Konstruksi Aktif' ? 'Aktif' : 'Disetujui'} size="sm" />
+                <StatusBadge status={site.status === 'Konstruksi Aktif' || site.status === 'Pemasaran Aktif' ? 'Aktif' : 'Disetujui'} size="sm" />
               </div>
 
               <div className="text-[11px] text-slate-600 space-y-1">
@@ -209,7 +210,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="truncate">{site.location}</span>
                 </div>
                 <p className="truncate">
-                  Site Manager: <strong className="text-slate-800">{site.siteManager}</strong>
+                  Penanggung Jawab: <strong className="text-slate-800">{site.siteManager}</strong>
                 </p>
               </div>
 
@@ -250,7 +251,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Log Presensi & Lokasi GPS Hari Ini
               </h2>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                Pencatatan real-time kehadiran karyawan dan kelengkapan APD di proyek.
+                Kehadiran seluruh anggota tim hari ini.
               </p>
             </div>
             <button

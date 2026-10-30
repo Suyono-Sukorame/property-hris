@@ -102,8 +102,8 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
   const currentEmp = employees.find((e) => e.id === selectedEmpId) || initialEmp || employees[0];
   const currentSite = sites.find((s) => s.id === selectedSiteId) || sites[0];
 
-  const isOffice = currentSite?.category === 'Corporate Head Office' || currentSite?.id === 'SITE-HQ';
-  const maxRadius = currentSite?.geofenceRadiusMeters || 200;
+  const isOffice = currentSite?.category === 'Corporate Head Office' || currentSite?.id === 'SITE-HQ' || currentSite?.category === 'Kantor';
+  const maxRadius = currentSite?.geofenceRadiusMeters || 500;
 
   // Detect today's existing attendance for currentEmp
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -115,9 +115,11 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
   const hasCheckedOut = !!todayRecord?.checkOutTime && todayRecord.checkOutTime !== '-';
   const isLeaveToday = todayRecord?.status === 'Cuti' || todayRecord?.status === 'Izin Lapangan';
 
-  // For office Dinas Luar or WFH, geofence radius requirement is relaxed
-  const isWithinGeofence = isOffice && workMode !== 'WFO' ? true : simulatedDistance <= maxRadius;
-  const isPpeComplete = isOffice ? true : (helmetChecked && vestChecked && bootsChecked);
+  // Mode Rintisan: Geofence selalu diizinkan (tidak memblokir absen) —
+  // GPS hanya dicatat sebagai referensi, bukan penghalang.
+  const isWithinGeofence = workMode === 'Dinas Luar' || workMode === 'WFH' ? true : simulatedDistance <= maxRadius;
+  // APD tidak wajib di mode rintisan — selalu dianggap OK
+  const isPpeComplete = true;
 
   // Action: Check-In (Absen Masuk)
   const handleExecuteCheckIn = () => {
