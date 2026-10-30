@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ActiveNavModule, PropertySite } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
-import { ChevronRight, MapPin, Smartphone, UserPlus, Shield, HardHat, UserCheck, Menu } from 'lucide-react';
+import { ChevronRight, MapPin, Smartphone, UserPlus, Shield, HardHat, UserCheck, Menu, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   activeModule: ActiveNavModule;
@@ -44,7 +44,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddEmployee,
   onToggleMobileNav,
 }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const userRole = currentUser?.role || 'SUPER_ADMIN';
   const isSuperAdmin = userRole === 'SUPER_ADMIN';
 
@@ -104,8 +105,8 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
-      {/* Zone 3: Primary Action Buttons */}
-      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+      {/* Zone 3: Primary Action Buttons & Mobile Logout */}
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <button
           type="button"
           onClick={onOpenLiveCheckIn}
@@ -126,7 +127,76 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Tambah</span>
           </button>
         )}
+
+        {/* User Identity & Logout Button (Accessible Everywhere on Mobile & Desktop) */}
+        <div className="flex items-center gap-1 sm:gap-1.5 pl-1 sm:pl-2 border-l border-slate-200">
+          <div
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200 shadow-2xs"
+            style={{ backgroundColor: currentUser?.avatarColor || '#0f766e' }}
+            title={`${currentUser?.name || 'Pengguna'} (${currentUser?.roleLabel || 'Operator'})`}
+          >
+            {currentUser?.initials || 'U'}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowLogoutConfirm(true)}
+            title="Keluar dari Akun"
+            className="p-1 sm:p-1.5 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-lg transition-colors shrink-0 cursor-pointer flex items-center gap-1"
+            aria-label="Keluar dari Akun"
+          >
+            <LogOut className="w-3.5 h-3.5 text-slate-500 hover:text-rose-600" />
+            <span className="hidden xl:inline">Keluar</span>
+          </button>
+        </div>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-2xs p-4">
+          <div
+            className="w-full max-w-sm bg-white rounded-2xl border border-slate-200 shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <LogOut className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Konfirmasi Keluar</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Apakah Anda yakin ingin keluar dari akun ini?</p>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-0.5">
+              <span className="font-semibold block text-slate-800">{currentUser?.name}</span>
+              <span className="text-[11px] text-slate-500 block truncate">{currentUser?.email} · {currentUser?.roleLabel}</span>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  logout();
+                }}
+                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Keluar Akun</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

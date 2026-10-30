@@ -191,9 +191,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             type="button"
             onClick={logout}
             title="Keluar dari Akun"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0 cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-300 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 hover:text-white transition-all shrink-0 cursor-pointer shadow-2xs"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Keluar</span>
           </button>
         </div>
       </div>
