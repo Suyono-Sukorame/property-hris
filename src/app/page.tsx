@@ -20,6 +20,7 @@ import {
   ApprovalDetailModal,
   LiveCheckInModal,
   AddEmployeeModal,
+  EditEmployeeModal,
   EditAttendanceModal,
 } from '@/components/modals';
 
@@ -49,11 +50,18 @@ function HRISApp() {
     setIsLiveCheckInOpen,
     isAddEmployeeOpen,
     setIsAddEmployeeOpen,
+    selectedEmployeeForEdit,
+    setSelectedEmployeeForEdit,
+    isEditEmployeeOpen,
+    setIsEditEmployeeOpen,
+    openEditEmployee,
     handleOpenPaySlipByEmployee,
     handleCheckInSuccess,
     handleCheckOut,
     handleEditAttendance,
     handleAddEmployee,
+    handleUpdateEmployee,
+    handleDeleteEmployee,
     handleUpdateApprovalStatus,
     handleQuickApprove,
     handleAddNewApproval,
@@ -154,6 +162,8 @@ function HRISApp() {
               onOpenEmployeeCard={setSelectedEmployeeForCard}
               onOpenPaySlip={handleOpenPaySlipByEmployee}
               onOpenAddModal={() => setIsAddEmployeeOpen(true)}
+              onOpenEditEmployee={openEditEmployee}
+              onDeleteEmployee={handleDeleteEmployee}
             />
           )}
 
@@ -248,6 +258,17 @@ function HRISApp() {
         onClose={() => setIsAddEmployeeOpen(false)}
         sites={sites}
         onAddEmployee={handleAddEmployee}
+      />
+
+      <EditEmployeeModal
+        isOpen={isEditEmployeeOpen}
+        employee={selectedEmployeeForEdit}
+        onClose={() => {
+          setIsEditEmployeeOpen(false);
+          setSelectedEmployeeForEdit(null);
+        }}
+        sites={sites}
+        onUpdateEmployee={handleUpdateEmployee}
       />
 
       <EditAttendanceModal

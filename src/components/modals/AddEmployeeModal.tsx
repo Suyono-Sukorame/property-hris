@@ -19,16 +19,16 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   const [name, setName] = useState('');
   const [nik, setNik] = useState('');
   const [title, setTitle] = useState('');
-  const [division, setDivision] = useState('Teknik Sipil & Struktur');
+  const [division, setDivision] = useState('Pemasaran & Penjualan');
   const [siteId, setSiteId] = useState(sites[0]?.id || 'SITE-01');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [contractType, setContractType] = useState<'PKWTT (Tetap)' | 'PKWT (Kontrak Proyek)'>('PKWT (Kontrak Proyek)');
-  const [k3Certified, setK3Certified] = useState(true);
+  const [contractType, setContractType] = useState<'PKWTT (Tetap)' | 'PKWT (Kontrak Proyek)'>('PKWTT (Tetap)');
+  const [k3Certified, setK3Certified] = useState(false);
   const [bloodType, setBloodType] = useState<'A+' | 'B+' | 'AB+' | 'O+' | 'O-'>('O+');
   const [emergencyContact, setEmergencyContact] = useState('');
-  const [baseSalary, setBaseSalary] = useState(15000000);
-  const [siteAllowance, setSiteAllowance] = useState(3500000);
+  const [baseSalary, setBaseSalary] = useState(3500000);
+  const [siteAllowance, setSiteAllowance] = useState(0);
 
   if (!isOpen) return null;
 
@@ -55,17 +55,17 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
       siteName: matchedSite.name,
       email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@bumiraya.co.id`,
       phone: phone || '+62 812-9988-7700',
-      joinDate: '2026-10-01',
+      joinDate: new Date().toISOString().slice(0, 10),
       status: 'Aktif',
       contractType,
       k3Certified,
       bloodType,
       emergencyContact: emergencyContact || 'Kontak Darurat Keluarga Terdaftar',
-      baseSalary: Number(baseSalary) || 12000000,
-      siteAllowance: Number(siteAllowance) || 3000000,
-      k3Allowance: k3Certified ? 1000000 : 0,
-      transportMealAllowance: 1800000,
-      bankAccount: 'Bank Mandiri Corporate a.n ' + name,
+      baseSalary: Number(baseSalary) || 3500000,
+      siteAllowance: Number(siteAllowance) || 0,
+      k3Allowance: k3Certified ? 500000 : 0,
+      transportMealAllowance: 500000,
+      bankAccount: 'Bank BRI a.n ' + name,
       initials,
       avatarColor: '#0f766e',
     };
@@ -151,13 +151,10 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 onChange={(e) => setDivision(e.target.value)}
                 className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               >
-                <option value="Teknik Sipil & Struktur">Teknik Sipil & Struktur</option>
-                <option value="Arsitektur & Desain Masterplan">Arsitektur & Desain Masterplan</option>
-                <option value="MEP (Mekanikal Elektrikal Plumbing)">MEP (Mekanikal Elektrikal)</option>
-                <option value="Operasional Proyek & K3 Lapangan">Operasional Proyek & K3 Lapangan</option>
-                <option value="Legalitas, Pertanahan & Perizinan">Legalitas, Pertanahan & Perizinan</option>
-                <option value="Pemasaran & Penjualan Properti">Pemasaran & Penjualan Properti</option>
-                <option value="Keuangan, Pengadaan & HR">Keuangan, Pengadaan & HR</option>
+                <option value="Manajemen">Manajemen</option>
+                <option value="Administrasi & Keuangan">Administrasi & Keuangan</option>
+                <option value="Pemasaran & Penjualan">Pemasaran & Penjualan</option>
+                <option value="Teknis Lapangan">Teknis Lapangan</option>
               </select>
             </div>
 

@@ -47,6 +47,11 @@ interface HRISContextType {
   setIsLiveCheckInOpen: (open: boolean) => void;
   isAddEmployeeOpen: boolean;
   setIsAddEmployeeOpen: (open: boolean) => void;
+  selectedEmployeeForEdit: Employee | null;
+  setSelectedEmployeeForEdit: (emp: Employee | null) => void;
+  isEditEmployeeOpen: boolean;
+  setIsEditEmployeeOpen: (open: boolean) => void;
+  openEditEmployee: (emp: Employee) => void;
 
   // Actions
   handleOpenPaySlipByEmployee: (emp: Employee) => void;
@@ -54,6 +59,8 @@ interface HRISContextType {
   handleCheckOut: (recordId: string) => void;
   handleEditAttendance: (recordId: string, updates: Partial<AttendanceRecord>) => void;
   handleAddEmployee: (newEmp: Employee) => void;
+  handleUpdateEmployee: (updatedEmp: Employee) => void;
+  handleDeleteEmployee: (empId: string, permanent?: boolean) => void;
   handleUpdateApprovalStatus: (itemId: string, newStatus: 'Disetujui' | 'Ditolak', reviewNote: string) => void;
   handleQuickApprove: (id: string) => void;
   handleAddNewApproval: (newItem: ApprovalItem) => void;
@@ -82,6 +89,8 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   const [selectedApprovalItem, setSelectedApprovalItem] = useState<ApprovalItem | null>(null);
   const [isLiveCheckInOpen, setIsLiveCheckInOpen] = useState(false);
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
+  const [selectedEmployeeForEdit, setSelectedEmployeeForEdit] = useState<Employee | null>(null);
+  const [isEditEmployeeOpen, setIsEditEmployeeOpen] = useState(false);
 
   // Fetch data from Supabase
   const fetchData = async () => {
@@ -485,6 +494,109 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Open Edit Employee Modal
+  const openEditEmployee = (emp: Employee) => {
+    setSelectedEmployeeForEdit(emp);
+    setIsEditEmployeeOpen(true);
+  };
+
+  // Update Employee
+  const handleUpdateEmployee = async (updatedEmp: Employee) => {
+    setEmployees((prev) =>
+      prev.map((e) => (e.id === updatedEmp.id ? updatedEmp : e))
+    );
+
+    // Synchronize matching payroll record if exists
+    setPayrollRecords((prev) =>
+      prev.map((p) => {
+        if (p.employeeId === updatedEmp.id) {
+          const baseSalary = updatedEmp.baseSalary;
+          const transportMealAllowance = updatedEmp.transportMealAllowance;
+          const totalEarnings =
+            baseSalary +
+            p.tunjanganJabatan +
+            updatedEmp.siteAllowance +
+            updatedEmp.k3Allowance +
+            transportMealAllowance +
+            p.upahLembur;
+          const totalDeductions =
+            p.potonganBPJSTK +
+            p.potonganBPJSKes +
+            p.potonganPPh21 +
+            p.potonganKeterlambatan;
+          return {
+            ...p,
+            employeeName: updatedEmp.name,
+            nik: updatedEmp.nik,
+            division: updatedEmp.division,
+            siteName: updatedEmp.siteName,
+            gajiPokok: baseSalary,
+            uangMakanTransport: transportMealAllowance,
+            totalEarnings,
+            gajiBersih: totalEarnings - totalDeductions,
+            paymentMethod: updatedEmp.bankAccount || p.paymentMethod,
+          };
+        }
+        return p;
+      })
+    );
+
+    // Sync to Supabase
+    try {
+      await supabase
+        .from('employees')
+        .update({
+          name: updatedEmp.name,
+          nik: updatedEmp.nik,
+          title: updatedEmp.title,
+          division: updatedEmp.division,
+          site_id: updatedEmp.siteId,
+          site_name: updatedEmp.siteName,
+          email: updatedEmp.email,
+          phone: updatedEmp.phone,
+          status: updatedEmp.status,
+          contract_type: updatedEmp.contractType,
+          base_salary: updatedEmp.baseSalary,
+          transport_meal_allowance: updatedEmp.transportMealAllowance,
+          site_allowance: updatedEmp.siteAllowance,
+          bank_account: updatedEmp.bankAccount,
+          emergency_contact: updatedEmp.emergencyContact,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', updatedEmp.id);
+    } catch (e) {
+      console.error('Failed to sync employee update to Supabase:', e);
+    }
+  };
+
+  // Delete / Deactivate Employee
+  const handleDeleteEmployee = async (empId: string, permanent: boolean = false) => {
+    if (permanent) {
+      setEmployees((prev) => prev.filter((e) => e.id !== empId));
+      try {
+        await supabase.from('employees').delete().eq('id', empId);
+      } catch (e) {
+        console.error('Failed to delete employee from Supabase:', e);
+      }
+    } else {
+      // Soft Deactivate
+      setEmployees((prev) =>
+        prev.map((e) => (e.id === empId ? { ...e, status: 'Nonaktif' } : e))
+      );
+      try {
+        await supabase
+          .from('employees')
+          .update({
+            status: 'Nonaktif',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', empId);
+      } catch (e) {
+        console.error('Failed to deactivate employee in Supabase:', e);
+      }
+    }
+  };
+
   // Update Approval Status
   const handleUpdateApprovalStatus = async (
     itemId: string,
@@ -633,11 +745,18 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     setIsLiveCheckInOpen,
     isAddEmployeeOpen,
     setIsAddEmployeeOpen,
+    selectedEmployeeForEdit,
+    setSelectedEmployeeForEdit,
+    isEditEmployeeOpen,
+    setIsEditEmployeeOpen,
+    openEditEmployee,
     handleOpenPaySlipByEmployee,
     handleCheckInSuccess,
     handleCheckOut,
     handleEditAttendance,
     handleAddEmployee,
+    handleUpdateEmployee,
+    handleDeleteEmployee,
     handleUpdateApprovalStatus,
     handleQuickApprove,
     handleAddNewApproval,

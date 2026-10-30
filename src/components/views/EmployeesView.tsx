@@ -21,6 +21,9 @@ import {
   Printer,
   ChevronDown,
   Layers,
+  Pencil,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface EmployeesViewProps {
@@ -30,6 +33,8 @@ interface EmployeesViewProps {
   onOpenEmployeeCard: (emp: Employee) => void;
   onOpenPaySlip: (emp: Employee) => void;
   onOpenAddModal: () => void;
+  onOpenEditEmployee?: (emp: Employee) => void;
+  onDeleteEmployee?: (empId: string, permanent?: boolean) => void;
 }
 
 export const EmployeesView: React.FC<EmployeesViewProps> = ({
@@ -39,6 +44,8 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   onOpenEmployeeCard,
   onOpenPaySlip,
   onOpenAddModal,
+  onOpenEditEmployee,
+  onDeleteEmployee,
 }) => {
   const [mainTab, setMainTab] = useState<'EMPLOYEES' | 'JOBDESCS'>('EMPLOYEES');
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,6 +53,8 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [selectedJobCode, setSelectedJobCode] = useState<string>('ALL');
+  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
+  const [deleteMode, setDeleteMode] = useState<'deactivate' | 'permanent'>('deactivate');
 
   // Filter employees
   const filteredEmployees = employees.filter((emp) => {
@@ -284,10 +293,10 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                             <div className="flex items-center justify-center gap-1.5">
                               <button
                                 onClick={() => onOpenEmployeeCard(emp)}
-                                className="px-2.5 py-1 text-[11px] font-semibold text-[#0f766e] hover:bg-[#0f766e]/10 rounded border border-[#0f766e]/30 transition-colors cursor-pointer whitespace-nowrap"
+                                className="px-2 py-1 text-[11px] font-semibold text-[#0f766e] hover:bg-[#0f766e]/10 rounded border border-[#0f766e]/30 transition-colors cursor-pointer whitespace-nowrap"
                                 title="Lihat Profil, Jobdesc & KPI"
                               >
-                                Profil & Jobdesc
+                                Profil
                               </button>
                               <button
                                 onClick={() => onOpenPaySlip(emp)}
@@ -296,6 +305,26 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                               >
                                 <CreditCard className="w-4 h-4" />
                               </button>
+                              {onOpenEditEmployee && (
+                                <button
+                                  type="button"
+                                  onClick={() => onOpenEditEmployee(emp)}
+                                  className="p-1 text-emerald-700 hover:text-emerald-950 hover:bg-emerald-50 rounded border border-emerald-200/60 transition-colors cursor-pointer"
+                                  title="Edit Data Karyawan"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              {onDeleteEmployee && emp.id !== 'EMP-2025-001' && (
+                                <button
+                                  type="button"
+                                  onClick={() => setEmployeeToDelete(emp)}
+                                  className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded border border-rose-200/60 transition-colors cursor-pointer"
+                                  title="Hapus / Nonaktifkan Karyawan"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -346,13 +375,13 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-1.5">
                     <button
                       type="button"
                       onClick={() => onOpenEmployeeCard(emp)}
-                      className="flex-1 py-1.5 text-xs font-semibold text-[#0f766e] bg-[#0f766e]/10 hover:bg-[#0f766e]/20 rounded-lg transition-colors cursor-pointer text-center"
+                      className="flex-1 py-1.5 text-xs font-semibold text-[#0f766e] bg-[#0f766e]/10 hover:bg-[#0f766e]/20 rounded-lg transition-colors cursor-pointer text-center truncate"
                     >
-                      Profil & Jobdesc
+                      Profil
                     </button>
                     <button
                       type="button"
@@ -362,6 +391,26 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                     >
                       <CreditCard className="w-4 h-4" />
                     </button>
+                    {onOpenEditEmployee && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenEditEmployee(emp)}
+                        className="p-1.5 text-emerald-700 hover:text-emerald-950 hover:bg-emerald-50 rounded-lg border border-emerald-200/60 transition-colors cursor-pointer"
+                        title="Edit Data Karyawan"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                    )}
+                    {onDeleteEmployee && emp.id !== 'EMP-2025-001' && (
+                      <button
+                        type="button"
+                        onClick={() => setEmployeeToDelete(emp)}
+                        className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg border border-rose-200/60 transition-colors cursor-pointer"
+                        title="Hapus / Nonaktifkan Karyawan"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -502,6 +551,92 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          DIALOG KONFIRMASI HAPUS / NONAKTIFKAN KARYAWAN
+          ========================================================================= */}
+      {employeeToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-2xs p-4">
+          <div
+            className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">
+                  Hapus / Nonaktifkan Karyawan
+                </h3>
+                <p className="text-xs text-slate-600 mt-1">
+                  Anda akan memproses data karyawan{' '}
+                  <strong className="text-slate-900">{employeeToDelete.name}</strong> ({employeeToDelete.title}).
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="radio"
+                  name="deleteMode"
+                  checked={deleteMode === 'deactivate'}
+                  onChange={() => setDeleteMode('deactivate')}
+                  className="mt-0.5 text-[#0f766e] focus:ring-[#0f766e]"
+                />
+                <div>
+                  <p className="font-bold text-slate-800">Nonaktifkan Karyawan (Disarankan)</p>
+                  <p className="text-[11px] text-slate-500">
+                    Karyawan ditandai status nonaktif & tidak bisa presensi, namun riwayat slip gaji & kehadiran masa lalu tetap aman tersimpan.
+                  </p>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-2.5 cursor-pointer pt-2 border-t border-slate-200">
+                <input
+                  type="radio"
+                  name="deleteMode"
+                  checked={deleteMode === 'permanent'}
+                  onChange={() => setDeleteMode('permanent')}
+                  className="mt-0.5 text-rose-600 focus:ring-rose-500"
+                />
+                <div>
+                  <p className="font-bold text-rose-700">Hapus Permanen</p>
+                  <p className="text-[11px] text-slate-500">
+                    Hapus seluruh data karyawan ini dari daftar tim (gunakan jika terjadi salah ketik saat input).
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setEmployeeToDelete(null)}
+                className="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteEmployee?.(employeeToDelete.id, deleteMode === 'permanent');
+                  setEmployeeToDelete(null);
+                }}
+                className={`px-4 py-2 rounded-lg text-xs font-bold text-white transition-all shadow-xs cursor-pointer ${
+                  deleteMode === 'permanent'
+                    ? 'bg-rose-600 hover:bg-rose-700 active:scale-95'
+                    : 'bg-amber-600 hover:bg-amber-700 active:scale-95'
+                }`}
+              >
+                {deleteMode === 'permanent' ? 'Ya, Hapus Permanen' : 'Ya, Nonaktifkan'}
+              </button>
+            </div>
           </div>
         </div>
       )}
