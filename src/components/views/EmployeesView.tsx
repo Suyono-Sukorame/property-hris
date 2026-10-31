@@ -59,6 +59,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   const [selectedJobCode, setSelectedJobCode] = useState<string>('ALL');
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
   const [deleteMode, setDeleteMode] = useState<'deactivate' | 'permanent'>('deactivate');
+  const [expandedJobCode, setExpandedJobCode] = useState<string | null>(null);
 
   // Filter employees
   const filteredEmployees = employees.filter((emp) => {
@@ -111,53 +112,54 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
       {/* =========================================================================
           MAIN TOP SWITCHER: [Daftar Personil Karyawan] vs [Katalog Jobdesc & Standar Jabatan]
           ========================================================================= */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-full sm:w-auto">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 bg-white p-2 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setMainTab('EMPLOYEES')}
-            className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               mainTab === 'EMPLOYEES'
                 ? 'bg-white text-[#0f766e] shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Users className="w-4 h-4 text-[#0f766e]" />
-            <span>Daftar Karyawan ({filteredEmployees.length})</span>
+            <span className="sm:hidden">Tim ({filteredEmployees.length})</span>
+            <span className="hidden sm:inline">Daftar Karyawan ({filteredEmployees.length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setMainTab('JOBDESCS')}
-            className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               mainTab === 'JOBDESCS'
                 ? 'bg-white text-[#0f766e] shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Briefcase className="w-4 h-4 text-[#0f766e]" />
-            <span>Katalog Jabatan & Jobdesk (8 Posisi)</span>
+            <span className="sm:hidden">Jobdesk ({allJobdescs.length})</span>
+            <span className="hidden sm:inline">Katalog Jabatan & Jobdesk ({allJobdescs.length})</span>
           </button>
         </div>
 
         {mainTab === 'EMPLOYEES' && (
-          <div className="flex items-center gap-2 px-1 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               onClick={exportCSV}
-              className="h-9 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+              className="flex-1 sm:flex-initial h-9 inline-flex items-center justify-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">Ekspor CSV</span>
-              <span className="sm:hidden">Ekspor</span>
+              <span>Ekspor CSV</span>
             </button>
             {isSuperAdmin && (
               <button
                 type="button"
                 onClick={onOpenAddModal}
-                className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
+                className="flex-1 sm:flex-initial h-9 inline-flex items-center justify-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
               >
                 <UserPlus className="w-3.5 h-3.5" />
-                <span>+ Tambah Karyawan</span>
+                <span>+ Tambah</span>
               </button>
             )}
           </div>
@@ -235,10 +237,9 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
             </div>
           </div>
 
-          {/* Table Mode */}
-          {viewMode === 'table' ? (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className={`${viewMode === 'table' ? 'hidden md:block' : 'hidden'} bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden`}>
+            <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left min-w-187.5">
                   <thead>
                     <tr className="h-10 bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] tracking-wider font-semibold">
@@ -347,11 +348,12 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                     )}
                   </tbody>
                 </table>
-              </div>
             </div>
-          ) : (
-            /* Cards Mode */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          </div>
+
+          {/* Cards View (Active when viewMode === 'cards' OR on mobile screens) */}
+          <div className={`${viewMode === 'cards' ? 'block' : 'block md:hidden'}`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
               {filteredEmployees.map((emp) => (
                 <div
                   key={emp.id}
@@ -430,7 +432,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 </div>
               ))}
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -511,44 +513,57 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                     <p className="italic text-slate-600 line-clamp-2">{job.purpose}</p>
                   </div>
 
-                  {/* Responsibilities Highlights */}
-                  <div className="space-y-2 mb-3">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                      Tugas Pokok & Tanggung Jawab Utama:
-                    </span>
-                    {job.responsibilities.map((r, rIdx) => (
-                      <div key={rIdx} className="text-[11px] space-y-1">
-                        <div className="font-semibold text-slate-800 flex items-center gap-1.5 text-[11px]">
-                          <Layers className="w-3 h-3 text-emerald-600" />
-                          <span>{r.category}:</span>
+                  {/* Mobile Accordion Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setExpandedJobCode(expandedJobCode === job.jobCode ? null : job.jobCode)}
+                    className="md:hidden w-full py-2 px-3 my-2 text-xs font-bold text-[#0f766e] bg-emerald-50/80 hover:bg-emerald-100 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <span>{expandedJobCode === job.jobCode ? 'Sembunyikan Rincian' : 'Lihat Rincian Tugas & KPI'}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expandedJobCode === job.jobCode ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Responsibilities & KPI (Collapsible on Mobile, Expanded on Desktop) */}
+                  <div className={`space-y-3 ${expandedJobCode === job.jobCode ? 'block' : 'hidden md:block'}`}>
+                    {/* Responsibilities Highlights */}
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                        Tugas Pokok & Tanggung Jawab Utama:
+                      </span>
+                      {job.responsibilities.map((r, rIdx) => (
+                        <div key={rIdx} className="text-[11px] space-y-1">
+                          <div className="font-semibold text-slate-800 flex items-center gap-1.5 text-[11px]">
+                            <Layers className="w-3 h-3 text-emerald-600" />
+                            <span>{r.category}:</span>
+                          </div>
+                          <ul className="pl-4 space-y-0.5 text-slate-600">
+                            {r.items.slice(0, 2).map((item, iIdx) => (
+                              <li key={iIdx} className="list-disc leading-relaxed text-[11px]">{item}</li>
+                            ))}
+                          </ul>
                         </div>
-                        <ul className="pl-4 space-y-0.5 text-slate-600">
-                          {r.items.slice(0, 2).map((item, iIdx) => (
-                            <li key={iIdx} className="list-disc leading-relaxed text-[11px]">{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Key Authorities */}
-                  <div className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200/80 text-[11px] mb-3">
-                    <span className="font-bold text-amber-900 mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider">
-                      <Lock className="w-3 h-3 text-amber-700" />
-                      <span>Wewenang & Batas Otorisasi:</span>
-                    </span>
-                    <p className="text-amber-800 text-[11px] line-clamp-2">• {job.authorities[0]}</p>
-                  </div>
-
-                  {/* Qualifications Pill */}
-                  <div className="text-[11px] space-y-1 text-slate-600">
-                    <span className="text-slate-400 block text-[10px]">Sertifikasi Kompetensi Wajib:</span>
-                    <div className="flex flex-wrap gap-1">
-                      {job.qualifications.certifications.map((cert, cIdx) => (
-                        <span key={cIdx} className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-semibold text-[10px] border border-slate-200">
-                          {cert}
-                        </span>
                       ))}
+                    </div>
+
+                    {/* Key Authorities */}
+                    <div className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200/80 text-[11px]">
+                      <span className="font-bold text-amber-900 mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider">
+                        <Lock className="w-3 h-3 text-amber-700" />
+                        <span>Wewenang & Batas Otorisasi:</span>
+                      </span>
+                      <p className="text-amber-800 text-[11px] line-clamp-2">• {job.authorities[0]}</p>
+                    </div>
+
+                    {/* Qualifications Pill */}
+                    <div className="text-[11px] space-y-1 text-slate-600">
+                      <span className="text-slate-400 block text-[10px]">Sertifikasi Kompetensi Wajib:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {job.qualifications.certifications.map((cert, cIdx) => (
+                          <span key={cIdx} className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-semibold text-[10px] border border-slate-200">
+                            {cert}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

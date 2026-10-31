@@ -127,60 +127,67 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
   return (
     <div className="space-y-5">
       {/* Top Filter and Segmented Tabs */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
         {/* Segmented Control */}
-        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg w-full md:w-auto">
+        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl w-full md:w-auto overflow-x-auto">
           <button
+            type="button"
             onClick={() => setTabFilter('PENDING')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 ${
+            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap shrink-0 flex items-center justify-center gap-1.5 cursor-pointer ${
               tabFilter === 'PENDING'
-                ? 'bg-white text-slate-900 shadow-xs'
+                ? 'bg-white text-[#0f766e] shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Menunggu Persetujuan ({approvals.filter((a) => a.status.includes('Menunggu')).length})
+            <span>Menunggu</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 text-[10px] font-mono font-bold">
+              {approvals.filter((a) => a.status.includes('Menunggu')).length}
+            </span>
           </button>
           <button
-            onClick={() => setTabFilter('ALL')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 ${
-              tabFilter === 'ALL'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Semua ({approvals.length})
-          </button>
-          <button
+            type="button"
             onClick={() => setTabFilter('APPROVED')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 ${
+            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
               tabFilter === 'APPROVED'
-                ? 'bg-white text-slate-900 shadow-xs'
+                ? 'bg-white text-[#0f766e] shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             Disetujui
           </button>
+          <button
+            type="button"
+            onClick={() => setTabFilter('ALL')}
+            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+              tabFilter === 'ALL'
+                ? 'bg-white text-[#0f766e] shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Semua ({approvals.length})
+          </button>
         </div>
 
         {/* Search & New Ticket CTA */}
-        <div className="flex items-center gap-2.5 w-full md:w-auto">
-          <div className="relative flex-1 md:w-64">
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+          <div className="relative w-full sm:w-64">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari tiket, nama, tipe..."
-              className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white"
+              className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
             />
           </div>
 
           <button
+            type="button"
             onClick={() => setIsCreating(!isCreating)}
-            className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs whitespace-nowrap shrink-0"
+            className="w-full sm:w-auto h-9 inline-flex items-center justify-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-lg transition-all shadow-xs whitespace-nowrap shrink-0 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Buat Pengajuan Baru</span>
+            <span>+ Buat Pengajuan</span>
           </button>
         </div>
       </div>
@@ -297,84 +304,92 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
       {/* Approvals List */}
       <div className="space-y-3">
         {filteredApprovals.length === 0 ? (
-          <div className="bg-white p-12 text-center rounded-xl border border-slate-200 text-slate-400 text-xs">
+          <div className="bg-white p-10 sm:p-12 text-center rounded-2xl border border-slate-200 text-slate-400 text-xs">
             Tidak ada tiket persetujuan dalam kategori ini.
           </div>
         ) : (
           filteredApprovals.map((app) => (
             <div
               key={app.id}
-              className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all text-xs"
+              className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all text-xs space-y-3"
             >
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-slate-100">
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                      {app.ticketNumber}
-                    </span>
-                    <StatusBadge status={app.status} size="sm" />
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                        app.priority === 'Kritis'
-                          ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                          : app.priority === 'Penting'
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      {app.priority}
-                    </span>
-                    <span className="text-slate-400 text-[11px]">
-                      {app.dateRequested}
-                    </span>
-                  </div>
+              {/* Card Header: Ticket No, Status, Priority, Date */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    {app.ticketNumber}
+                  </span>
+                  <StatusBadge status={app.status} size="sm" />
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                      app.priority === 'Kritis'
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                        : app.priority === 'Penting'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {app.priority}
+                  </span>
+                </div>
+                <span className="text-slate-400 text-[11px] font-mono">
+                  {app.dateRequested}
+                </span>
+              </div>
 
-                  <h3 className="text-sm font-bold text-slate-900 mt-1">
+              {/* Card Body: Title, Pemohon, Description, Cost */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <h3 className="text-sm font-bold text-slate-900">
                     {app.type}
                   </h3>
-                  <p className="text-slate-600 line-clamp-1">
+                  <p className="text-slate-600 text-xs line-clamp-2">
                     {app.description}
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Pemohon: <strong className="text-slate-700">{app.employeeName}</strong> ({app.siteName})
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  {app.costEstimate && (
-                    <div className="text-right">
-                      <span className="text-[10px] text-slate-400 uppercase block font-semibold">
-                        Estimasi Biaya
-                      </span>
-                      <span className="font-mono font-bold text-sm text-[#065f46] tabular-nums">
-                        {FORMAT_IDR(app.costEstimate)}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => onOpenApproval(app)}
-                      className="px-3 py-1.5 font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors inline-flex items-center gap-1"
-                    >
-                      <span>Lihat Detail</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-
-                    {canApprove && app.status.includes('Menunggu') && (
-                      <button
-                        onClick={() => onQuickApprove(app.id)}
-                        className="px-3.5 py-1.5 font-semibold text-white bg-[#0f766e] hover:bg-[#115e59] rounded-lg transition-colors shadow-2xs"
-                      >
-                        Setujui Langsung
-                      </button>
-                    )}
+                {app.costEstimate && (
+                  <div className="bg-emerald-50/70 border border-emerald-200/60 p-2 sm:p-2.5 rounded-xl shrink-0 sm:text-right">
+                    <span className="text-[10px] text-emerald-800 uppercase block font-bold tracking-wider">
+                      Estimasi Biaya
+                    </span>
+                    <span className="font-mono font-bold text-sm text-[#065f46] tabular-nums">
+                      {FORMAT_IDR(app.costEstimate)}
+                    </span>
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Step Audit Trail Compact Strip */}
-              <div className="pt-3 flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
-                <span className="font-semibold text-slate-700">Tahapan:</span>
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => onOpenApproval(app)}
+                  className="flex-1 py-2 px-3 font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-xl transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                >
+                  <span>Lihat Detail</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+
+                {canApprove && app.status.includes('Menunggu') && (
+                  <button
+                    type="button"
+                    onClick={() => onQuickApprove(app.id)}
+                    className="flex-1 py-2 px-3.5 font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer text-center whitespace-nowrap"
+                  >
+                    Setujui Langsung
+                  </button>
+                )}
+              </div>
+
+              {/* Step Audit Trail Micro-Stepper */}
+              <div className="pt-2 flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px] text-slate-500 border-t border-slate-50">
+                <span className="font-semibold text-slate-700">Tahap:</span>
                 {app.steps.map((step, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5">
+                  <div key={idx} className="flex items-center gap-1">
                     <span
                       className={`w-2 h-2 rounded-full ${
                         step.status === 'completed'
@@ -385,7 +400,7 @@ export const ApprovalsView: React.FC<ApprovalsViewProps> = ({
                       }`}
                     />
                     <span className={step.status === 'completed' ? 'text-slate-800 font-semibold' : 'text-slate-400'}>
-                      {step.role} ({step.actorName})
+                      {step.role.replace(/^\d+\.\s*/, '')}
                     </span>
                     {idx < app.steps.length - 1 && (
                       <span className="text-slate-300">&rarr;</span>
