@@ -4,8 +4,15 @@ import React from 'react';
 import { ActiveNavModule } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
 import {
-  LayoutDashboard, Clock, Banknote, Menu, Smartphone,
-  Users, CheckSquare, BarChart3, Building,
+  LayoutDashboard,
+  Clock,
+  Banknote,
+  Smartphone,
+  Users,
+  CheckSquare,
+  Building,
+  BarChart3,
+  Menu,
 } from 'lucide-react';
 
 interface BottomNavProps {
@@ -15,14 +22,6 @@ interface BottomNavProps {
   onToggleMobileDrawer: () => void;
 }
 
-// Modules accessible only via the sidebar drawer (not in the 4 main tabs)
-const SECONDARY_MODULES: Partial<Record<ActiveNavModule, { label: string; icon: React.FC<{ className?: string }> }>> = {
-  employees: { label: 'Karyawan',   icon: Users },
-  approvals: { label: 'Persetujuan', icon: CheckSquare },
-  reports:   { label: 'Laporan',    icon: BarChart3 },
-  settings:  { label: 'Pengaturan', icon: Building },
-};
-
 export const BottomNav: React.FC<BottomNavProps> = ({
   activeModule,
   onSelectModule,
@@ -30,45 +29,188 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onToggleMobileDrawer,
 }) => {
   const { currentUser } = useAuth();
-  const isEmployee = currentUser?.role === 'EMPLOYEE';
+  const role = currentUser?.role || 'SUPER_ADMIN';
 
-  // Determine if current module is a "secondary" one (shows via drawer)
-  const secondaryInfo = SECONDARY_MODULES[activeModule];
-  const isOnSecondary = Boolean(secondaryInfo);
-  const Tab5Icon  = secondaryInfo?.icon ?? Menu;
-  const tab5Label = secondaryInfo?.label ?? 'Menu';
+  // 1. SUPER_ADMIN Navigation (Direktur / Pemilik)
+  // [Beranda] [Karyawan] [🟢 Presensi GPS] [Persetujuan] [Pengaturan]
+  if (role === 'SUPER_ADMIN') {
+    const isReports = activeModule === 'reports';
+    const isPayroll = activeModule === 'payroll';
 
+    return (
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
+        {/* Tab 1: Beranda */}
+        <button
+          type="button"
+          onClick={() => onSelectModule('dashboard')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'dashboard'
+              ? 'text-emerald-400 font-bold'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <LayoutDashboard className="w-4 h-4 mb-0.5" />
+          <span>Beranda</span>
+        </button>
+
+        {/* Tab 2: Karyawan */}
+        <button
+          type="button"
+          onClick={() => onSelectModule('employees')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'employees'
+              ? 'text-emerald-400 font-bold'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Users className="w-4 h-4 mb-0.5" />
+          <span>Karyawan</span>
+        </button>
+
+        {/* Center Tab: Action Button (PRESENSI GPS LAPANGAN) */}
+        <div className="-mt-5 flex flex-col items-center">
+          <button
+            type="button"
+            onClick={onOpenLiveCheckIn}
+            title="Buka Presensi GPS"
+            className="w-12 h-12 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white flex items-center justify-center shadow-lg shadow-[#0f766e]/30 border-3 border-slate-900 active:scale-95 transition-all cursor-pointer"
+          >
+            <Smartphone className="w-5 h-5 text-emerald-100" />
+          </button>
+          <span className="text-[9px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider">
+            Presensi GPS
+          </span>
+        </div>
+
+        {/* Tab 4: Persetujuan (atau Laporan jika sedang dibuka) */}
+        <button
+          type="button"
+          onClick={() => onSelectModule(isReports ? 'reports' : 'approvals')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'approvals' || isReports
+              ? 'text-emerald-400 font-bold'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          {isReports ? (
+            <BarChart3 className="w-4 h-4 mb-0.5" />
+          ) : (
+            <CheckSquare className="w-4 h-4 mb-0.5" />
+          )}
+          <span>{isReports ? 'Laporan' : 'Persetujuan'}</span>
+        </button>
+
+        {/* Tab 5: Pengaturan (atau Gaji jika sedang dibuka) */}
+        <button
+          type="button"
+          onClick={() => onSelectModule(isPayroll ? 'payroll' : 'settings')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'settings' || isPayroll
+              ? 'text-emerald-400 font-bold'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          {isPayroll ? (
+            <Banknote className="w-4 h-4 mb-0.5" />
+          ) : (
+            <Building className="w-4 h-4 mb-0.5" />
+          )}
+          <span>{isPayroll ? 'Gaji' : 'Pengaturan'}</span>
+        </button>
+      </nav>
+    );
+  }
+
+  // 2. SITE_MANAGER Navigation (Admin & Keuangan / Dewi Anggraini)
+  if (role === 'SITE_MANAGER') {
+    return (
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
+        <button
+          type="button"
+          onClick={() => onSelectModule('dashboard')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'dashboard' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <LayoutDashboard className="w-4 h-4 mb-0.5" />
+          <span>Beranda</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onSelectModule('employees')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'employees' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Users className="w-4 h-4 mb-0.5" />
+          <span>Karyawan</span>
+        </button>
+
+        <div className="-mt-5 flex flex-col items-center">
+          <button
+            type="button"
+            onClick={onOpenLiveCheckIn}
+            title="Buka Presensi GPS"
+            className="w-12 h-12 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white flex items-center justify-center shadow-lg shadow-[#0f766e]/30 border-3 border-slate-900 active:scale-95 transition-all cursor-pointer"
+          >
+            <Smartphone className="w-5 h-5 text-emerald-100" />
+          </button>
+          <span className="text-[9px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider">
+            Presensi GPS
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onSelectModule('attendance')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'attendance' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Clock className="w-4 h-4 mb-0.5" />
+          <span>Presensi</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onSelectModule('approvals')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'approvals' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <CheckSquare className="w-4 h-4 mb-0.5" />
+          <span>Persetujuan</span>
+        </button>
+      </nav>
+    );
+  }
+
+  // 3. EMPLOYEE Navigation (Self-Service: Andi / Rudi)
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
-      {/* Tab 1: Dashboard / Home */}
-      <button
-        type="button"
-        onClick={() => onSelectModule(isEmployee ? 'attendance' : 'dashboard')}
-        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-          (isEmployee ? activeModule === 'attendance' : activeModule === 'dashboard')
-            ? 'text-emerald-400 font-bold'
-            : 'text-slate-400 hover:text-white'
-        }`}
-      >
-        <LayoutDashboard className="w-4 h-4 mb-0.5" />
-        <span>{isEmployee ? 'Presensi' : 'Beranda'}</span>
-      </button>
-
-      {/* Tab 2: Attendance / Presensi */}
       <button
         type="button"
         onClick={() => onSelectModule('attendance')}
         className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-          activeModule === 'attendance'
-            ? 'text-emerald-400 font-bold'
-            : 'text-slate-400 hover:text-white'
+          activeModule === 'attendance' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
         }`}
       >
         <Clock className="w-4 h-4 mb-0.5" />
-        <span>Riwayat</span>
+        <span>Presensi</span>
       </button>
 
-      {/* Center Tab: Action Button (PRESENSI GPS LAPANGAN) */}
+      <button
+        type="button"
+        onClick={() => onSelectModule('payroll')}
+        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+          activeModule === 'payroll' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+        }`}
+      >
+        <Banknote className="w-4 h-4 mb-0.5" />
+        <span>Slip Gaji</span>
+      </button>
+
       <div className="-mt-5 flex flex-col items-center">
         <button
           type="button"
@@ -83,32 +225,24 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         </span>
       </div>
 
-      {/* Tab 4: Slip Gaji */}
       <button
         type="button"
-        onClick={() => onSelectModule('payroll')}
+        onClick={() => onSelectModule('approvals')}
         className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-          activeModule === 'payroll'
-            ? 'text-emerald-400 font-bold'
-            : 'text-slate-400 hover:text-white'
+          activeModule === 'approvals' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
         }`}
       >
-        <Banknote className="w-4 h-4 mb-0.5" />
-        <span>Slip Gaji</span>
+        <CheckSquare className="w-4 h-4 mb-0.5" />
+        <span>Pengajuan</span>
       </button>
 
-      {/* Tab 5: Dynamic — shows active secondary module OR menu drawer */}
       <button
         type="button"
         onClick={onToggleMobileDrawer}
-        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-          isOnSecondary
-            ? 'text-emerald-400 font-bold'
-            : 'text-slate-400 hover:text-white'
-        }`}
+        className="flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
       >
-        <Tab5Icon className="w-4 h-4 mb-0.5" />
-        <span>{tab5Label}</span>
+        <Menu className="w-4 h-4 mb-0.5" />
+        <span>Menu</span>
       </button>
     </nav>
   );

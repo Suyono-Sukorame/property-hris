@@ -141,14 +141,25 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
         </div>
 
         {mainTab === 'EMPLOYEES' && (
-          <div className="flex items-center gap-2 px-2">
+          <div className="flex items-center gap-2 px-1 w-full sm:w-auto justify-end">
             <button
               onClick={exportCSV}
               className="h-9 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
               <span className="hidden sm:inline">Ekspor CSV</span>
+              <span className="sm:hidden">Ekspor</span>
             </button>
+            {isSuperAdmin && (
+              <button
+                type="button"
+                onClick={onOpenAddModal}
+                className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>+ Tambah Karyawan</span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -643,22 +654,6 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
             </div>
           </div>
         </div>
-      )}
-
-      {/* =========================================================================
-          FAB: Tombol Tambah Karyawan (Mobile Only, SUPER_ADMIN Only)
-          Floating action button di pojok kanan bawah, di atas BottomNav
-          ========================================================================= */}
-      {isSuperAdmin && (
-        <button
-          type="button"
-          onClick={onOpenAddModal}
-          aria-label="Tambah Karyawan"
-          title="Tambah Karyawan Baru"
-          className="md:hidden fixed bottom-22 right-4 z-30 w-14 h-14 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white shadow-xl shadow-[#0f766e]/40 flex items-center justify-center active:scale-95 transition-all cursor-pointer border-2 border-white/20"
-        >
-          <UserPlus className="w-6 h-6" />
-        </button>
       )}
     </div>
   );

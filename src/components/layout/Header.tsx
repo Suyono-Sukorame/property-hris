@@ -11,7 +11,7 @@ interface HeaderProps {
   onSelectSiteFilter: (siteId: string) => void;
   sites: PropertySite[];
   onOpenLiveCheckIn: () => void;
-  onOpenAddEmployee: () => void;
+  onOpenAddEmployee?: () => void;
   onToggleMobileNav?: () => void;
 }
 
@@ -116,17 +116,6 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="hidden xs:inline">Presensi GPS</span>
           <span className="xs:hidden">Presensi</span>
         </button>
-
-        {isSuperAdmin && (
-          <button
-            type="button"
-            onClick={onOpenAddEmployee}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs whitespace-nowrap shrink-0 cursor-pointer"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>Tambah</span>
-          </button>
-        )}
 
         {/* User Identity & Logout Button (Accessible Everywhere on Mobile & Desktop) */}
         <div className="flex items-center gap-1 sm:gap-1.5 pl-1 sm:pl-2 border-l border-slate-200">
