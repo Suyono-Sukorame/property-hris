@@ -91,7 +91,7 @@ export const EmployeeProfileView: React.FC<EmployeeProfileViewProps> = ({
   return (
     <div className="space-y-4 sm:space-y-6 max-w-5xl mx-auto pb-10">
       {/* 1. Sticky Navigation Top Bar */}
-      <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 backdrop-blur-md bg-white/95">
+      <div className="bg-white/95 p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 backdrop-blur-md">
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
@@ -548,3 +548,4 @@ export const EmployeeProfileView: React.FC<EmployeeProfileViewProps> = ({
     </div>
   );
 };
+
