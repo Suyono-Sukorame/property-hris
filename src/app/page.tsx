@@ -8,6 +8,7 @@ import { Sidebar, Header, BottomNav } from '@/components/layout';
 import {
   DashboardView,
   EmployeesView,
+  EmployeeProfileView,
   AttendanceView,
   PayrollView,
   ApprovalsView,
@@ -15,7 +16,6 @@ import {
   SettingsView,
 } from '@/components/views';
 import {
-  EmployeeIDCardModal,
   PaySlipModal,
   ApprovalDetailModal,
   LiveCheckInModal,
@@ -84,6 +84,20 @@ function HRISApp() {
       }
     }
   }, [currentUser, activeModule, setActiveModule, setSelectedSiteFilter]);
+
+  // Sync direct employee profile links (?id=EMP-...)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const empId = params.get('id');
+      if (empId) {
+        const found = employees.find((e) => e.id === empId);
+        if (found) {
+          setSelectedEmployeeForCard(found);
+        }
+      }
+    }
+  }, [employees, setSelectedEmployeeForCard]);
 
   // Loading Screen
   if (isAuthLoading) {
@@ -160,23 +174,49 @@ function HRISApp() {
               approvals={approvals}
               selectedSiteFilter={selectedSiteFilter}
               onNavigateModule={setActiveModule}
-              onOpenEmployeeCard={setSelectedEmployeeForCard}
+              onOpenEmployeeCard={(emp) => {
+                setActiveModule('employees');
+                setSelectedEmployeeForCard(emp);
+                if (typeof window !== 'undefined') {
+                  window.history.pushState(null, '', `/employees?id=${emp.id}`);
+                }
+              }}
               onOpenApproval={setSelectedApprovalItem}
               onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
             />
           )}
 
           {activeModule === 'employees' && (
-            <EmployeesView
-              employees={filteredEmployees}
-              sites={sites}
-              selectedSiteFilter={selectedSiteFilter}
-              onOpenEmployeeCard={setSelectedEmployeeForCard}
-              onOpenPaySlip={handleOpenPaySlipByEmployee}
-              onOpenAddModal={() => setIsAddEmployeeOpen(true)}
-              onOpenEditEmployee={openEditEmployee}
-              onDeleteEmployee={handleDeleteEmployee}
-            />
+            selectedEmployeeForCard ? (
+              <EmployeeProfileView
+                employee={selectedEmployeeForCard}
+                onBack={() => {
+                  setSelectedEmployeeForCard(null);
+                  if (typeof window !== 'undefined') {
+                    window.history.pushState(null, '', '/employees');
+                  }
+                }}
+                onOpenEditEmployee={openEditEmployee}
+                onViewPaySlip={handleOpenPaySlipByEmployee}
+                isSuperAdmin={!isEmployee}
+              />
+            ) : (
+              <EmployeesView
+                employees={filteredEmployees}
+                sites={sites}
+                selectedSiteFilter={selectedSiteFilter}
+                onOpenEmployeeCard={(emp) => {
+                  setSelectedEmployeeForCard(emp);
+                  if (typeof window !== 'undefined') {
+                    window.history.pushState(null, '', `/employees?id=${emp.id}`);
+                  }
+                }}
+                onOpenPaySlip={handleOpenPaySlipByEmployee}
+                onOpenAddModal={() => setIsAddEmployeeOpen(true)}
+                onOpenEditEmployee={openEditEmployee}
+                onDeleteEmployee={handleDeleteEmployee}
+              />
+            )
           )}
 
           {activeModule === 'attendance' && (
@@ -243,12 +283,6 @@ function HRISApp() {
       />
 
       {/* Global Modals */}
-      <EmployeeIDCardModal
-        employee={selectedEmployeeForCard}
-        onClose={() => setSelectedEmployeeForCard(null)}
-        onViewPaySlip={handleOpenPaySlipByEmployee}
-      />
-
       <PaySlipModal
         record={selectedPayrollForSlip}
         onClose={() => setSelectedPayrollForSlip(null)}
