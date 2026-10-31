@@ -147,7 +147,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* 1. Mobile Native Greeting & Status Card */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#0f766e] text-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-linear-to-r from-slate-900 via-slate-800 to-[#0f766e] text-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-1.5 text-emerald-300 text-[11px] font-semibold tracking-wider uppercase mb-1">
             <Calendar className="w-3.5 h-3.5" />
