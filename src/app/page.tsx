@@ -162,6 +162,7 @@ function HRISApp() {
               onNavigateModule={setActiveModule}
               onOpenEmployeeCard={setSelectedEmployeeForCard}
               onOpenApproval={setSelectedApprovalItem}
+              onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
             />
           )}
 
