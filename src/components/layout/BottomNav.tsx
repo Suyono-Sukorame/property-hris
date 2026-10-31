@@ -3,7 +3,10 @@
 import React from 'react';
 import { ActiveNavModule } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Clock, Banknote, Menu, Smartphone } from 'lucide-react';
+import {
+  LayoutDashboard, Clock, Banknote, Menu, Smartphone,
+  Users, CheckSquare, BarChart3, Building,
+} from 'lucide-react';
 
 interface BottomNavProps {
   activeModule: ActiveNavModule;
@@ -11,6 +14,14 @@ interface BottomNavProps {
   onOpenLiveCheckIn: () => void;
   onToggleMobileDrawer: () => void;
 }
+
+// Modules accessible only via the sidebar drawer (not in the 4 main tabs)
+const SECONDARY_MODULES: Partial<Record<ActiveNavModule, { label: string; icon: React.FC<{ className?: string }> }>> = {
+  employees: { label: 'Karyawan',   icon: Users },
+  approvals: { label: 'Persetujuan', icon: CheckSquare },
+  reports:   { label: 'Laporan',    icon: BarChart3 },
+  settings:  { label: 'Pengaturan', icon: Building },
+};
 
 export const BottomNav: React.FC<BottomNavProps> = ({
   activeModule,
@@ -20,6 +31,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 }) => {
   const { currentUser } = useAuth();
   const isEmployee = currentUser?.role === 'EMPLOYEE';
+
+  // Determine if current module is a "secondary" one (shows via drawer)
+  const secondaryInfo = SECONDARY_MODULES[activeModule];
+  const isOnSecondary = Boolean(secondaryInfo);
+  const Tab5Icon  = secondaryInfo?.icon ?? Menu;
+  const tab5Label = secondaryInfo?.label ?? 'Menu';
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
@@ -80,14 +97,18 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <span>Slip Gaji</span>
       </button>
 
-      {/* Tab 5: Menu Drawer */}
+      {/* Tab 5: Dynamic — shows active secondary module OR menu drawer */}
       <button
         type="button"
         onClick={onToggleMobileDrawer}
-        className="flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+          isOnSecondary
+            ? 'text-emerald-400 font-bold'
+            : 'text-slate-400 hover:text-white'
+        }`}
       >
-        <Menu className="w-4 h-4 mb-0.5" />
-        <span>Menu</span>
+        <Tab5Icon className="w-4 h-4 mb-0.5" />
+        <span>{tab5Label}</span>
       </button>
     </nav>
   );

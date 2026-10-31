@@ -5,6 +5,7 @@ import { Employee, PropertySite } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
 import { StatusBadge } from '@/components/ui';
 import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
+import { useAuth } from '@/context/AuthContext';
 import {
   Search,
   CreditCard,
@@ -24,6 +25,7 @@ import {
   Pencil,
   Trash2,
   AlertTriangle,
+  UserPlus,
 } from 'lucide-react';
 
 interface EmployeesViewProps {
@@ -47,6 +49,8 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   onOpenEditEmployee,
   onDeleteEmployee,
 }) => {
+  const { currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
   const [mainTab, setMainTab] = useState<'EMPLOYEES' | 'JOBDESCS'>('EMPLOYEES');
   const [searchQuery, setSearchQuery] = useState('');
   const [divisionFilter, setDivisionFilter] = useState('ALL');
@@ -639,6 +643,22 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* =========================================================================
+          FAB: Tombol Tambah Karyawan (Mobile Only, SUPER_ADMIN Only)
+          Floating action button di pojok kanan bawah, di atas BottomNav
+          ========================================================================= */}
+      {isSuperAdmin && (
+        <button
+          type="button"
+          onClick={onOpenAddModal}
+          aria-label="Tambah Karyawan"
+          title="Tambah Karyawan Baru"
+          className="md:hidden fixed bottom-22 right-4 z-30 w-14 h-14 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white shadow-xl shadow-[#0f766e]/40 flex items-center justify-center active:scale-95 transition-all cursor-pointer border-2 border-white/20"
+        >
+          <UserPlus className="w-6 h-6" />
+        </button>
       )}
     </div>
   );
