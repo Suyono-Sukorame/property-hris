@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import {
   ActiveNavModule,
   PropertySite,
@@ -71,8 +72,33 @@ interface HRISContextType {
 
 const HRISContext = createContext<HRISContextType | undefined>(undefined);
 
+// Valid module paths — used for URL sync
+const VALID_MODULES: ActiveNavModule[] = ['dashboard', 'employees', 'attendance', 'payroll', 'approvals', 'reports', 'settings'];
+
+const getModuleFromPath = (path: string): ActiveNavModule => {
+  const segment = path.replace(/^\//, '') as ActiveNavModule;
+  return VALID_MODULES.includes(segment) ? segment : 'dashboard';
+};
+
 export function HRISProvider({ children }: { children: ReactNode }) {
-  const [activeModule, setActiveModule] = useState<ActiveNavModule>('dashboard');
+  const pathname = usePathname();
+
+  // Initialize activeModule from the current URL path
+  const [activeModule, _setActiveModule] = useState<ActiveNavModule>(() => getModuleFromPath(pathname));
+
+  // Sync activeModule when browser back/forward changes the pathname
+  useEffect(() => {
+    const module = getModuleFromPath(pathname);
+    _setActiveModule(module);
+  }, [pathname]);
+
+  // Public setter: updates state AND pushes to browser history stack
+  const setActiveModule = useCallback((module: ActiveNavModule) => {
+    _setActiveModule(module);
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', '/' + module);
+    }
+  }, []);
   const [selectedSiteFilter, setSelectedSiteFilter] = useState<string>('ALL');
 
   // Core Data States (Initialized with local fallback)

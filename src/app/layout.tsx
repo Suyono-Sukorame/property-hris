@@ -26,15 +26,15 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://property-hris.vercel.app'),
-  title: 'Property HRIS - PT Bumi Raya Propertindo Tbk',
-  description: 'Sistem Manajemen Sumber Daya Manusia dan Absensi Lapangan Terintegrasi untuk Pengembang Properti dan Konstruksi di Kalimantan Selatan.',
+  title: 'HRIS - Griya Bumi Raya',
+  description: 'Sistem Manajemen SDM & Presensi Lapangan untuk Bumi Raya Propertindo.',
   icons: {
     icon: '/property-hris.png',
     apple: '/property-hris.png',
   },
   openGraph: {
-    title: 'Property HRIS - PT Bumi Raya Propertindo Tbk',
-    description: 'Sistem Manajemen SDM & Absensi Lapangan Terintegrasi untuk Pengembang Properti',
+    title: 'HRIS - Griya Bumi Raya | Bumi Raya Propertindo',
+    description: 'Sistem Manajemen SDM & Presensi Lapangan Terintegrasi',
     images: ['/property-hris.png'],
     type: 'website',
   },
