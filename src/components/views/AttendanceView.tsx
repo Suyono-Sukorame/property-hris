@@ -35,9 +35,19 @@ function getDateRangeLabel(range: DateRangeFilter): string {
     today: 'Hari Ini',
     week: 'Minggu Ini',
     month: 'Bulan Ini',
-    all: 'Semua Periode',
+    all: 'Semua',
   };
   return labels[range];
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase();
 }
 
 function isInDateRange(dateStr: string, range: DateRangeFilter): boolean {
@@ -135,79 +145,103 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   };
 
   return (
-    <div className="space-y-5">
-      {/* Metrics Row — live computed */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Hadir Tepat Waktu
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-emerald-800 tabular-nums">
+    <div className="space-y-4">
+
+      {/* ─── Metric Grid: 2x2 on mobile, 4 cols on desktop ─── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        {/* Hadir Tepat Waktu */}
+        <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <CheckCircle className="w-3.5 h-3.5 text-[#0f766e] shrink-0" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">
+              Hadir Tepat Waktu
+            </span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-bold font-mono text-emerald-800 tabular-nums leading-none">
               {countHadir}
             </span>
-            <span className="text-xs text-slate-500">Karyawan</span>
+            <span className="text-[11px] text-slate-500">Org</span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-2">
-            Presensi di lokasi kerja terdaftar
+          <p className="text-[10px] text-slate-400 mt-1.5 leading-tight hidden sm:block">
+            Presensi di lokasi terdaftar
           </p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-amber-500 shadow-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Terlambat
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-amber-700 tabular-nums">
+        {/* Terlambat */}
+        <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 border-t-2 border-t-amber-500 shadow-xs">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">
+              Terlambat
+            </span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-bold font-mono text-amber-700 tabular-nums leading-none">
               {countTerlambat}
             </span>
-            <span className="text-xs text-slate-500">Karyawan</span>
+            <span className="text-[11px] text-slate-500">Org</span>
           </div>
-          <p className="text-[11px] text-amber-800 font-medium mt-2">
-            {countTerlambat > 0 ? `Rata-rata selisih ${avgLateMinutes} menit` : 'Tidak ada keterlambatan'}
+          <p className="text-[10px] text-amber-700 font-medium mt-1.5 leading-tight hidden sm:block">
+            {countTerlambat > 0 ? `Rata-rata +${avgLateMinutes} mnt` : 'Tepat waktu semua'}
           </p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-slate-400 shadow-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Cuti & Izin
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-slate-700 tabular-nums">
+        {/* Cuti & Izin */}
+        <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 border-t-2 border-t-slate-400 shadow-xs">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">
+              Cuti &amp; Izin
+            </span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-bold font-mono text-slate-700 tabular-nums leading-none">
               {countCuti}
             </span>
-            <span className="text-xs text-slate-500">Terjadwal</span>
+            <span className="text-[11px] text-slate-500">Org</span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-2">
-            Dengan surat tugas & delegasi
+          <p className="text-[10px] text-slate-400 mt-1.5 leading-tight hidden sm:block">
+            Dengan surat tugas resmi
           </p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-emerald-600 shadow-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            Kepatuhan APD Proyek Lapangan
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-[#065f46] tabular-nums">
-              {ppeRate}%
-            </span>
-            <span className="text-xs text-emerald-700 font-semibold">
-              ({countPpeValid}/{fieldRecords.length} Personil)
+        {/* Kepatuhan APD */}
+        <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 border-t-2 border-t-emerald-600 shadow-xs">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">
+              APD Lapangan
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-2">
-            {officeRecords.length > 0
-              ? `${officeRecords.length} staf kantor Menara HQ aktif`
-              : 'Helm + Rompi Reflektif diverifikasi'}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-bold font-mono text-[#065f46] tabular-nums leading-none">
+              {ppeRate}%
+            </span>
+            <span className="text-[11px] text-emerald-700 font-semibold">
+              ({countPpeValid}/{fieldRecords.length})
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-400 mt-1.5 leading-tight hidden sm:block">
+            Helm + Rompi K3 diverifikasi
           </p>
         </div>
       </div>
 
-      {/* Control Strip */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Search */}
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+      {/* ─── Hero GPS Action Button (Mobile Only) ─── */}
+      <button
+        onClick={onOpenLiveCheckIn}
+        className="md:hidden w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl bg-linear-to-r from-[#0f766e] to-emerald-500 text-white font-bold text-sm shadow-md active:scale-[0.98] transition-transform"
+      >
+        <Smartphone className="w-5 h-5" />
+        <span>Presensi GPS Sekarang</span>
+      </button>
+
+      {/* ─── Control Strip ─── */}
+      <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+        {/* Row 1: Search */}
+        <div className="relative w-full">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
@@ -217,14 +251,15 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-          {/* Date Range Filter */}
-          <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
+        {/* Row 2: Filters + Actions */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date Range Pills */}
+          <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5 flex-1 min-w-0 overflow-x-auto no-scrollbar">
             {(['today', 'week', 'month', 'all'] as DateRangeFilter[]).map((range) => (
               <button
                 key={range}
                 onClick={() => setDateRange(range)}
-                className={`px-2.5 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer ${
+                className={`shrink-0 px-2.5 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer whitespace-nowrap ${
                   dateRange === range
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-500 hover:text-slate-800'
@@ -240,7 +275,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             aria-label="Filter Status Kehadiran"
-            className="h-9 px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
+            className="h-9 px-2 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
           >
             <option value="ALL">Semua Status</option>
             <option value="Hadir">Hadir</option>
@@ -250,17 +285,20 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <option value="Alpa">Alpa</option>
           </select>
 
+          {/* Export CSV — icon-only on mobile, label on desktop */}
           <button
             onClick={exportAttendanceCSV}
+            title="Ekspor CSV"
             className="h-9 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Ekspor CSV</span>
+            <span className="hidden sm:inline">Ekspor CSV</span>
           </button>
 
+          {/* GPS Button — desktop only (mobile has hero button above) */}
           <button
             onClick={onOpenLiveCheckIn}
-            className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs"
+            className="hidden md:inline-flex h-9 items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs"
           >
             <Smartphone className="w-3.5 h-3.5" />
             <span>Presensi GPS Sekarang</span>
@@ -268,8 +306,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
         </div>
       </div>
 
-      {/* Attendance Log Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      {/* ─── Desktop Table (hidden on mobile) ─── */}
+      <div className="hidden md:block bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead>
@@ -278,7 +316,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 <th className="px-4">Lokasi Proyek</th>
                 <th className="px-4">Masuk / Pulang</th>
                 <th className="px-4">Shift Kerja</th>
-                <th className="px-4">Status & Telat</th>
+                <th className="px-4">Status &amp; Telat</th>
                 <th className="px-4">Radius GPS</th>
                 <th className="px-4">APD K3</th>
                 <th className="px-4">Keterangan</th>
@@ -383,10 +421,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                       {record.notes || '-'}
                     </td>
 
-                    {/* Action Column */}
                     <td className="px-4 text-center">
                       <div className="flex items-center justify-center gap-1.5">
-                        {/* Check-Out button — show if no checkout yet */}
                         {!record.checkOutTime && (
                           <button
                             onClick={() => onCheckOut(record.id)}
@@ -397,7 +433,6 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             <span>Pulang</span>
                           </button>
                         )}
-                        {/* Edit button — ONLY for Admin */}
                         {canEditAttendance && (
                           <button
                             onClick={() => onEditAttendance(record)}
@@ -424,9 +459,161 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             Menampilkan {filteredRecords.length} rekaman ·{' '}
             <span className="font-semibold text-slate-700">{getDateRangeLabel(dateRange)}</span>
           </span>
-          <span className="font-mono text-[11px]">Verifikasi Radius GPS & Standar K3 Lapangan</span>
+          <span className="font-mono text-[11px]">Verifikasi Radius GPS &amp; Standar K3 Lapangan</span>
         </div>
       </div>
+
+      {/* ─── Mobile Card Feed (hidden on desktop) ─── */}
+      <div className="md:hidden space-y-3">
+        {filteredRecords.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+            <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+            <p className="font-semibold text-slate-500 text-sm">Tidak ada rekaman presensi</p>
+            <p className="text-xs text-slate-400 mt-1">Coba ubah filter periode atau status</p>
+          </div>
+        ) : (
+          filteredRecords.map((record) => {
+            const isOffice = record.siteId === 'SITE-HQ' || record.shift.includes('Kantor');
+            return (
+              <div key={record.id} className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                {/* Card Header */}
+                <div className="flex items-center gap-3 p-3.5 border-b border-slate-100">
+                  {/* Avatar */}
+                  <div className="w-10 h-10 rounded-full bg-[#0f766e]/10 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-bold text-[#0f766e]">
+                      {getInitials(record.employeeName)}
+                    </span>
+                  </div>
+                  {/* Name & Code */}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-slate-900 text-sm truncate">{record.employeeName}</div>
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                      <span className="font-mono text-[10px] text-slate-400">{record.jobCode}</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-[10px] text-slate-500 truncate">{record.siteName}</span>
+                    </div>
+                  </div>
+                  {/* Status Badge */}
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    <StatusBadge status={record.status} size="sm" />
+                    {record.lateMinutes > 0 && (
+                      <span className="text-[10px] font-mono text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded">
+                        +{record.lateMinutes} mnt
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Card Body — Time & Location */}
+                <div className="px-3.5 py-3 grid grid-cols-2 gap-2">
+                  {/* Check In */}
+                  <div className="bg-slate-50 rounded-lg p-2.5">
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">Masuk</span>
+                    <span className="font-mono text-sm font-bold text-slate-900">{record.checkInTime}</span>
+                    <span className="text-[10px] text-slate-400 block">WIB</span>
+                  </div>
+                  {/* Check Out */}
+                  <div className={`rounded-lg p-2.5 ${record.checkOutTime ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">Pulang</span>
+                    {record.checkOutTime ? (
+                      <>
+                        <span className="font-mono text-sm font-bold text-emerald-800">{record.checkOutTime}</span>
+                        <span className="text-[10px] text-emerald-600 block">WIB</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-xs font-semibold text-amber-700">Belum</span>
+                        <span className="text-[10px] text-amber-500 block">Absen Pulang</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Info Strip: GPS + APD + Shift */}
+                <div className="px-3.5 pb-3 flex flex-wrap gap-2">
+                  {/* GPS Distance */}
+                  <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold ${
+                    record.geofenceVerified
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-rose-50 text-rose-700 border border-rose-200'
+                  }`}>
+                    <MapPin className="w-3 h-3" />
+                    <span>{record.geofenceDistanceMeters}m</span>
+                    <span className="font-normal opacity-75">
+                      {record.geofenceVerified ? '· Dalam Radius' : '· Luar Radius'}
+                    </span>
+                  </div>
+
+                  {/* APD / Work Mode */}
+                  {isOffice ? (
+                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                      <Building2 className="w-3 h-3" />
+                      <span>{record.workMode || 'Kantor Pusat'}</span>
+                    </div>
+                  ) : (
+                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold ${
+                      record.ppeCompliance
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-700 border border-rose-200'
+                    }`}>
+                      <ShieldCheck className="w-3 h-3" />
+                      <span>APD {record.ppeCompliance ? 'Lengkap' : 'Tidak Lengkap'}</span>
+                    </div>
+                  )}
+
+                  {/* Shift */}
+                  <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                    <Clock className="w-3 h-3" />
+                    <span className="truncate max-w-28">{record.shift}</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                {(!record.checkOutTime || canEditAttendance) && (
+                  <div className="px-3.5 pb-3.5 flex gap-2">
+                    {!record.checkOutTime && (
+                      <button
+                        onClick={() => onCheckOut(record.id)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-[0.98] transition-all shadow-sm"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Absen Pulang</span>
+                      </button>
+                    )}
+                    {canEditAttendance && (
+                      <button
+                        onClick={() => onEditAttendance(record)}
+                        title="Koreksi Data Presensi (Admin)"
+                        className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] transition-all border border-slate-200 ${!record.checkOutTime ? 'shrink-0' : 'flex-1'}`}
+                      >
+                        <ClipboardEdit className="w-4 h-4" />
+                        <span>Koreksi</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Completed state — no actions needed */}
+                {!canEditAttendance && record.checkOutTime && (
+                  <div className="px-3.5 pb-3 flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Presensi Hari Ini Selesai</span>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+
+        {/* Mobile footer count */}
+        {filteredRecords.length > 0 && (
+          <p className="text-center text-[11px] text-slate-400 pb-1">
+            {filteredRecords.length} rekaman ·{' '}
+            <span className="font-semibold text-slate-500">{getDateRangeLabel(dateRange)}</span>
+          </p>
+        )}
+      </div>
+
     </div>
   );
 };
