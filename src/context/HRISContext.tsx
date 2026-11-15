@@ -80,6 +80,23 @@ const getModuleFromPath = (path: string): ActiveNavModule => {
   return VALID_MODULES.includes(segment) ? segment : 'dashboard';
 };
 
+// Auto-archive sanitizer: record dari hari-hari sebelumnya yang belum checkout otomatis ditutup
+function autoArchiveAttendanceRecords(records: AttendanceRecord[]): AttendanceRecord[] {
+  const today = new Date().toISOString().slice(0, 10);
+  return records.map((rec) => {
+    if (rec.date < today && (!rec.checkOutTime || rec.checkOutTime === '-')) {
+      const isOffice = rec.siteId === 'SITE-HQ' || (rec.shift && rec.shift.includes('Kantor'));
+      const defaultOut = isOffice ? '17:30 WITA' : '16:00 WITA';
+      return {
+        ...rec,
+        checkOutTime: defaultOut,
+        notes: rec.notes ? `${rec.notes} · Auto-close pergantian hari` : 'Auto-close sistem pergantian hari',
+      };
+    }
+    return rec;
+  });
+}
+
 export function HRISProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
@@ -102,9 +119,12 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   const [selectedSiteFilter, setSelectedSiteFilter] = useState<string>('ALL');
 
   // Core Data States (Initialized with local fallback)
+  // Auto-archive: record hari sebelumnya yang belum checkout otomatis ditutup di state awal
   const [sites, setSites] = useState<PropertySite[]>(INITIAL_PROPERTY_SITES);
   const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(INITIAL_ATTENDANCE_RECORDS);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(
+    autoArchiveAttendanceRecords(INITIAL_ATTENDANCE_RECORDS)
+  );
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>(INITIAL_PAYROLL_RECORDS);
   const [approvals, setApprovals] = useState<ApprovalItem[]>(INITIAL_APPROVALS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -176,32 +196,31 @@ export function HRISProvider({ children }: { children: ReactNode }) {
         );
       }
 
-      // Fetch Attendance
+      // Fetch Attendance — auto-archive record hari lalu yang belum checkout
       const { data: attData, error: attErr } = await supabase.from('attendance_records').select('*').order('date', { ascending: false });
       if (!attErr && attData && attData.length > 0) {
-        setAttendanceRecords(
-          attData.map((a: any) => ({
-            id: a.id,
-            employeeId: a.employee_id,
-            employeeName: a.employee_name,
-            jobCode: a.job_code,
-            division: a.division,
-            siteId: a.site_id,
-            siteName: a.site_name,
-            date: a.date,
-            checkInTime: a.check_in_time,
-            checkOutTime: a.check_out_time,
-            shift: a.shift,
-            status: a.status,
-            lateMinutes: a.late_minutes,
-            geofenceDistanceMeters: a.geofence_distance_meters,
-            geofenceVerified: a.geofence_verified,
-            biometricVerified: a.biometric_verified,
-            ppeCompliance: a.ppe_compliance,
-            deviceInfo: a.device_info,
-            notes: a.notes,
-          }))
-        );
+        const mapped: AttendanceRecord[] = attData.map((a: any) => ({
+          id: a.id,
+          employeeId: a.employee_id,
+          employeeName: a.employee_name,
+          jobCode: a.job_code,
+          division: a.division,
+          siteId: a.site_id,
+          siteName: a.site_name,
+          date: a.date,
+          checkInTime: a.check_in_time,
+          checkOutTime: a.check_out_time,
+          shift: a.shift,
+          status: a.status,
+          lateMinutes: a.late_minutes,
+          geofenceDistanceMeters: a.geofence_distance_meters,
+          geofenceVerified: a.geofence_verified,
+          biometricVerified: a.biometric_verified,
+          ppeCompliance: a.ppe_compliance,
+          deviceInfo: a.device_info,
+          notes: a.notes,
+        }));
+        setAttendanceRecords(autoArchiveAttendanceRecords(mapped));
       }
 
       // Fetch Payroll
