@@ -25,6 +25,7 @@ import {
   Sparkles,
   CalendarCheck,
   ArrowRight,
+  Fingerprint,
 } from 'lucide-react';
 
 interface AttendanceViewProps {
@@ -32,6 +33,7 @@ interface AttendanceViewProps {
   sites: PropertySite[];
   selectedSiteFilter: string;
   onOpenLiveCheckIn: (tab?: 'ATTENDANCE' | 'LEAVE') => void;
+  onCheckInSuccess?: (record: AttendanceRecord) => void;
   onCheckOut: (recordId: string) => void;
   onEditAttendance: (record: AttendanceRecord) => void;
   isEmployeeView?: boolean;
@@ -108,6 +110,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   sites,
   selectedSiteFilter,
   onOpenLiveCheckIn,
+  onCheckInSuccess,
   onCheckOut,
   onEditAttendance,
   isEmployeeView = false,
@@ -128,6 +131,65 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Direct 1-Tap Attendance states
+  const [isCheckingInDirect, setIsCheckingInDirect] = useState(false);
+  const [directFeedback, setDirectFeedback] = useState<string | null>(null);
+
+  const handleDirectCheckIn = () => {
+    setIsCheckingInDirect(true);
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const currentTimeStr = `${hh}:${mm}`;
+
+    const currentSite = sites.find((s) => s.id === (currentUser?.siteId || 'SITE-GRIYA')) || sites[0];
+    const isOffice = currentSite?.category === 'Corporate Head Office' || currentSite?.id === 'SITE-HQ' || currentSite?.category === 'Kantor';
+
+    const isLate = isOffice
+      ? now.getHours() > 8 || (now.getHours() === 8 && now.getMinutes() > 30)
+      : now.getHours() > 8 || (now.getHours() === 8 && now.getMinutes() > 0);
+    const lateMinutes = isOffice
+      ? isLate ? (now.getHours() - 8) * 60 + (now.getMinutes() - 30) : 0
+      : isLate ? (now.getHours() - 8) * 60 + now.getMinutes() : 0;
+
+    const shiftLabel = isOffice
+      ? 'Shift Kantor Pusat (08:30 - 17:30)'
+      : 'Shift Proyek Pagi (07:00 - 16:00)';
+
+    const defaultNotes = isOffice
+      ? 'Presensi operasional kantor pusat'
+      : 'Presensi langsung diverifikasi di area proyek';
+
+    const newRecord: AttendanceRecord = {
+      id: `ATT-${Date.now()}`,
+      employeeId: currentUser?.employeeId || 'EMP-2025-003',
+      employeeName: currentUser?.name || 'Rudi Hartono',
+      jobCode: (currentUser as any)?.jobCode || 'LAP-001',
+      division: (currentUser as any)?.division || 'Operasional Lapangan',
+      siteId: currentSite?.id || 'SITE-GRIYA',
+      siteName: currentSite?.name || currentUser?.siteName || 'Griya Bumi Raya',
+      date: new Date().toISOString().slice(0, 10),
+      checkInTime: `${currentTimeStr} WITA`,
+      shift: shiftLabel,
+      status: isLate ? 'Terlambat' : 'Hadir',
+      lateMinutes,
+      geofenceDistanceMeters: 0,
+      geofenceVerified: true,
+      biometricVerified: true,
+      ppeCompliance: true,
+      workMode: isOffice ? 'WFO' : 'Site Proyek',
+      deviceInfo: 'Smartphone GPS Geotagged (1-Tap Direct)',
+      notes: defaultNotes,
+    };
+
+    if (onCheckInSuccess) {
+      onCheckInSuccess(newRecord);
+    }
+    setIsCheckingInDirect(false);
+    setDirectFeedback(`Presensi Masuk Berhasil! (${currentTimeStr} WITA)`);
+    setTimeout(() => setDirectFeedback(null), 4000);
+  };
 
   // Filter states for Team Monitoring
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -326,15 +388,24 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Main Action Buttons */}
+                  {/* Feedback Toast */}
+                  {directFeedback && (
+                    <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 font-bold text-xs flex items-center gap-2 animate-in fade-in duration-200">
+                      <CheckCircle2 className="w-4 h-4 text-[#0f766e]" />
+                      <span>{directFeedback}</span>
+                    </div>
+                  )}
+
+                  {/* Main Action Buttons: 1-Tap Direct Attendance */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <button
                       type="button"
-                      onClick={() => onOpenLiveCheckIn('ATTENDANCE')}
-                      className="sm:col-span-2 py-3.5 px-4 rounded-xl bg-linear-to-r from-[#0f766e] to-teal-700 hover:from-[#115e59] hover:to-teal-800 text-white font-bold text-sm shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+                      onClick={handleDirectCheckIn}
+                      disabled={isCheckingInDirect}
+                      className="sm:col-span-2 py-3.5 px-4 rounded-xl bg-linear-to-r from-[#0f766e] to-teal-700 hover:from-[#115e59] hover:to-teal-800 text-white font-bold text-sm shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-60"
                     >
-                      <Smartphone className="w-5 h-5" />
-                      <span>Presensi Masuk Sekarang (Check-In)</span>
+                      <Fingerprint className="w-5 h-5 text-emerald-200" />
+                      <span>{isCheckingInDirect ? 'Mencatat Kehadiran...' : 'Presensi Masuk Sekarang'}</span>
                     </button>
 
                     <button

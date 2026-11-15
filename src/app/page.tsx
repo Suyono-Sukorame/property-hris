@@ -231,6 +231,7 @@ function HRISApp() {
               sites={sites}
               selectedSiteFilter={selectedSiteFilter}
               onOpenLiveCheckIn={handleOpenLiveCheckIn}
+              onCheckInSuccess={handleCheckInSuccess}
               onCheckOut={handleCheckOut}
               onEditAttendance={(record) => setEditingAttendanceRecord(record)}
               isEmployeeView={isEmployee}

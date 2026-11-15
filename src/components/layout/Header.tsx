@@ -107,15 +107,17 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Zone 3: Primary Action Buttons & Mobile Logout */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <button
-          type="button"
-          onClick={onOpenLiveCheckIn}
-          className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs whitespace-nowrap shrink-0 cursor-pointer"
-        >
-          <Smartphone className="w-3.5 h-3.5 text-[#0f766e]" />
-          <span className="hidden xs:inline">Presensi GPS</span>
-          <span className="xs:hidden">Presensi</span>
-        </button>
+        {/* Tombol Presensi GPS di Header hanya untuk Admin/Site Manager di Desktop (disembunyikan di Mobile & untuk Karyawan) */}
+        {!isSuperAdmin && userRole !== 'SITE_MANAGER' ? null : (
+          <button
+            type="button"
+            onClick={onOpenLiveCheckIn}
+            className="hidden md:inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-[#0f766e]" />
+            <span>Presensi GPS</span>
+          </button>
+        )}
 
         {/* User Identity & Logout Button (Accessible Everywhere on Mobile & Desktop) */}
         <div className="flex items-center gap-1 sm:gap-1.5 pl-1 sm:pl-2 border-l border-slate-200">
