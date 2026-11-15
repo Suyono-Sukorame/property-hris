@@ -119,12 +119,10 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   const [selectedSiteFilter, setSelectedSiteFilter] = useState<string>('ALL');
 
   // Core Data States (Initialized with local fallback)
-  // Auto-archive: record hari sebelumnya yang belum checkout otomatis ditutup di state awal
+  // Auto-archive dijalankan di useEffect (setelah mount) agar tidak trigger new Date() saat prerender
   const [sites, setSites] = useState<PropertySite[]>(INITIAL_PROPERTY_SITES);
   const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(
-    autoArchiveAttendanceRecords(INITIAL_ATTENDANCE_RECORDS)
-  );
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(INITIAL_ATTENDANCE_RECORDS);
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>(INITIAL_PAYROLL_RECORDS);
   const [approvals, setApprovals] = useState<ApprovalItem[]>(INITIAL_APPROVALS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -137,6 +135,11 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
   const [selectedEmployeeForEdit, setSelectedEmployeeForEdit] = useState<Employee | null>(null);
   const [isEditEmployeeOpen, setIsEditEmployeeOpen] = useState(false);
+
+  // Auto-archive saat mount (client-side only) — aman dari Next.js prerender restriction
+  useEffect(() => {
+    setAttendanceRecords((prev) => autoArchiveAttendanceRecords(prev));
+  }, []);
 
   // Fetch data from Supabase
   const fetchData = async () => {
