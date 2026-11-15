@@ -172,12 +172,12 @@ export const AttendanceItemCard: React.FC<AttendanceItemCardProps> = ({
             {record.ppeCompliance ? (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-teal-50 text-[#0f766e] border border-teal-200 font-semibold">
                 <ShieldCheck className="w-3 h-3" />
-                <span>APD Lengkap</span>
+                <span>Helm &amp; Rompi Lengkap</span>
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 font-semibold">
                 <AlertCircle className="w-3 h-3" />
-                <span>Tanpa APD</span>
+                <span>Perlu Helm &amp; Rompi</span>
               </span>
             )}
 

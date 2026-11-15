@@ -155,7 +155,7 @@ export const LoginPage: React.FC = () => {
                 Icon = Building2;
                 roleBadge = 'Pemilik / Direktur';
                 roleBadgeClass = 'bg-teal-950/80 text-teal-300 border-teal-700/60';
-                dutyDescription = 'ACC Kasbon, Cuti, & Ringkasan Bisnis';
+                dutyDescription = 'Persetujuan Kasbon, Cuti & Ringkasan Bisnis';
               } else if (isSite) {
                 Icon = DollarSign;
                 roleBadge = 'Admin & Keuangan';

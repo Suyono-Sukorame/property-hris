@@ -318,7 +318,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         {/* KPI 3: Persetujuan Menunggu */}
         <KPICard
-          label="Perlu ACC"
+          label="Butuh Persetujuan"
           value={pendingApprovals.length}
           unit="Menunggu"
           icon={<AlertTriangle className="w-4 h-4 text-amber-500" />}
@@ -605,7 +605,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <FileCheck className="w-4 h-4 text-amber-600" />
-                Persetujuan Perlu ACC
+                Menunggu Persetujuan Pimpinan
               </h2>
               <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
                 {pendingApprovals.length} Tiket

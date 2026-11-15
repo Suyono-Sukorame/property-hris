@@ -82,11 +82,11 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
       'Tunjangan K3',
       'Lembur',
       'Total Bruto',
-      'BPJS TK',
-      'BPJS Kes',
-      'PPh 21',
+      'BPJS Ketenagakerjaan',
+      'BPJS Kesehatan',
+      'Pajak PPh 21',
       'Total Potongan',
-      'Gaji Bersih (THP)',
+      'Gaji Bersih Diterima',
       'Status',
     ];
     const rows = filteredRecords.map((r) => [
@@ -177,7 +177,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
           <div className="flex items-center gap-3">
             <div className="text-left sm:text-right">
               <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-                Gaji Bersih (THP)
+                Gaji Bersih Diterima
               </span>
               <span className="text-xl sm:text-2xl font-bold font-mono text-[#065f46]">
                 {filteredRecords[0] ? FORMAT_IDR(filteredRecords[0].gajiBersih) : 'Rp 0'}
@@ -198,7 +198,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           <KPICard
-            label="Total Gaji Bersih (THP)"
+            label="Total Gaji Bersih"
             value={FORMAT_IDR(totalNetPayAll)}
             color="primary"
             icon={<Banknote className="w-4 h-4 text-[#0f766e]" />}
@@ -218,7 +218,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
             value={FORMAT_IDR(totalDeductionsAll)}
             color="rose"
             icon={<DollarSign className="w-4 h-4 text-rose-600" />}
-            sublabel={<span className="text-[11px] text-slate-500">Kepatuhan UU BPJS & PPh 21 TER</span>}
+            sublabel={<span className="text-[11px] text-slate-500">Kepatuhan BPJS & Pajak PPh 21</span>}
           />
 
           <KPICard
@@ -288,7 +288,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
                 <th className="px-4 text-right">Tunjangan Proyek & K3</th>
                 <th className="px-4 text-right">Lembur Proyek</th>
                 <th className="px-4 text-right">Potongan Pajak/BPJS</th>
-                <th className="px-4 text-right">Gaji Bersih (THP)</th>
+                <th className="px-4 text-right">Gaji Bersih Diterima</th>
                 <th className="px-4 text-center">Status</th>
                 <th className="px-4 text-center">Slip Gaji</th>
               </tr>
@@ -395,11 +395,11 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
                 <StatusBadge status={rec.status} size="sm" />
               </div>
 
-              {/* THP Highlight Box */}
+              {/* Gaji Bersih Highlight Box */}
               <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/70 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
-                    Gaji Bersih (THP)
+                    Gaji Bersih Diterima
                   </span>
                   <span className="text-lg font-bold font-mono text-[#065f46] tabular-nums">
                     {FORMAT_IDR(rec.gajiBersih)}

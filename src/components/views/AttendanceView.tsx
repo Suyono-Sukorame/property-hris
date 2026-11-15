@@ -246,7 +246,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   const isMyLeave = myTodayRecord?.status === 'Cuti' || myTodayRecord?.status === 'Izin Lapangan';
 
   const exportAttendanceCSV = () => {
-    const headers = ['ID', 'Nama', 'Site', 'Tanggal', 'Jam Masuk', 'Jam Pulang', 'Status', 'Terlambat (m)', 'Jarak GPS (m)', 'APD K3 / Mode'];
+    const headers = ['ID', 'Nama', 'Site', 'Tanggal', 'Jam Masuk', 'Jam Pulang', 'Status', 'Terlambat (m)', 'Jarak GPS (m)', 'Helm & Rompi K3 / Mode'];
     const rows = filteredRecords.map((r) => [
       r.id,
       `"${r.employeeName}"`,
@@ -628,9 +628,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               sublabel={<span className="text-[10px] text-slate-400">Dengan surat tugas resmi</span>}
             />
 
-            {/* Kepatuhan APD */}
+            {/* Kepatuhan Helm & Rompi K3 */}
             <KPICard
-              label="APD Lapangan"
+              label="Helm & Rompi K3"
               value={`${ppeRate}%`}
               unit={`(${countPpeValid}/${fieldRecords.length})`}
               icon={<ShieldCheck className="w-4 h-4 text-emerald-600" />}
@@ -712,7 +712,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     <th className="px-4">Shift Kerja</th>
                     <th className="px-4">Status &amp; Telat</th>
                     <th className="px-4">Radius GPS</th>
-                    <th className="px-4">APD K3</th>
+                    <th className="px-4">Helm &amp; Rompi K3</th>
                     <th className="px-4">Keterangan</th>
                     <th className="px-4 text-center">{canEditAttendance ? 'Aksi Admin' : 'Status'}</th>
                   </tr>
@@ -933,7 +933,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             : 'bg-rose-50 text-rose-700 border border-rose-200'
                         }`}>
                           <ShieldCheck className="w-3 h-3" />
-                          <span>APD {record.ppeCompliance ? 'Lengkap' : 'Tidak Lengkap'}</span>
+                          <span>Helm & Rompi {record.ppeCompliance ? 'Lengkap' : 'Belum Lengkap'}</span>
                         </div>
                       )}
 

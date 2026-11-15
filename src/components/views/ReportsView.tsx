@@ -166,7 +166,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <Users className="w-4 h-4 text-[#0f766e]" />
-              Komposisi Hubungan Kerja (PKWTT vs PKWT Proyek)
+              Status Hubungan Kerja (Karyawan Tetap & Kontrak Proyek)
             </h3>
             <span className="text-[11px] text-slate-400 font-mono">Kemenaker</span>
           </div>
@@ -174,7 +174,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="grid grid-cols-2 gap-4 py-2">
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                PKWTT (Karyawan Tetap)
+                Karyawan Tetap
               </span>
               <span className="text-3xl font-extrabold font-mono text-slate-900 block my-1">
                 {pkwttCount}
@@ -186,7 +186,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                PKWT (Kontrak Proyek)
+                Kontrak Proyek
               </span>
               <span className="text-3xl font-extrabold font-mono text-slate-900 block my-1">
                 {pkwtCount}
@@ -198,9 +198,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </div>
 
           <div className="p-3 rounded-lg border border-slate-200 bg-slate-50/60 space-y-1 text-[11px] text-slate-600">
-            <p className="font-semibold text-slate-800">Ketentuan Regulasi Ketenagakerjaan Properti:</p>
+            <p className="font-semibold text-slate-800">Ketentuan Ketenagakerjaan Properti:</p>
             <p>
-              • Seluruh tenaga kerja PKWT proyek terikat klausul durasi pelaksanaan konstruksi sesuai Surat Perjanjian Pemborongan Pekerjaan.
+              • Seluruh pekerja kontrak proyek terikat masa durasi penyelesaian konstruksi sesuai Surat Perjanjian Kerja.
             </p>
             <p>
               • Jaminan BPJS Ketenagakerjaan Konstruksi diwajibkan aktif 100% sebelum mobilisasi ke area lapangan.
@@ -214,7 +214,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-[#0f766e]" />
-            Rekap Kehadiran & Kepatuhan APD — Data Aktual
+            Rekap Kehadiran & Kepatuhan Perlengkapan K3 — Data Aktual
           </h3>
           <span className="text-[11px] text-slate-400 font-mono">Live dari {totalAttendance} rekaman</span>
         </div>
@@ -245,7 +245,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </div>
 
           <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#065f46] block">Kepatuhan APD Proyek</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#065f46] block">Perlengkapan K3 (Helm & Rompi)</span>
             <span className="text-2xl font-extrabold font-mono text-[#065f46] block">{ppeRate}%</span>
             <span className="text-[11px] text-emerald-700 font-semibold">
               {ppeCompliantCount} dari {fieldRecords.length} personil lapangan

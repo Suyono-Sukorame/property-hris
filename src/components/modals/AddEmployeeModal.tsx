@@ -184,8 +184,8 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 onChange={(e) => setContractType(e.target.value as 'PKWTT (Tetap)' | 'PKWT (Kontrak Proyek)')}
                 className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
               >
-                <option value="PKWTT (Tetap)">PKWTT (Karyawan Tetap)</option>
-                <option value="PKWT (Kontrak Proyek)">PKWT (Kontrak Proyek)</option>
+                <option value="PKWTT (Tetap)">Karyawan Tetap</option>
+                <option value="PKWT (Kontrak Proyek)">Kontrak Proyek</option>
               </select>
             </div>
 

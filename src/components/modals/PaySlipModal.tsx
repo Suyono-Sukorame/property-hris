@@ -208,8 +208,8 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
                 </div>
                 <div className="px-3.5 py-2 flex justify-between">
                   <div>
-                    <span className="text-slate-600">PPh Pasal 21 Terutang</span>
-                    <span className="text-[9px] text-slate-400 block">TER Bulanan Kemenkeu</span>
+                    <span className="text-slate-600">Pajak Penghasilan (PPh 21)</span>
+                    <span className="text-[9px] text-slate-400 block">Tarif Resmi Kemenkeu</span>
                   </div>
                   <span className="font-mono font-medium text-slate-900">{FORMAT_IDR(record.potonganPPh21)}</span>
                 </div>

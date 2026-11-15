@@ -157,18 +157,18 @@ export const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
             </div>
           </div>
 
-          {/* APD Compliance for Field vs Office Notice */}
+          {/* Perlengkapan K3 Compliance for Field vs Office Notice */}
           {record.siteId === 'SITE-HQ' || record.shift.includes('Kantor') ? (
             <div className="p-2.5 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-700">
               <span className="font-medium">Standar Lingkungan Kantor (Non-Site Proyek)</span>
               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-                Bebas Kewajiban APD
+                Bebas Kewajiban Helm &amp; Rompi
               </span>
             </div>
           ) : (
             <div>
               <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block mb-2">
-                Kepatuhan APD K3
+                Perlengkapan K3 Lapangan
               </label>
               <label className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer">
                 <input
@@ -177,7 +177,7 @@ export const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
                   onChange={(e) => setPpeCompliance(e.target.checked)}
                   className="rounded text-[#0f766e] focus:ring-[#0f766e]"
                 />
-                <span className="font-medium text-slate-800">APD Lengkap (Helm + Rompi + Sepatu Safety)</span>
+                <span className="font-medium text-slate-800">Perlengkapan K3 Lengkap (Helm, Rompi &amp; Sepatu Safety)</span>
               </label>
             </div>
           )}
