@@ -7,7 +7,7 @@ import {
   LayoutDashboard,
   Clock,
   Banknote,
-  Smartphone,
+  Fingerprint,
   Users,
   CheckSquare,
   Building,
@@ -67,18 +67,18 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span>Karyawan</span>
         </button>
 
-        {/* Center Tab: Action Button (PRESENSI GPS LAPANGAN) */}
+        {/* Center Tab: Action Button (Absen Masuk/Pulang) */}
         <div className="-mt-5 flex flex-col items-center">
           <button
             type="button"
             onClick={onOpenLiveCheckIn}
-            title="Buka Presensi GPS"
+            title="Absen Sekarang"
             className="w-12 h-12 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white flex items-center justify-center shadow-lg shadow-[#0f766e]/30 border-3 border-slate-900 active:scale-95 transition-all cursor-pointer"
           >
-            <Smartphone className="w-5 h-5 text-emerald-100" />
+            <Fingerprint className="w-5 h-5 text-emerald-100" />
           </button>
           <span className="text-[9px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider">
-            Presensi GPS
+            Absen
           </span>
         </div>
 
@@ -151,13 +151,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={onOpenLiveCheckIn}
-            title="Buka Presensi GPS"
+            title="Absen Sekarang"
             className="w-12 h-12 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white flex items-center justify-center shadow-lg shadow-[#0f766e]/30 border-3 border-slate-900 active:scale-95 transition-all cursor-pointer"
           >
-            <Smartphone className="w-5 h-5 text-emerald-100" />
+            <Fingerprint className="w-5 h-5 text-emerald-100" />
           </button>
           <span className="text-[9px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider">
-            Presensi GPS
+            Absen
           </span>
         </div>
 
@@ -215,13 +215,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <button
           type="button"
           onClick={onOpenLiveCheckIn}
-          title="Buka Presensi GPS"
+          title="Absen Sekarang"
           className="w-12 h-12 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white flex items-center justify-center shadow-lg shadow-[#0f766e]/30 border-3 border-slate-900 active:scale-95 transition-all cursor-pointer"
         >
-          <Smartphone className="w-5 h-5 text-emerald-100" />
+          <Fingerprint className="w-5 h-5 text-emerald-100" />
         </button>
         <span className="text-[9px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider">
-          Presensi GPS
+          Absen
         </span>
       </div>
 
