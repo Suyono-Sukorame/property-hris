@@ -26,6 +26,12 @@ import {
 
 function HRISApp() {
   const { currentUser, isLoading: isAuthLoading } = useAuth();
+  const [liveCheckInTab, setLiveCheckInTab] = useState<'ATTENDANCE' | 'LEAVE'>('ATTENDANCE');
+
+  const handleOpenLiveCheckIn = (tab: 'ATTENDANCE' | 'LEAVE' = 'ATTENDANCE') => {
+    setLiveCheckInTab(tab);
+    setIsLiveCheckInOpen(true);
+  };
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [editingAttendanceRecord, setEditingAttendanceRecord] = useState<import('@/types/hris').AttendanceRecord | null>(null);
 
@@ -224,7 +230,7 @@ function HRISApp() {
               attendanceRecords={filteredAttendance}
               sites={sites}
               selectedSiteFilter={selectedSiteFilter}
-              onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
+              onOpenLiveCheckIn={handleOpenLiveCheckIn}
               onCheckOut={handleCheckOut}
               onEditAttendance={(record) => setEditingAttendanceRecord(record)}
               isEmployeeView={isEmployee}
@@ -303,6 +309,7 @@ function HRISApp() {
         attendanceRecords={attendanceRecords}
         onCheckInSuccess={handleCheckInSuccess}
         onCheckOut={handleCheckOut}
+        initialTab={liveCheckInTab}
       />
 
       <AddEmployeeModal

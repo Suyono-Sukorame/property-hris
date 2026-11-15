@@ -37,6 +37,7 @@ interface LiveCheckInModalProps {
   attendanceRecords?: AttendanceRecord[];
   onCheckInSuccess: (record: AttendanceRecord) => void;
   onCheckOut?: (recordId: string) => void;
+  initialTab?: 'ATTENDANCE' | 'LEAVE';
 }
 
 export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
@@ -47,6 +48,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
   attendanceRecords = [],
   onCheckInSuccess,
   onCheckOut,
+  initialTab = 'ATTENDANCE',
 }) => {
   const { currentUser } = useAuth();
   const isEmployeeUser = currentUser?.role === 'EMPLOYEE';
@@ -82,7 +84,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
     if (isOpen) {
       setSubmittedRecord(null);
       setIsProcessing(false);
-      setModalTab('ATTENDANCE');
+      setModalTab(initialTab || 'ATTENDANCE');
       if (initialEmp) {
         setSelectedEmpId(initialEmp.id);
         const targetSiteId = currentUser?.siteId || initialEmp.siteId || sites[0]?.id;
@@ -95,7 +97,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
       setLeaveType('Izin');
       setLeaveReason('');
     }
-  }, [isOpen, currentUser, initialEmp, sites]);
+  }, [isOpen, initialTab, currentUser, initialEmp, sites]);
 
   if (!isOpen) return null;
 
@@ -665,66 +667,11 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-slate-800 flex items-center gap-1.5 text-xs">
                             <MapPin className="w-4 h-4 text-[#0f766e] shrink-0" />
-                            <span>Jarak dari {currentSite.name}</span>
+                            <span>Lokasi Presensi GPS</span>
                           </span>
-                          <span className="font-mono font-bold text-xs sm:text-sm text-slate-900 tabular-nums">
-                            {simulatedDistance} meter
+                          <span className="font-mono text-[11px] text-emerald-700 bg-emerald-100 font-bold px-2 py-0.5 rounded-full">
+                            {currentSite.name}
                           </span>
-                        </div>
-
-                        <input
-                          type="range"
-                          min="10"
-                          max="400"
-                          step="5"
-                          value={simulatedDistance}
-                          onChange={(e) => setSimulatedDistance(Number(e.target.value))}
-                          className="w-full accent-[#0f766e] cursor-pointer"
-                        />
-
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                          <span>0m (Tengah Lokasi)</span>
-                          <span className="font-semibold text-slate-700">Batas Aman: {maxRadius}m</span>
-                          <span>400m (Luar)</span>
-                        </div>
-
-                        <div className="pt-2 border-t border-slate-200/80 flex flex-wrap items-center gap-1.5">
-                          <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mr-1">
-                            Pintasan:
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setSimulatedDistance(25)}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                              simulatedDistance === 25
-                                ? 'bg-[#0f766e] text-white shadow-xs'
-                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
-                            }`}
-                          >
-                            25m (Dalam Lokasi)
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSimulatedDistance(85)}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                              simulatedDistance === 85
-                                ? 'bg-[#0f766e] text-white shadow-xs'
-                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
-                            }`}
-                          >
-                            85m (Gerbang)
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSimulatedDistance(250)}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                              simulatedDistance === 250
-                                ? 'bg-rose-600 text-white shadow-xs'
-                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
-                            }`}
-                          >
-                            250m (Luar)
-                          </button>
                         </div>
 
                         <div
@@ -737,14 +684,77 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                           {isWithinGeofence ? (
                             <>
                               <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                              <span>Posisi GPS Valid (Radius {simulatedDistance}m / Batas {maxRadius}m)</span>
+                              <div className="min-w-0">
+                                <span className="font-bold block">Posisi Dalam Radius Proyek ({simulatedDistance}m)</span>
+                                <span className="text-[10px] text-emerald-700 font-normal">Aman untuk presensi (toleransi maksimal {maxRadius}m).</span>
+                              </div>
                             </>
                           ) : (
                             <>
                               <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                              <span>Di Luar Radius ({simulatedDistance}m)! Melebihi batas {maxRadius}m.</span>
+                              <div className="min-w-0">
+                                <span className="font-bold block">Di Luar Radius ({simulatedDistance}m)!</span>
+                                <span className="text-[10px] text-rose-700 font-normal">Jarak melebihi batas toleransi lokasi {maxRadius}m.</span>
+                              </div>
                             </>
                           )}
+                        </div>
+
+                        {/* Testing / Demo Location Simulation */}
+                        <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] text-slate-500">
+                            <span className="font-semibold uppercase tracking-wider text-slate-400">Simulasi Radius GPS (Mode Uji Coba)</span>
+                            <span className="font-mono font-bold text-slate-700">{simulatedDistance}m</span>
+                          </div>
+
+                          <input
+                            type="range"
+                            min="10"
+                            max="400"
+                            step="5"
+                            value={simulatedDistance}
+                            onChange={(e) => setSimulatedDistance(Number(e.target.value))}
+                            className="w-full accent-[#0f766e] cursor-pointer"
+                          />
+
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                            <span className="text-[10px] text-slate-400 font-semibold uppercase mr-1">
+                              Pintasan Uji:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setSimulatedDistance(25)}
+                              className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all cursor-pointer ${
+                                simulatedDistance === 25
+                                  ? 'bg-[#0f766e] text-white'
+                                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              25m (Dalam Area)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSimulatedDistance(85)}
+                              className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all cursor-pointer ${
+                                simulatedDistance === 85
+                                  ? 'bg-[#0f766e] text-white'
+                                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              85m (Gerbang Proyek)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSimulatedDistance(250)}
+                              className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all cursor-pointer ${
+                                simulatedDistance === 250
+                                  ? 'bg-rose-600 text-white'
+                                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              250m (Luar Radius)
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ) : (
