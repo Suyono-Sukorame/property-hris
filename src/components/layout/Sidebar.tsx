@@ -17,21 +17,38 @@ interface SidebarProps {
   onCloseMobile?: () => void;
 }
 
-const allNavItems: {
-  id: ActiveNavModule;
-  label: string;
-  icon: React.FC<{ className?: string }>;
-  badge?: boolean;
-  roles: ('SUPER_ADMIN' | 'SITE_MANAGER' | 'EMPLOYEE')[];
-}[] = [
-  { id: 'dashboard',  label: 'Beranda',           icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
-  { id: 'employees',  label: 'Data Tim (4 Orang)', icon: Users,           roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
-  { id: 'attendance', label: 'Presensi & Izin',    icon: Clock,           roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
-  { id: 'payroll',    label: 'Gaji & Kasbon',      icon: Banknote,        roles: ['SUPER_ADMIN', 'EMPLOYEE'] },
-  { id: 'approvals',  label: 'Persetujuan',        icon: CheckSquare,     badge: true, roles: ['SUPER_ADMIN', 'SITE_MANAGER', 'EMPLOYEE'] },
-  { id: 'reports',    label: 'Laporan',            icon: BarChart3,       roles: ['SUPER_ADMIN', 'SITE_MANAGER'] },
-  { id: 'settings',   label: 'Pengaturan',         icon: Building,        roles: ['SUPER_ADMIN'] },
-];
+// Opsi 1: Tiga Dunia Spesifik — Navigasi disesuaikan 100% untuk peran masing-masing
+const getNavItemsForRole = (role: 'SUPER_ADMIN' | 'SITE_MANAGER' | 'EMPLOYEE') => {
+  if (role === 'EMPLOYEE') {
+    return [
+      { id: 'attendance' as ActiveNavModule, label: 'Presensi & Riwayat', icon: Clock, badge: false },
+      { id: 'payroll' as ActiveNavModule, label: 'Slip Gaji Saya', icon: Banknote, badge: false },
+      { id: 'approvals' as ActiveNavModule, label: 'Pengajuan Saya', icon: CheckSquare, badge: true },
+    ];
+  }
+
+  if (role === 'SITE_MANAGER') {
+    // Dewi Anggraini: Admin & Keuangan
+    return [
+      { id: 'dashboard' as ActiveNavModule, label: 'Beranda Operasional', icon: LayoutDashboard, badge: false },
+      { id: 'employees' as ActiveNavModule, label: 'Data Tim (4 Orang)', icon: Users, badge: false },
+      { id: 'attendance' as ActiveNavModule, label: 'Monitoring Presensi', icon: Clock, badge: false },
+      { id: 'payroll' as ActiveNavModule, label: 'Gaji & Kasbon Tim', icon: Banknote, badge: false },
+      { id: 'approvals' as ActiveNavModule, label: 'Verifikasi Pengajuan', icon: CheckSquare, badge: true },
+    ];
+  }
+
+  // SUPER_ADMIN: Navyzar (Pemilik / Direktur)
+  return [
+    { id: 'dashboard' as ActiveNavModule, label: 'Ringkasan Eksekutif', icon: LayoutDashboard, badge: false },
+    { id: 'employees' as ActiveNavModule, label: 'Data Tim', icon: Users, badge: false },
+    { id: 'attendance' as ActiveNavModule, label: 'Monitoring Presensi', icon: Clock, badge: false },
+    { id: 'payroll' as ActiveNavModule, label: 'Rekap Penggajian', icon: Banknote, badge: false },
+    { id: 'approvals' as ActiveNavModule, label: 'Persetujuan Direktur', icon: CheckSquare, badge: true },
+    { id: 'reports' as ActiveNavModule, label: 'Laporan Bisnis', icon: BarChart3, badge: false },
+    { id: 'settings' as ActiveNavModule, label: 'Pengaturan', icon: Building, badge: false },
+  ];
+};
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeModule,
@@ -43,8 +60,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { currentUser, logout } = useAuth();
   const userRole = currentUser?.role || 'SUPER_ADMIN';
 
-  // Filter menu items based on active role
-  const visibleNavItems = allNavItems.filter((item) => item.roles.includes(userRole));
+  // Menu items berbasis peran nyata (Role-Dedicated)
+  const visibleNavItems = getNavItemsForRole(userRole);
 
   const handleItemClick = (id: ActiveNavModule) => {
     onSelectModule(id);

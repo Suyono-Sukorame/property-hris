@@ -236,6 +236,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   }
 
   // 2. SITE_MANAGER Navigation (Admin & Keuangan / Dewi Anggraini)
+  // [Beranda] [Presensi Tim] (🟢 Masuk) [Gaji & Kasbon] [Persetujuan]
   if (role === 'SITE_MANAGER') {
     return (
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
@@ -252,13 +253,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
         <button
           type="button"
-          onClick={() => onSelectModule('employees')}
+          onClick={() => onSelectModule('attendance')}
           className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-            activeModule === 'employees' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+            activeModule === 'attendance' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Users className="w-4 h-4 mb-0.5" />
-          <span>Karyawan</span>
+          <Clock className="w-4 h-4 mb-0.5" />
+          <span>Presensi</span>
         </button>
 
         {/* Center Tab: Action Button (Masuk/Pulang) */}
@@ -278,13 +279,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
         <button
           type="button"
-          onClick={() => onSelectModule('attendance')}
+          onClick={() => onSelectModule('payroll')}
           className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-            activeModule === 'attendance' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+            activeModule === 'payroll' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Clock className="w-4 h-4 mb-0.5" />
-          <span>Monitoring</span>
+          <Banknote className="w-4 h-4 mb-0.5" />
+          <span>Gaji</span>
         </button>
 
         <button

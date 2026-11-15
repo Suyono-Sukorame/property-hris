@@ -70,8 +70,28 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="hidden sm:inline text-xs font-semibold text-slate-400 whitespace-nowrap">Property HRIS</span>
           <ChevronRight className="hidden sm:inline w-3.5 h-3.5 text-slate-300 shrink-0" />
           <h1 className="text-xs sm:text-sm font-bold text-slate-900 truncate tracking-tight">
-            <span className="sm:hidden">{MODULE_TITLES_SHORT[activeModule]}</span>
-            <span className="hidden sm:inline">{MODULE_TITLES[activeModule]}</span>
+            <span className="sm:hidden">
+              {!isSuperAdmin && userRole !== 'SITE_MANAGER'
+                ? activeModule === 'attendance'
+                  ? 'Riwayat'
+                  : activeModule === 'payroll'
+                  ? 'Slip Gaji'
+                  : activeModule === 'approvals'
+                  ? 'Pengajuan'
+                  : MODULE_TITLES_SHORT[activeModule]
+                : MODULE_TITLES_SHORT[activeModule]}
+            </span>
+            <span className="hidden sm:inline">
+              {!isSuperAdmin && userRole !== 'SITE_MANAGER'
+                ? activeModule === 'attendance'
+                  ? 'Presensi & Riwayat Saya'
+                  : activeModule === 'payroll'
+                  ? 'Slip Gaji Saya'
+                  : activeModule === 'approvals'
+                  ? 'Pengajuan & Permohonan Saya'
+                  : MODULE_TITLES[activeModule]
+                : MODULE_TITLES[activeModule]}
+            </span>
           </h1>
         </div>
 

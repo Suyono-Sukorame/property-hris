@@ -143,39 +143,63 @@ export const LoginPage: React.FC = () => {
             {DEMO_USERS.map((user) => {
               const isSuper = user.role === 'SUPER_ADMIN';
               const isSite = user.role === 'SITE_MANAGER';
-              // Ikon berdasarkan divisi
+              const isMarketing = user.division?.includes('Pemasaran');
+
+              // Ikon & Badge berbasis peran nyata
               let Icon = UserCheck;
-              if (isSuper) Icon = Building2;
-              else if (isSite) Icon = DollarSign;
-              else if (user.division?.includes('Pemasaran')) Icon = Megaphone;
-              else if (user.division?.includes('Lapangan') || user.division?.includes('Teknis')) Icon = HardHat;
+              let roleBadge = 'Staf';
+              let roleBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60';
+              let dutyDescription = 'Presensi Proyek, Slip Gaji & Ajukan Izin';
+
+              if (isSuper) {
+                Icon = Building2;
+                roleBadge = 'Pemilik / Direktur';
+                roleBadgeClass = 'bg-teal-950/80 text-teal-300 border-teal-700/60';
+                dutyDescription = 'ACC Kasbon, Cuti, & Ringkasan Bisnis';
+              } else if (isSite) {
+                Icon = DollarSign;
+                roleBadge = 'Admin & Keuangan';
+                roleBadgeClass = 'bg-sky-950/80 text-sky-300 border-sky-700/60';
+                dutyDescription = 'Kelola Gaji, Kasbon, & Rekap Presensi';
+              } else if (isMarketing) {
+                Icon = Megaphone;
+                roleBadge = 'Marketing';
+                roleBadgeClass = 'bg-amber-950/80 text-amber-300 border-amber-700/60';
+                dutyDescription = 'Presensi Harian, Slip Gaji & Izin';
+              } else {
+                Icon = HardHat;
+                roleBadge = 'Pengawas';
+                roleBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60';
+                dutyDescription = 'Presensi Proyek, Slip Gaji & Izin';
+              }
 
               return (
                 <button
                   key={user.id}
                   type="button"
                   onClick={() => loginAsDemo(user.id)}
-                  className="w-full p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 text-left transition-all flex items-center gap-3 group cursor-pointer"
+                  className="w-full p-3 rounded-xl bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-left transition-all flex items-center gap-3 group cursor-pointer"
                 >
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 shadow-xs"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
                     style={{ backgroundColor: user.avatarColor }}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-4.5 h-4.5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors truncate">
                         {user.name}
                       </span>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${roleBadgeClass}`}>
+                        {roleBadge}
+                      </span>
                     </div>
-                    <p className="text-[11px] text-slate-400 font-medium truncate">
-                      {user.roleLabel}
+                    <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                      {dutyDescription}
                     </p>
                   </div>
-                  <span className="text-[10px] font-semibold font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
-                    {user.role}
-                  </span>
+                  <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition-colors shrink-0" />
                 </button>
               );
             })}

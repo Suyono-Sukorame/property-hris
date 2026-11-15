@@ -128,6 +128,13 @@ function HRISApp() {
   // Role helpers
   const isEmployee = currentUser.role === 'EMPLOYEE';
 
+  // Auto-redirect: Karyawan staf langsung mendarat di portal Presensi & Riwayat Saya (bukan dashboard bos)
+  useEffect(() => {
+    if (isEmployee && activeModule === 'dashboard') {
+      setActiveModule('attendance');
+    }
+  }, [isEmployee, activeModule, setActiveModule]);
+
   // Filter records based on role
   const filteredEmployees = currentUser.role === 'SITE_MANAGER' && currentUser.siteId
     ? employees.filter((e) => e.siteId === currentUser.siteId)
