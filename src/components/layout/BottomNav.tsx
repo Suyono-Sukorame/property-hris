@@ -33,7 +33,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onToggleMobileDrawer,
 }) => {
   const { currentUser } = useAuth();
-  const { attendanceRecords, sites, handleCheckInSuccess, handleCheckOut } = useHRIS();
+  const { attendanceRecords, sites, handleCheckInSuccess, handleCheckOut, pendingApprovalsCount } = useHRIS();
   const role = currentUser?.role || 'SUPER_ADMIN';
 
   // Mount-safe check for today's date (prevents Next.js prerender mismatch)
@@ -146,157 +146,130 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const CenterIcon = centerAction.Icon;
 
   // 1. SUPER_ADMIN Navigation (Direktur / Pemilik)
-  // [Beranda] [Karyawan] [🟢 Masuk] [Persetujuan] [Pengaturan]
+  // [ 📊 Beranda ] [ 👥 Data Tim ] [ 💵 Gaji & Kasbon ] [ ✍️ Persetujuan ]
   if (role === 'SUPER_ADMIN') {
-    const isReports = activeModule === 'reports';
-    const isPayroll = activeModule === 'payroll';
-
     return (
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-2 px-3 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
         {/* Tab 1: Beranda */}
         <button
           type="button"
           onClick={() => onSelectModule('dashboard')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'dashboard'
-              ? 'text-emerald-400 font-bold'
+              ? 'text-emerald-400 font-bold bg-white/5'
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          <LayoutDashboard className="w-4 h-4 mb-0.5" />
+          <LayoutDashboard className="w-4.5 h-4.5 mb-1" />
           <span>Beranda</span>
         </button>
 
-        {/* Tab 2: Karyawan */}
+        {/* Tab 2: Data Tim */}
         <button
           type="button"
           onClick={() => onSelectModule('employees')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'employees'
-              ? 'text-emerald-400 font-bold'
+              ? 'text-emerald-400 font-bold bg-white/5'
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Users className="w-4 h-4 mb-0.5" />
-          <span>Karyawan</span>
+          <Users className="w-4.5 h-4.5 mb-1" />
+          <span>Data Tim</span>
         </button>
 
-        {/* Center Tab: Action Button (Masuk/Pulang) */}
-        <div className="-mt-5 flex flex-col items-center">
-          <button
-            type="button"
-            onClick={onOpenLiveCheckIn}
-            title={centerAction.title}
-            className={`w-12 h-12 rounded-full ${centerAction.btnColor} text-white flex items-center justify-center shadow-lg border-3 active:scale-95 transition-all cursor-pointer`}
-          >
-            <CenterIcon className="w-5 h-5 text-white" />
-          </button>
-          <span className={`text-[9px] font-extrabold ${centerAction.textColor} mt-0.5 uppercase tracking-wider`}>
-            {centerAction.label}
-          </span>
-        </div>
-
-        {/* Tab 4: Persetujuan (atau Laporan jika sedang dibuka) */}
+        {/* Tab 3: Gaji & Kasbon */}
         <button
           type="button"
-          onClick={() => onSelectModule(isReports ? 'reports' : 'approvals')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-            activeModule === 'approvals' || isReports
-              ? 'text-emerald-400 font-bold'
+          onClick={() => onSelectModule('payroll')}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'payroll'
+              ? 'text-emerald-400 font-bold bg-white/5'
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          {isReports ? (
-            <BarChart3 className="w-4 h-4 mb-0.5" />
-          ) : (
-            <CheckSquare className="w-4 h-4 mb-0.5" />
-          )}
-          <span>{isReports ? 'Laporan' : 'Persetujuan'}</span>
+          <Banknote className="w-4.5 h-4.5 mb-1" />
+          <span>Gaji & Kasbon</span>
         </button>
 
-        {/* Tab 5: Pengaturan (atau Gaji jika sedang dibuka) */}
+        {/* Tab 4: Persetujuan */}
         <button
           type="button"
-          onClick={() => onSelectModule(isPayroll ? 'payroll' : 'settings')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-            activeModule === 'settings' || isPayroll
-              ? 'text-emerald-400 font-bold'
+          onClick={() => onSelectModule('approvals')}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer relative ${
+            activeModule === 'approvals'
+              ? 'text-emerald-400 font-bold bg-white/5'
               : 'text-slate-400 hover:text-white'
           }`}
         >
-          {isPayroll ? (
-            <Banknote className="w-4 h-4 mb-0.5" />
-          ) : (
-            <Building className="w-4 h-4 mb-0.5" />
-          )}
-          <span>{isPayroll ? 'Gaji' : 'Pengaturan'}</span>
+          <div className="relative">
+            <CheckSquare className="w-4.5 h-4.5 mb-1" />
+            {pendingApprovalsCount > 0 && (
+              <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-extrabold flex items-center justify-center ring-2 ring-slate-900">
+                {pendingApprovalsCount}
+              </span>
+            )}
+          </div>
+          <span>Persetujuan</span>
         </button>
       </nav>
     );
   }
 
   // 2. SITE_MANAGER Navigation (Admin & Keuangan / Dewi Anggraini)
-  // [Beranda] [Presensi Tim] (🟢 Masuk) [Gaji & Kasbon] [Persetujuan]
+  // [ 📊 Beranda ] [ 🕒 Presensi Tim ] [ 💵 Gaji & Kasbon ] [ 📋 Verifikasi ]
   if (role === 'SITE_MANAGER') {
     return (
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-2 px-3 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
         <button
           type="button"
           onClick={() => onSelectModule('dashboard')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-            activeModule === 'dashboard' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'dashboard' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <LayoutDashboard className="w-4 h-4 mb-0.5" />
+          <LayoutDashboard className="w-4.5 h-4.5 mb-1" />
           <span>Beranda</span>
         </button>
 
         <button
           type="button"
           onClick={() => onSelectModule('attendance')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-            activeModule === 'attendance' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'attendance' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Clock className="w-4 h-4 mb-0.5" />
-          <span>Presensi</span>
+          <Clock className="w-4.5 h-4.5 mb-1" />
+          <span>Presensi Tim</span>
         </button>
-
-        {/* Center Tab: Action Button (Masuk/Pulang) */}
-        <div className="-mt-5 flex flex-col items-center">
-          <button
-            type="button"
-            onClick={onOpenLiveCheckIn}
-            title={centerAction.title}
-            className={`w-12 h-12 rounded-full ${centerAction.btnColor} text-white flex items-center justify-center shadow-lg border-3 active:scale-95 transition-all cursor-pointer`}
-          >
-            <CenterIcon className="w-5 h-5 text-white" />
-          </button>
-          <span className={`text-[9px] font-extrabold ${centerAction.textColor} mt-0.5 uppercase tracking-wider`}>
-            {centerAction.label}
-          </span>
-        </div>
 
         <button
           type="button"
           onClick={() => onSelectModule('payroll')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-            activeModule === 'payroll' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
+            activeModule === 'payroll' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Banknote className="w-4 h-4 mb-0.5" />
-          <span>Gaji</span>
+          <Banknote className="w-4.5 h-4.5 mb-1" />
+          <span>Gaji & Kasbon</span>
         </button>
 
         <button
           type="button"
           onClick={() => onSelectModule('approvals')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
-            activeModule === 'approvals' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer relative ${
+            activeModule === 'approvals' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <CheckSquare className="w-4 h-4 mb-0.5" />
-          <span>Persetujuan</span>
+          <div className="relative">
+            <CheckSquare className="w-4.5 h-4.5 mb-1" />
+            {pendingApprovalsCount > 0 && (
+              <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-amber-500 text-white text-[9px] font-extrabold flex items-center justify-center ring-2 ring-slate-900">
+                {pendingApprovalsCount}
+              </span>
+            )}
+          </div>
+          <span>Verifikasi</span>
         </button>
       </nav>
     );

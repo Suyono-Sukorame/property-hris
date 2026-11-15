@@ -22,6 +22,7 @@ import {
   Building,
   BarChart3,
   UserCheck,
+  CheckSquare,
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -92,48 +93,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       ? 'Selamat Sore'
       : 'Selamat Malam';
 
-  // Role-based Quick Actions for Mobile
-  const quickActions = [
-    {
-      id: 'gps',
-      label: 'Presensi GPS',
-      icon: Smartphone,
-      onClick: () => onOpenLiveCheckIn?.(),
-      bgColor: 'bg-emerald-50 text-emerald-700',
-    },
-    {
-      id: 'team',
-      label: 'Data Tim',
-      icon: Users,
-      onClick: () => onNavigateModule('employees'),
-      bgColor: 'bg-teal-50 text-[#0f766e]',
-    },
-    {
-      id: 'approvals',
-      label: 'Persetujuan',
-      icon: CheckSquareIcon,
-      onClick: () => onNavigateModule('approvals'),
-      bgColor: 'bg-amber-50 text-amber-700',
-      badgeCount: pendingApprovals.length,
-    },
-    {
-      id: 'payroll',
-      label: 'Gaji & Kasbon',
-      icon: Banknote,
-      onClick: () => onNavigateModule('payroll'),
-      bgColor: 'bg-indigo-50 text-indigo-700',
-    },
-    ...(role === 'SUPER_ADMIN'
+  // Role-based Quick Actions for Mobile (Tanpa Presensi GPS untuk Bos & Keuangan)
+  const quickActions =
+    role === 'SUPER_ADMIN'
       ? [
           {
-            id: 'settings',
-            label: 'Pengaturan',
-            icon: Building,
-            onClick: () => onNavigateModule('settings'),
-            bgColor: 'bg-slate-100 text-slate-700',
+            id: 'approvals',
+            label: 'Persetujuan',
+            icon: CheckSquare,
+            onClick: () => onNavigateModule('approvals'),
+            bgColor: 'bg-amber-50 text-amber-700',
+            badgeCount: pendingApprovals.length,
           },
-        ]
-      : [
+          {
+            id: 'attendance',
+            label: 'Presensi Tim',
+            icon: Clock,
+            onClick: () => onNavigateModule('attendance'),
+            bgColor: 'bg-emerald-50 text-emerald-700',
+          },
+          {
+            id: 'payroll',
+            label: 'Gaji & Kasbon',
+            icon: Banknote,
+            onClick: () => onNavigateModule('payroll'),
+            bgColor: 'bg-indigo-50 text-indigo-700',
+          },
+          {
+            id: 'team',
+            label: 'Data Tim',
+            icon: Users,
+            onClick: () => onNavigateModule('employees'),
+            bgColor: 'bg-teal-50 text-[#0f766e]',
+          },
           {
             id: 'reports',
             label: 'Laporan',
@@ -141,8 +133,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             onClick: () => onNavigateModule('reports'),
             bgColor: 'bg-slate-100 text-slate-700',
           },
-        ]),
-  ];
+        ]
+      : [
+          {
+            id: 'attendance',
+            label: 'Presensi Tim',
+            icon: Clock,
+            onClick: () => onNavigateModule('attendance'),
+            bgColor: 'bg-emerald-50 text-emerald-700',
+          },
+          {
+            id: 'payroll',
+            label: 'Gaji & Kasbon',
+            icon: Banknote,
+            onClick: () => onNavigateModule('payroll'),
+            bgColor: 'bg-indigo-50 text-indigo-700',
+          },
+          {
+            id: 'approvals',
+            label: 'Verifikasi',
+            icon: CheckSquare,
+            onClick: () => onNavigateModule('approvals'),
+            bgColor: 'bg-amber-50 text-amber-700',
+            badgeCount: pendingApprovals.length,
+          },
+          {
+            id: 'team',
+            label: 'Data Tim',
+            icon: Users,
+            onClick: () => onNavigateModule('employees'),
+            bgColor: 'bg-teal-50 text-[#0f766e]',
+          },
+          {
+            id: 'reports',
+            label: 'Laporan',
+            icon: BarChart3,
+            onClick: () => onNavigateModule('reports'),
+            bgColor: 'bg-slate-100 text-slate-700',
+          },
+        ];
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -161,14 +190,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </p>
         </div>
 
-        {onOpenLiveCheckIn && (
+        {/* Action Button: Manajerial (Bukan Presensi GPS Lapangan) */}
+        {role === 'SUPER_ADMIN' ? (
+          pendingApprovals.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => onNavigateModule('approvals')}
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
+            >
+              <CheckSquare className="w-4 h-4" />
+              <span>{pendingApprovals.length} Butuh Persetujuan</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onNavigateModule('attendance')}
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/15 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 transition-all active:scale-95 cursor-pointer"
+            >
+              <Clock className="w-4 h-4 text-emerald-300" />
+              <span>Pantau Presensi Tim</span>
+            </button>
+          )
+        ) : (
           <button
             type="button"
-            onClick={onOpenLiveCheckIn}
-            className="self-start sm:self-auto inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
+            onClick={() => onNavigateModule('attendance')}
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
           >
-            <Smartphone className="w-4 h-4" />
-            <span>Presensi GPS Lapangan</span>
+            <Clock className="w-4 h-4" />
+            <span>Rekap Presensi Tim</span>
           </button>
         )}
       </div>
