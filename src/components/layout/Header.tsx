@@ -145,6 +145,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="pl-1 sm:pl-2 border-l border-slate-200">
           <UserProfileHub
             user={currentUser}
+            activeModule={activeModule}
             onLogout={logout}
             onOpenIDCard={onOpenEmployeeIDCard}
           />

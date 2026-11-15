@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthUser } from '@/types/auth';
+import { ActiveNavModule } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
 import { UserProfileDrawer } from './UserProfileDrawer';
 import { EditProfileModal } from './EditProfileModal';
@@ -9,6 +10,7 @@ import { ChevronDown } from 'lucide-react';
 
 interface UserProfileHubProps {
   user: AuthUser | null;
+  activeModule?: ActiveNavModule;
   onLogout: () => void;
   onOpenIDCard?: () => void;
   className?: string;
@@ -16,6 +18,7 @@ interface UserProfileHubProps {
 
 export const UserProfileHub: React.FC<UserProfileHubProps> = ({
   user,
+  activeModule,
   onLogout,
   onOpenIDCard,
   className = '',
@@ -23,6 +26,25 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({
   const { updateCurrentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+
+  // 1. Auto-close whenever active module/tab changes (e.g. mobile bottom nav, sidebar)
+  useEffect(() => {
+    setIsOpen(false);
+    setIsEditProfileOpen(false);
+  }, [activeModule]);
+
+  // 2. Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   if (!user) return null;
 
