@@ -23,6 +23,7 @@ import {
   EditEmployeeModal,
   EditAttendanceModal,
 } from '@/components/modals';
+import { DynamicAlertToast } from '@/components/ui';
 
 function HRISApp() {
   const { currentUser, isLoading: isAuthLoading } = useAuth();
@@ -40,6 +41,8 @@ function HRISApp() {
     setActiveModule,
     selectedSiteFilter,
     setSelectedSiteFilter,
+    dynamicAlert,
+    dismissDynamicAlert,
     sites,
     employees,
     attendanceRecords,
@@ -339,6 +342,9 @@ function HRISApp() {
           setEditingAttendanceRecord(null);
         }}
       />
+
+      {/* Floating Dynamic Island Notification */}
+      <DynamicAlertToast alert={dynamicAlert} onDismiss={dismissDynamicAlert} />
     </div>
   );
 }

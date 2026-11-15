@@ -388,14 +388,6 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Feedback Toast */}
-                  {directFeedback && (
-                    <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 font-bold text-xs flex items-center gap-2 animate-in fade-in duration-200">
-                      <CheckCircle2 className="w-4 h-4 text-[#0f766e]" />
-                      <span>{directFeedback}</span>
-                    </div>
-                  )}
-
                   {/* Main Action Buttons: 1-Tap Direct Attendance */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <button

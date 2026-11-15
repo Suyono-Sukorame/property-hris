@@ -18,6 +18,7 @@ import {
   INITIAL_APPROVALS,
 } from '@/data/mockData';
 import { supabase } from '@/lib/supabase';
+import { DynamicAlertData } from '@/components/ui';
 
 interface HRISContextType {
   // Navigation
@@ -25,6 +26,11 @@ interface HRISContextType {
   setActiveModule: (module: ActiveNavModule) => void;
   selectedSiteFilter: string;
   setSelectedSiteFilter: (siteId: string) => void;
+
+  // Dynamic Alert / Toast (Dynamic Island style)
+  dynamicAlert: DynamicAlertData | null;
+  showDynamicAlert: (data: Omit<DynamicAlertData, 'id'>) => void;
+  dismissDynamicAlert: () => void;
 
   // Core Data
   sites: PropertySite[];
@@ -135,6 +141,17 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
   const [selectedEmployeeForEdit, setSelectedEmployeeForEdit] = useState<Employee | null>(null);
   const [isEditEmployeeOpen, setIsEditEmployeeOpen] = useState(false);
+
+  // Dynamic Alert / Toast State
+  const [dynamicAlert, setDynamicAlert] = useState<DynamicAlertData | null>(null);
+
+  const showDynamicAlert = useCallback((data: Omit<DynamicAlertData, 'id'>) => {
+    setDynamicAlert({ ...data, id: `ALT-${Date.now()}` });
+  }, []);
+
+  const dismissDynamicAlert = useCallback(() => {
+    setDynamicAlert(null);
+  }, []);
 
   // Auto-archive saat mount (client-side only) — aman dari Next.js prerender restriction
   useEffect(() => {
@@ -336,6 +353,27 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   const handleCheckInSuccess = async (newRecord: AttendanceRecord) => {
     setAttendanceRecords((prev) => [newRecord, ...prev]);
 
+    // Trigger Modern Dynamic Alert Toast
+    if (newRecord.status === 'Cuti' || newRecord.status === 'Izin Lapangan') {
+      showDynamicAlert({
+        type: 'LEAVE',
+        title: 'Pengajuan Izin Diterima! 📝',
+        subtitle: `${newRecord.employeeName} · ${newRecord.notes || 'Tercatat di sistem HRIS'}`,
+        time: newRecord.date,
+      });
+    } else {
+      showDynamicAlert({
+        type: 'CHECK_IN',
+        title: 'Presensi Masuk Berhasil! 🟢',
+        subtitle: `${newRecord.employeeName} · ${newRecord.siteName}`,
+        time: newRecord.checkInTime,
+        meta:
+          newRecord.lateMinutes > 0
+            ? `Terlambat +${newRecord.lateMinutes} menit`
+            : 'Tepat Waktu · Status Hadir Tercatat',
+      });
+    }
+
     // Persist to Supabase
     try {
       await supabase.from('attendance_records').insert({
@@ -394,6 +432,18 @@ export function HRISProvider({ children }: { children: ReactNode }) {
           : r
       )
     );
+
+    // Trigger Modern Dynamic Alert Toast for Check-Out
+    showDynamicAlert({
+      type: 'CHECK_OUT',
+      title: 'Presensi Pulang Berhasil! 👏',
+      subtitle: `${rec?.employeeName || 'Karyawan'} · ${rec?.siteName || 'Griya Bumi Raya'}`,
+      time: checkOutTime,
+      meta:
+        lemburHours > 0
+          ? `Lembur Tercatat: +${lemburHours} Jam`
+          : 'Jam Kerja Selesai · Selamat Beristirahat!',
+    });
 
     // Sync payroll overtime if > 0
     if (lemburHours > 0) {
@@ -797,6 +847,9 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     setSelectedEmployeeForEdit,
     isEditEmployeeOpen,
     setIsEditEmployeeOpen,
+    dynamicAlert,
+    showDynamicAlert,
+    dismissDynamicAlert,
     openEditEmployee,
     handleOpenPaySlipByEmployee,
     handleCheckInSuccess,
