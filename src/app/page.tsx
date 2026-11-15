@@ -176,6 +176,15 @@ function HRISApp() {
           onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
           onOpenAddEmployee={() => setIsAddEmployeeOpen(true)}
           onToggleMobileNav={() => setIsMobileNavOpen((prev) => !prev)}
+          onOpenEmployeeIDCard={() => {
+            const matchedEmp = currentUser?.employeeId
+              ? employees.find((e) => e.id === currentUser.employeeId)
+              : employees[0];
+            if (matchedEmp) {
+              setActiveModule('employees');
+              setSelectedEmployeeForCard(matchedEmp);
+            }
+          }}
         />
 
         {/* Scrollable Main Area with extra bottom padding for Mobile BottomNav */}
