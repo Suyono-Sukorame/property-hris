@@ -196,7 +196,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           <KPICard
             label="Total Gaji Bersih (THP)"
             value={FORMAT_IDR(totalNetPayAll)}
@@ -276,8 +276,8 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
         />
       </FilterBar>
 
-      {/* Ledger Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      {/* Desktop Ledger Table (hidden on mobile) */}
+      <div className="hidden md:block bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead>
@@ -344,8 +344,9 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
 
                   <td className="px-4 text-center">
                     <button
+                      type="button"
                       onClick={() => onOpenPaySlip(rec)}
-                      className="px-2.5 py-1 text-[11px] font-semibold text-[#0f766e] bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-colors inline-flex items-center gap-1"
+                      className="px-2.5 py-1 text-[11px] font-semibold text-[#0f766e] bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-colors inline-flex items-center gap-1 cursor-pointer"
                     >
                       <FileSpreadsheet className="w-3.5 h-3.5" />
                       Slip
@@ -361,6 +362,102 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
           <span>Menampilkan {filteredRecords.length} slip gaji periode berjalan</span>
           <span className="font-mono text-[11px]">Perhitungan PPh 21, BPJS Ketenagakerjaan & BPJS Kesehatan</span>
         </div>
+      </div>
+
+      {/* Mobile Card Feed (Native Card View on mobile screens) */}
+      <div className="md:hidden space-y-3">
+        {filteredRecords.length === 0 ? (
+          <EmptyState
+            variant="card"
+            icon={<Banknote className="w-8 h-8 text-slate-300" />}
+            title="Tidak ada data slip gaji"
+            message="Coba ubah filter pencarian atau status payroll."
+          />
+        ) : (
+          filteredRecords.map((rec) => (
+            <div
+              key={rec.id}
+              className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3"
+            >
+              {/* Card Header */}
+              <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-100">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm tracking-tight">
+                    {rec.employeeName}
+                  </h4>
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-0.5">
+                    <span className="font-mono text-slate-400">{rec.nik}</span>
+                    <span>·</span>
+                    <span className="text-[#0f766e] font-semibold">{rec.siteName}</span>
+                    <span>({rec.jobCode})</span>
+                  </div>
+                </div>
+                <StatusBadge status={rec.status} size="sm" />
+              </div>
+
+              {/* THP Highlight Box */}
+              <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/70 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
+                    Gaji Bersih (THP)
+                  </span>
+                  <span className="text-lg font-bold font-mono text-[#065f46] tabular-nums">
+                    {FORMAT_IDR(rec.gajiBersih)}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
+                    Periode
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700">
+                    {rec.period}
+                  </span>
+                </div>
+              </div>
+
+              {/* Rincian Finansial 2x2 Grid */}
+              <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50/80 p-2.5 rounded-xl border border-slate-200/60">
+                <div>
+                  <span className="text-[10px] text-slate-400 block">Gaji Pokok</span>
+                  <span className="font-mono font-medium text-slate-800 tabular-nums">
+                    {FORMAT_IDR(rec.gajiPokok)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block">Tunjangan & K3</span>
+                  <span className="font-mono font-medium text-slate-800 tabular-nums">
+                    {FORMAT_IDR(rec.tunjanganProyekLapangan + rec.tunjanganK3)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block">Lembur Proyek</span>
+                  <span className="font-mono font-medium text-slate-800 tabular-nums">
+                    {FORMAT_IDR(rec.upahLembur)}{' '}
+                    {rec.lemburHours > 0 && (
+                      <span className="text-[10px] text-slate-400">({rec.lemburHours}j)</span>
+                    )}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-rose-500 block">Potongan Pajak/BPJS</span>
+                  <span className="font-mono font-medium text-rose-700 tabular-nums">
+                    -{FORMAT_IDR(rec.totalDeductions)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Full Width Action Button on Mobile */}
+              <button
+                type="button"
+                onClick={() => onOpenPaySlip(rec)}
+                className="w-full py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-[#0f766e] font-bold text-xs rounded-xl border border-emerald-200/80 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Lihat Detail Rincian Slip Gaji</span>
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

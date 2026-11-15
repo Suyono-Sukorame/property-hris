@@ -76,11 +76,11 @@ export const KPICard: React.FC<KPICardProps> = ({
 
         {/* Value & Unit */}
         <div className="flex items-baseline gap-1.5 flex-wrap">
-          <span className="text-xl sm:text-2xl font-bold font-mono text-slate-900 tabular-nums leading-none">
+          <span className="text-sm sm:text-2xl font-bold font-mono text-slate-900 tabular-nums leading-tight">
             {value}
           </span>
           {unit && (
-            <span className="text-[11px] text-slate-500 font-medium truncate">
+            <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
               {unit}
             </span>
           )}
