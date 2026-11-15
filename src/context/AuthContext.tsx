@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AuthUser, UserRole } from '@/types/auth';
 import { DEMO_USERS } from '@/data/authUsers';
+import { supabase } from '@/lib/supabase';
 
 interface AuthContextType {
   currentUser: AuthUser | null;
@@ -22,21 +23,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load session from storage on mount
+  // Load session from storage on mount & sync latest profile from Supabase
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.email) {
-          setCurrentUser(parsed);
+    (async () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.email) {
+            setCurrentUser(parsed);
+            try {
+              const { data: dbUser } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('id', parsed.id)
+                .single();
+              if (dbUser) {
+                const refreshed: AuthUser = {
+                  ...parsed,
+                  name: dbUser.name,
+                  email: dbUser.email,
+                  phone: dbUser.phone,
+                  avatarColor: dbUser.avatar_color,
+                  initials: dbUser.initials,
+                  role: dbUser.role,
+                  roleLabel: dbUser.role_label,
+                  title: dbUser.title,
+                  division: dbUser.division,
+                  siteId: dbUser.site_id,
+                  siteName: dbUser.site_name,
+                  employeeId: dbUser.employee_id,
+                };
+                setCurrentUser(refreshed);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(refreshed));
+              }
+            } catch {
+              // Fallback to local session
+            }
+          }
         }
+      } catch (e) {
+        console.warn('Failed to parse saved session:', e);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {
-      console.warn('Failed to parse saved session:', e);
-    } finally {
-      setIsLoading(false);
-    }
+    })();
   }, []);
 
   const login = (email: string) => {
@@ -89,6 +120,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         console.warn('Failed to save updated session:', e);
       }
+
+      // Sinkronisasi permanen ke Supabase table user_profiles & employees
+      (async () => {
+        try {
+          const dbUpdates: Record<string, unknown> = {
+            updated_at: new Date().toISOString(),
+          };
+          if (updates.name) dbUpdates.name = updates.name;
+          if (updates.phone) dbUpdates.phone = updates.phone;
+          if (updates.avatarColor) dbUpdates.avatar_color = updates.avatarColor;
+          if (updates.initials) dbUpdates.initials = updates.initials;
+          if (updates.password) dbUpdates.password_hash = updates.password;
+
+          await supabase.from('user_profiles').update(dbUpdates).eq('id', prev.id);
+
+          // Jika user terhubung ke record karyawan di tabel employees
+          if (prev.employeeId) {
+            const empUpdates: Record<string, unknown> = {};
+            if (updates.name) empUpdates.name = updates.name;
+            if (updates.phone) empUpdates.phone = updates.phone;
+            if (updates.avatarColor) empUpdates.avatar_color = updates.avatarColor;
+            if (updates.initials) empUpdates.initials = updates.initials;
+            await supabase.from('employees').update(empUpdates).eq('id', prev.employeeId);
+          }
+        } catch (err) {
+          console.error('Error syncing user profile to Supabase:', err);
+        }
+      })();
+
       return updated;
     });
   };

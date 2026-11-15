@@ -63,6 +63,7 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({
       phone: updates.phone,
       avatarColor: updates.avatarColor,
       initials: updates.initials,
+      password: updates.password,
     });
   };
 
