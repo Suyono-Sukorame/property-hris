@@ -1,6 +1,7 @@
 import React from 'react';
 import { AttendanceRecord, Employee } from '@/types/hris';
 import { StatusBadge } from './StatusBadge';
+import { GeofenceBadge } from '@/components/attendance';
 import {
   Clock,
   MapPin,
@@ -158,16 +159,11 @@ export const AttendanceItemCard: React.FC<AttendanceItemCardProps> = ({
 
           {/* Indikator Lapangan: Jarak Geofence & Kepatuhan APD K3 */}
           <div className="flex items-center gap-2 text-[10px] font-medium text-slate-500 mt-1.5 flex-wrap">
-            <span
-              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md font-mono ${
-                isNear
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : 'bg-amber-50 text-amber-700 border border-amber-200'
-              }`}
-            >
-              <MapPin className="w-3 h-3" />
-              <span>{record.geofenceDistanceMeters}m ({isNear ? 'Dalam Radius' : 'Luar Radius'})</span>
-            </span>
+            <GeofenceBadge
+              distanceMeters={record.geofenceDistanceMeters}
+              verified={record.geofenceVerified}
+              compact
+            />
 
             {record.ppeCompliance ? (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-teal-50 text-[#0f766e] border border-teal-200 font-semibold">

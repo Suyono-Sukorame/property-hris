@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { AttendanceRecord, PropertySite } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
-import { StatusBadge, KPICard, FilterBar, SearchInput, Select, EmptyState } from '@/components/ui';
+import { StatusBadge, KPICard, FilterBar, SearchInput, Select, EmptyState, GeofenceBadge } from '@/components/ui';
 import {
   Clock,
   MapPin,
@@ -446,7 +446,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                       <div className="bg-white/80 p-2.5 rounded-lg border border-emerald-200">
                         <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Lokasi GPS</span>
                         <span className="text-xs font-bold text-slate-800 truncate block mt-0.5">{myTodayRecord.siteName}</span>
-                        <span className="text-[10px] text-emerald-700 block font-mono">Radius {myTodayRecord.geofenceDistanceMeters}m (Valid)</span>
+                        <div className="mt-1">
+                          <GeofenceBadge
+                            distanceMeters={myTodayRecord.geofenceDistanceMeters}
+                            verified={myTodayRecord.geofenceVerified}
+                            compact
+                          />
+                        </div>
                       </div>
 
                       <div className="bg-white/80 p-2.5 rounded-lg border border-emerald-200">
@@ -770,17 +776,11 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         </td>
 
                         <td className="px-4">
-                          <div className="flex items-center gap-1.5">
-                            <span className={`w-2 h-2 rounded-full ${
-                              record.geofenceVerified ? 'bg-[#0f766e]' : 'bg-rose-500'
-                            }`} />
-                            <span className="font-mono text-slate-700 font-semibold tabular-nums">
-                              {record.geofenceDistanceMeters}m
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-slate-400 block">
-                            {record.geofenceVerified ? 'Dalam Radius' : 'Luar Radius'}
-                          </span>
+                          <GeofenceBadge
+                            distanceMeters={record.geofenceDistanceMeters}
+                            verified={record.geofenceVerified}
+                            compact
+                          />
                         </td>
 
                         <td className="px-4">
@@ -908,18 +908,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     </div>
 
                     {/* Info Strip: GPS + APD + Shift */}
-                    <div className="px-3.5 pb-3 flex flex-wrap gap-2">
-                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold ${
-                        record.geofenceVerified
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-rose-50 text-rose-700 border border-rose-200'
-                      }`}>
-                        <MapPin className="w-3 h-3" />
-                        <span>{record.geofenceDistanceMeters}m</span>
-                        <span className="font-normal opacity-75">
-                          {record.geofenceVerified ? '· Dalam Radius' : '· Luar Radius'}
-                        </span>
-                      </div>
+                    <div className="px-3.5 pb-3 flex flex-wrap items-center gap-2">
+                      <GeofenceBadge
+                        distanceMeters={record.geofenceDistanceMeters}
+                        verified={record.geofenceVerified}
+                        compact
+                      />
 
                       {isOffice ? (
                         <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">

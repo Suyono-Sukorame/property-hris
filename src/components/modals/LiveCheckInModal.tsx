@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Employee, PropertySite, AttendanceRecord } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
 import { StatusBadge } from '@/components/ui';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { calculateHaversineDistance, formatDistance, formatCoordinates } from '@/lib/geo';
+import { GeofenceStatusCard, GeofenceBadge } from '@/components/attendance';
 import {
   X,
   MapPin,
@@ -85,6 +88,15 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
 
   if (!isOpen) return null;
 
+  // Geolocation & Simulation State
+  const [isSimulatedGeofence, setIsSimulatedGeofence] = useState<boolean>(true);
+  const {
+    coordinates,
+    error: gpsError,
+    isLoading: isLoadingGPS,
+    refreshPosition: handleRefreshGPS,
+  } = useGeolocation({ autoRequest: isOpen });
+
   const currentEmp = employees.find((e) => e.id === selectedEmpId) || initialEmp || employees[0];
   const currentSite = sites.find((s) => s.id === selectedSiteId) || sites[0];
 
@@ -104,8 +116,24 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
   const isLeaveToday =
     todayRecord?.status === 'Cuti' || todayRecord?.status === 'Izin Lapangan';
 
-  // GPS selalu diizinkan (Mode Rintisan) — dicatat sebagai referensi saja
-  const isWithinGeofence = true;
+  // Distance calculation via Haversine formula
+  const realDistance = coordinates
+    ? calculateHaversineDistance(
+        coordinates.latitude,
+        coordinates.longitude,
+        currentSite.latitude,
+        currentSite.longitude
+      )
+    : 0;
+
+  const allowedRadius = currentSite.geofenceRadiusMeters || 500;
+  const isRealWithinRadius = coordinates ? realDistance <= allowedRadius : false;
+
+  // In simulated mode: distance = 0m and verified
+  // In real GPS mode: must be within radius, unless office work is WFH or Dinas Luar
+  const effectiveDistance = isSimulatedGeofence ? 0 : realDistance;
+  const isWithinGeofence =
+    isSimulatedGeofence || (isOffice && workMode !== 'WFO') || isRealWithinRadius;
   const isPpeComplete = true;
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -140,6 +168,16 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
         : 'Presensi remote WFH terjadwal'
       : 'Presensi langsung diverifikasi di area proyek';
 
+    const deviceInfoStr = isSimulatedGeofence
+      ? 'Smartphone GPS (Mode Simulasi Proyek 0m)'
+      : coordinates
+      ? `Smartphone GPS (${formatCoordinates(coordinates.latitude, coordinates.longitude)} · Akurasi ±${coordinates.accuracy}m)`
+      : isOffice
+      ? workMode === 'WFO'
+        ? 'Turnstile Biometric & Mobile Web (Menara HQ)'
+        : `Geotagged Mobile (${workMode})`
+      : 'Smartphone GPS Geotagged (Mobile Web)';
+
     const newRecord: AttendanceRecord = {
       id: `ATT-${Date.now()}`,
       employeeId: currentEmp.id,
@@ -153,16 +191,12 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
       shift: shiftLabel,
       status: isLate ? 'Terlambat' : 'Hadir',
       lateMinutes,
-      geofenceDistanceMeters: 0,
-      geofenceVerified: true,
+      geofenceDistanceMeters: effectiveDistance,
+      geofenceVerified: isWithinGeofence,
       biometricVerified: true,
       ppeCompliance: isPpeComplete,
       workMode: isOffice ? workMode : 'Site Proyek',
-      deviceInfo: isOffice
-        ? workMode === 'WFO'
-          ? 'Turnstile Biometric & Mobile Web (Menara HQ)'
-          : `Geotagged Mobile (${workMode})`
-        : 'Smartphone GPS Geotagged (Mobile Web)',
+      deviceInfo: deviceInfoStr,
       notes: defaultNotes,
     };
 
@@ -330,6 +364,15 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                 </div>
               )}
 
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                <span className="text-[10px] text-slate-500 font-medium">Verifikasi GPS Geofence:</span>
+                <GeofenceBadge
+                  distanceMeters={submittedRecord.geofenceDistanceMeters}
+                  verified={submittedRecord.geofenceVerified}
+                  compact
+                />
+              </div>
+
               <div className="pt-2 border-t border-slate-200 text-[10px] font-mono text-slate-400">
                 Ref: {submittedRecord.id}
               </div>
@@ -487,22 +530,19 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                     ) : (
                       /* FORM ABSEN MASUK */
                       <>
-                        {/* GPS Status — 1 baris, tanpa slider */}
-                        <div
-                          className="flex items-center gap-2.5 p-3 rounded-xl border bg-emerald-50 border-emerald-200 text-xs"
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-center shrink-0">
-                            <MapPin className="w-4 h-4 text-[#0f766e]" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <span className="font-bold text-emerald-900 block truncate">
-                              {currentSite.name}
-                            </span>
-                            <span className="text-[11px] text-emerald-700">
-                              ✓ Lokasi terdeteksi — siap absen
-                            </span>
-                          </div>
-                        </div>
+                        {/* Geofence GPS Status Card */}
+                        <GeofenceStatusCard
+                          targetSite={currentSite}
+                          isSimulated={isSimulatedGeofence}
+                          onToggleSimulated={setIsSimulatedGeofence}
+                          coordinates={coordinates}
+                          distanceMeters={realDistance}
+                          isWithinRadius={isRealWithinRadius}
+                          isLoadingGPS={isLoadingGPS}
+                          gpsError={gpsError}
+                          onRefreshGPS={handleRefreshGPS}
+                          showDemoToggle={true}
+                        />
 
                         {/* Mode Kehadiran (hanya untuk kantor) */}
                         {isOffice && (
@@ -641,12 +681,18 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                 <button
                   type="button"
                   onClick={handleExecuteCheckIn}
-                  disabled={isProcessing}
-                  className="w-full py-3.5 text-sm font-bold text-white bg-[#0f766e] hover:bg-[#115e59] rounded-xl shadow-sm shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  disabled={isProcessing || !isWithinGeofence}
+                  className={`w-full py-3.5 text-sm font-bold text-white rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 active:scale-98 ${
+                    !isWithinGeofence
+                      ? 'bg-slate-400 hover:bg-slate-400 cursor-not-allowed opacity-80 shadow-none'
+                      : 'bg-[#0f766e] hover:bg-[#115e59] shadow-emerald-700/20 cursor-pointer'
+                  }`}
                 >
                   <CheckCircle className="w-4.5 h-4.5" />
                   {isProcessing
                     ? 'Memverifikasi...'
+                    : !isWithinGeofence
+                    ? `Di Luar Radius (${formatDistance(realDistance)})`
                     : isOffice
                     ? workMode === 'WFO'
                       ? 'Absen Masuk — Kantor'
