@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { PayrollRecord, PropertySite } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
-import { StatusBadge } from '@/components/ui';
+import { StatusBadge, KPICard, PageHeader, FilterBar, SearchInput, Select, EmptyState } from '@/components/ui';
 import {
   Banknote,
   FileSpreadsheet,
@@ -116,10 +116,48 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
+      {/* 1. Page Header */}
+      <PageHeader
+        title={isEmployeeView ? "Slip Gaji Saya" : "Penggajian Properti (Payroll)"}
+        subtitle={
+          isEmployeeView
+            ? "Transparansi perhitungan gaji pokok, lembur, tunjangan lapangan, dan potongan BPJS/Pajak."
+            : "Kompilasi gaji kotor, lembur jam kerja lapangan, tunjangan K3, kasbon, dan transfer payroll massal."
+        }
+        icon={<Banknote className="w-5 h-5 text-[#0f766e]" />}
+        badge={
+          <span className="px-2.5 py-0.5 rounded-full bg-teal-50 text-[#0f766e] font-mono text-[10px] font-bold border border-teal-200">
+            Periode: Oktober 2026
+          </span>
+        }
+        actions={
+          !isEmployeeView && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={exportPayrollCSV}
+                className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span>Ekspor CSV</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleBatch}
+                className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                <span>Jalankan Payroll Massal</span>
+              </button>
+            </div>
+          )
+        }
+      />
+
       {/* Metrics Row — Employee View vs Admin View */}
       {isEmployeeView ? (
-        <div className="bg-white p-5 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 border-t-2 border-t-[#0f766e] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -149,7 +187,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenPaySlip(filteredRecords[0])}
-                className="px-3.5 py-2 bg-[#0f766e] hover:bg-[#115e59] text-white font-bold text-xs rounded-lg transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+                className="px-3.5 py-2 bg-[#0f766e] hover:bg-[#115e59] text-white font-bold text-xs rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
               >
                 <CreditCard className="w-4 h-4" />
                 <span>Lihat Detail Slip</span>
@@ -158,71 +196,47 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-              Total Penggajian Bersih (THP)
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl sm:text-2xl font-bold font-mono text-[#065f46] tabular-nums">
-                {FORMAT_IDR(totalNetPayAll)}
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 mt-2">
-              Periode: <strong className="text-slate-800">Oktober 2026</strong>
-            </p>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <KPICard
+            label="Total Gaji Bersih (THP)"
+            value={FORMAT_IDR(totalNetPayAll)}
+            color="primary"
+            icon={<Banknote className="w-4 h-4 text-[#0f766e]" />}
+            sublabel={<span className="text-[11px] text-slate-500">Periode: <strong className="text-slate-800">Oktober 2026</strong></span>}
+          />
 
-          <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-              Tunjangan Proyek & K3
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl sm:text-2xl font-bold font-mono text-slate-900 tabular-nums">
-                {FORMAT_IDR(totalSiteAllowances)}
-              </span>
-            </div>
-            <p className="text-[11px] text-emerald-700 font-medium mt-2">
-              Kompensasi penugasan konstruksi
-            </p>
-          </div>
+          <KPICard
+            label="Tunjangan Proyek & K3"
+            value={FORMAT_IDR(totalSiteAllowances)}
+            color="primary"
+            icon={<Building2 className="w-4 h-4 text-[#0f766e]" />}
+            sublabel={<span className="text-[11px] text-emerald-700 font-medium">Kompensasi penugasan konstruksi</span>}
+          />
 
-          <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-rose-500 shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-              Total Potongan (Pajak & BPJS)
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl sm:text-2xl font-bold font-mono text-rose-700 tabular-nums">
-                {FORMAT_IDR(totalDeductionsAll)}
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 mt-2">
-              Kepatuhan UU BPJS & PPh 21 TER
-            </p>
-          </div>
+          <KPICard
+            label="Total Potongan (Pajak & BPJS)"
+            value={FORMAT_IDR(totalDeductionsAll)}
+            color="rose"
+            icon={<DollarSign className="w-4 h-4 text-rose-600" />}
+            sublabel={<span className="text-[11px] text-slate-500">Kepatuhan UU BPJS & PPh 21 TER</span>}
+          />
 
-          <div className="bg-white p-4 rounded-xl border border-slate-200 border-t-2 border-t-amber-500 shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-              Status Pembayaran Gaji
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl sm:text-2xl font-bold font-mono text-slate-900 tabular-nums">
-                {filteredRecords.filter((r) => r.status === 'Dibayar').length} / {filteredRecords.length}
-              </span>
-              <span className="text-xs text-slate-500">Terselesaikan</span>
-            </div>
-            <p className="text-[11px] text-emerald-700 font-semibold mt-2">
-              Transfer Rekening Payroll
-            </p>
-          </div>
+          <KPICard
+            label="Status Pembayaran Gaji"
+            value={`${filteredRecords.filter((r) => r.status === 'Dibayar').length} / ${filteredRecords.length}`}
+            unit="Terselesaikan"
+            color="amber"
+            icon={<CheckCircle className="w-4 h-4 text-amber-500" />}
+            sublabel={<span className="text-[11px] text-emerald-700 font-semibold">Transfer Rekening Payroll</span>}
+          />
         </div>
       )}
 
       {/* Batch Processing Notification Banner */}
       {batchNotice && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between text-xs">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between text-xs shadow-xs animate-in fade-in duration-150">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-emerald-600" />
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
             <div>
               <strong className="font-bold">Proses Payroll Massal Berhasil Dijalankan!</strong>
               <p className="text-emerald-700 text-[11px]">
@@ -234,48 +248,33 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
       )}
 
       {/* Control Strip */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari karyawan, NIK, atau slip..."
-            className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
-          />
-        </div>
+      <FilterBar
+        summary={
+          <span className="text-slate-500 text-xs">
+            Menampilkan <strong className="text-slate-800">{filteredRecords.length}</strong> slip gaji
+          </span>
+        }
+      >
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Cari karyawan, NIK, atau slip..."
+          className="w-full md:w-80"
+        />
 
-        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            aria-label="Filter Status Payroll"
-            className="h-9 px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
-          >
-            <option value="ALL">Semua Status Payroll</option>
-            <option value="Dibayar">Dibayar</option>
-            <option value="Disetujui">Disetujui</option>
-            <option value="Draft">Draft</option>
-          </select>
-
-          <button
-            onClick={exportPayrollCSV}
-            className="h-9 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Ekspor Payroll CSV</span>
-          </button>
-
-          <button
-            onClick={handleBatch}
-            className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs"
-          >
-            <Banknote className="w-3.5 h-3.5" />
-            <span>Jalankan Payroll Massal</span>
-          </button>
-        </div>
-      </div>
+        <Select
+          value={statusFilter}
+          onChange={setStatusFilter}
+          ariaLabel="Filter Status Payroll"
+          options={[
+            { value: 'ALL', label: 'Semua Status Payroll' },
+            { value: 'Dibayar', label: 'Dibayar' },
+            { value: 'Disetujui', label: 'Disetujui' },
+            { value: 'Draft', label: 'Draft' },
+          ]}
+          className="w-full sm:w-auto"
+        />
+      </FilterBar>
 
       {/* Ledger Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
@@ -295,7 +294,16 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredRecords.map((rec) => (
+              {filteredRecords.length === 0 ? (
+                <EmptyState
+                  variant="table"
+                  colSpan={9}
+                  icon={<Banknote className="w-8 h-8 text-slate-300" />}
+                  title="Tidak ada data slip gaji"
+                  message="Coba ubah filter pencarian atau status payroll."
+                />
+              ) : (
+                filteredRecords.map((rec) => (
                 <tr key={rec.id} className="h-14 hover:bg-slate-50/80 transition-colors">
                   <td className="px-4">
                     <div className="font-bold text-slate-900">{rec.employeeName}</div>
@@ -344,7 +352,7 @@ export const PayrollView: React.FC<PayrollViewProps> = ({
                     </button>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

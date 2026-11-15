@@ -152,7 +152,7 @@ export const DynamicAlertToast: React.FC<DynamicAlertToastProps> = ({
         {/* Shrinking Progress Bar */}
         <div className="w-full h-1 bg-slate-800 overflow-hidden">
           <div
-            className={`h-full bg-gradient-to-r ${progressBarGradient} transition-all duration-75 ease-linear`}
+            className={`h-full bg-linear-to-r ${progressBarGradient} transition-all duration-75 ease-linear`}
             style={{ width: `${progress}%` }}
           />
         </div>

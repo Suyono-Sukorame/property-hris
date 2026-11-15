@@ -2,6 +2,7 @@
 import React from 'react';
 import { PropertySite, Employee, AttendanceRecord } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
+import { PageHeader, KPICard } from '@/components/ui';
 import {
   BarChart3,
   ShieldCheck,
@@ -48,78 +49,68 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   const avgLateMinutes = terlambatCount > 0 ? Math.round(totalLateMinutes / terlambatCount) : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <span className="text-[11px] font-mono uppercase text-[#0f766e] font-bold tracking-wider block">
-            Laporan SDM & Operasional Proyek Triwulan IV 2026
+    <div className="space-y-4 sm:space-y-6">
+      {/* 1. Standard Page Header */}
+      <PageHeader
+        title="Laporan Ketenagakerjaan & K3"
+        subtitle="Data terintegrasi dari seluruh lokasi proyek konstruksi perumahan dan kantor pusat."
+        icon={<BarChart3 className="w-5 h-5 text-[#0f766e]" />}
+        badge={
+          <span className="px-2.5 py-0.5 rounded-full bg-teal-50 text-[#0f766e] font-mono text-[10px] font-bold border border-teal-200">
+            Triwulan IV 2026
           </span>
-          <h2 className="text-lg font-bold text-slate-900 tracking-tight mt-0.5">
-            Laporan Ketenagakerjaan & Keselamatan Kerja (K3)
-          </h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Data terintegrasi dari seluruh lokasi proyek konstruksi dan kantor pusat.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+        }
+        actions={
           <button
+            type="button"
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5 text-slate-500" />
             <span>Cetak Laporan</span>
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Safety & Compliance Strip */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-5 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#065f46]">
-              Target K3 Zero Accident
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <KPICard
+          label="Target K3 Zero Accident"
+          value="1.240.000"
+          unit="Jam"
+          color="emerald"
+          icon={<ShieldCheck className="w-4 h-4 text-emerald-600" />}
+          sublabel={
+            <span className="text-[11px] text-emerald-800">
+              Jam Kerja Selamat Kumulatif Tanpa Kecelakaan Fatal (Zero Lost-Time Injury)
             </span>
-            <ShieldCheck className="w-5 h-5 text-[#0f766e]" />
-          </div>
-          <div className="text-2xl font-bold font-mono text-[#065f46] tabular-nums">
-            1.240.000
-          </div>
-          <p className="text-[11px] text-emerald-800">
-            Jam Kerja Selamat Kumulatif Tanpa Kecelakaan Fatal (Zero Lost-Time Injury)
-          </p>
-        </div>
+          }
+        />
 
-        <div className="p-5 rounded-xl border border-slate-200 bg-white space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Sertifikasi K3 Karyawan
+        <KPICard
+          label="Sertifikasi K3 Karyawan"
+          value={`${k3Count} / ${totalEmployees}`}
+          unit="Ahli K3"
+          color="amber"
+          icon={<HardHat className="w-4 h-4 text-amber-500" />}
+          sublabel={
+            <span className="text-[11px] text-slate-500">
+              Karyawan bersertifikasi Ahli K3 Konstruksi aktif
             </span>
-            <HardHat className="w-5 h-5 text-amber-500" />
-          </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 tabular-nums">
-            {k3Count} / {totalEmployees}
-          </div>
-          <p className="text-[11px] text-slate-500">
-            Karyawan bersertifikasi Ahli K3 Konstruksi aktif
-          </p>
-        </div>
+          }
+        />
 
-        <div className="p-5 rounded-xl border border-slate-200 bg-white space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Estimasi Total Payroll Bulanan
+        <KPICard
+          label="Estimasi Total Payroll Bulanan"
+          value={FORMAT_IDR(totalPayrollEstimate)}
+          color="primary"
+          icon={<FileCheck2 className="w-4 h-4 text-[#0f766e]" />}
+          sublabel={
+            <span className="text-[11px] text-slate-500">
+              Total bruto gaji pokok & tunjangan operasional seluruh kawasan
             </span>
-            <FileCheck2 className="w-5 h-5 text-[#0f766e]" />
-          </div>
-          <div className="text-2xl font-bold font-mono text-[#065f46] tabular-nums">
-            {FORMAT_IDR(totalPayrollEstimate)}
-          </div>
-          <p className="text-[11px] text-slate-500">
-            Total bruto gaji pokok & tunjangan operasional seluruh kawasan
-          </p>
-        </div>
+          }
+        />
       </div>
 
       {/* Two Column Section: Project Site Distribution & Contract Ratios */}

@@ -1,9 +1,11 @@
 export { StatusBadge } from './StatusBadge';
 export { Button } from './Button';
 export { Modal } from './Modal';
-export { KPICard } from './KPICard';
+export { KPICard, type KPIColor } from './KPICard';
+export { PageHeader } from './PageHeader';
 export { SearchInput } from './SearchInput';
-export { Select } from './Select';
+export { Select, type SelectOption } from './Select';
+export { FilterBar } from './FilterBar';
 export { AlertBanner } from './AlertBanner';
 export { EmptyState } from './EmptyState';
 export { DynamicAlertToast, type DynamicAlertData } from './DynamicAlertToast';

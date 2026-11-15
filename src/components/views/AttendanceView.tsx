@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { AttendanceRecord, PropertySite } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
-import { StatusBadge } from '@/components/ui';
+import { StatusBadge, KPICard, FilterBar, SearchInput, Select, EmptyState } from '@/components/ui';
 import {
   Clock,
   MapPin,
@@ -595,143 +595,110 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           {/* Metrics Row — live computed */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
             {/* Hadir Tepat Waktu */}
-            <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 border-t-2 border-t-[#0f766e] shadow-xs">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <CheckCircle className="w-3.5 h-3.5 text-[#0f766e] shrink-0" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">
-                  Hadir Tepat Waktu
-                </span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold font-mono text-emerald-800 tabular-nums leading-none">
-                  {countHadir}
-                </span>
-                <span className="text-[11px] text-slate-500">Org</span>
-              </div>
-              <p className="text-[10px] text-slate-400 mt-1.5 leading-tight hidden sm:block">
-                Presensi di lokasi terdaftar
-              </p>
-            </div>
+            <KPICard
+              label="Hadir Tepat Waktu"
+              value={countHadir}
+              unit="Org"
+              icon={<CheckCircle className="w-4 h-4 text-[#0f766e]" />}
+              color="primary"
+              sublabel={<span className="text-[10px] text-slate-400">Presensi di lokasi terdaftar</span>}
+            />
 
             {/* Terlambat */}
-            <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 border-t-2 border-t-amber-500 shadow-xs">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">
-                  Terlambat
+            <KPICard
+              label="Terlambat"
+              value={countTerlambat}
+              unit="Org"
+              icon={<Clock className="w-4 h-4 text-amber-500" />}
+              color="amber"
+              sublabel={
+                <span className="text-[10px] text-amber-700 font-medium">
+                  {countTerlambat > 0 ? `Rata-rata +${avgLateMinutes} mnt` : 'Tepat waktu semua'}
                 </span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold font-mono text-amber-700 tabular-nums leading-none">
-                  {countTerlambat}
-                </span>
-                <span className="text-[11px] text-slate-500">Org</span>
-              </div>
-              <p className="text-[10px] text-amber-700 font-medium mt-1.5 leading-tight hidden sm:block">
-                {countTerlambat > 0 ? `Rata-rata +${avgLateMinutes} mnt` : 'Tepat waktu semua'}
-              </p>
-            </div>
+              }
+            />
 
             {/* Cuti & Izin */}
-            <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 border-t-2 border-t-slate-400 shadow-xs">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">
-                  Cuti &amp; Izin
-                </span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold font-mono text-slate-700 tabular-nums leading-none">
-                  {countCuti}
-                </span>
-                <span className="text-[11px] text-slate-500">Org</span>
-              </div>
-              <p className="text-[10px] text-slate-400 mt-1.5 leading-tight hidden sm:block">
-                Dengan surat tugas resmi
-              </p>
-            </div>
+            <KPICard
+              label="Cuti & Izin"
+              value={countCuti}
+              unit="Org"
+              icon={<Calendar className="w-4 h-4 text-slate-400" />}
+              color="slate"
+              sublabel={<span className="text-[10px] text-slate-400">Dengan surat tugas resmi</span>}
+            />
 
             {/* Kepatuhan APD */}
-            <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 border-t-2 border-t-emerald-600 shadow-xs">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 leading-tight">
-                  APD Lapangan
-                </span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold font-mono text-[#065f46] tabular-nums leading-none">
-                  {ppeRate}%
-                </span>
-                <span className="text-[11px] text-emerald-700 font-semibold">
-                  ({countPpeValid}/{fieldRecords.length})
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 mt-1.5 leading-tight hidden sm:block">
-                Helm + Rompi K3 diverifikasi
-              </p>
-            </div>
+            <KPICard
+              label="APD Lapangan"
+              value={`${ppeRate}%`}
+              unit={`(${countPpeValid}/${fieldRecords.length})`}
+              icon={<ShieldCheck className="w-4 h-4 text-emerald-600" />}
+              color="emerald"
+              sublabel={<span className="text-[10px] text-slate-400">Helm + Rompi K3 diverifikasi</span>}
+            />
           </div>
 
           {/* Control Strip */}
-          <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
-            {/* Search */}
-            <div className="relative w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama karyawan, proyek, atau jabatan tim..."
-                className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
-              />
-            </div>
-
-            {/* Filters + Actions */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Date Range Pills */}
-              <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5 flex-1 min-w-0 overflow-x-auto no-scrollbar">
-                {(['today', 'week', 'month', 'all'] as DateRangeFilter[]).map((range) => (
-                  <button
-                    key={range}
-                    onClick={() => setDateRange(range)}
-                    className={`shrink-0 px-2.5 py-1.5 text-[11px] font-semibold rounded-md transition-all cursor-pointer whitespace-nowrap ${
-                      dateRange === range
-                        ? 'bg-white text-slate-900 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    {getDateRangeLabel(range)}
-                  </button>
-                ))}
-              </div>
-
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                aria-label="Filter Status Kehadiran"
-                className="h-9 px-2 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
-              >
-                <option value="ALL">Semua Status</option>
-                <option value="Hadir">Hadir</option>
-                <option value="Terlambat">Terlambat</option>
-                <option value="Cuti">Cuti</option>
-                <option value="Izin Lapangan">Izin Lapangan</option>
-                <option value="Alpa">Alpa</option>
-              </select>
-
-              {/* Export CSV */}
+          <FilterBar
+            summary={
+              <span className="text-slate-500 text-xs">
+                Total: <strong className="text-slate-800">{filteredRecords.length}</strong> catatan
+              </span>
+            }
+            actions={
               <button
+                type="button"
                 onClick={exportAttendanceCSV}
                 title="Ekspor CSV"
-                className="h-9 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+                className="h-9 inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Ekspor CSV</span>
+                <span>Ekspor CSV</span>
               </button>
+            }
+          >
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Cari nama karyawan, proyek, atau jabatan tim..."
+              className="w-full md:w-72"
+            />
+
+            {/* Date Range Pills */}
+            <div className="flex items-center gap-0.5 bg-slate-100 rounded-xl p-0.5 min-w-0 overflow-x-auto no-scrollbar">
+              {(['today', 'week', 'month', 'all'] as DateRangeFilter[]).map((range) => (
+                <button
+                  key={range}
+                  type="button"
+                  onClick={() => setDateRange(range)}
+                  className={`shrink-0 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                    dateRange === range
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {getDateRangeLabel(range)}
+                </button>
+              ))}
             </div>
-          </div>
+
+            {/* Status Filter */}
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              ariaLabel="Filter Status Kehadiran"
+              options={[
+                { value: 'ALL', label: 'Semua Status' },
+                { value: 'Hadir', label: 'Hadir' },
+                { value: 'Terlambat', label: 'Terlambat' },
+                { value: 'Cuti', label: 'Cuti' },
+                { value: 'Izin Lapangan', label: 'Izin Lapangan' },
+                { value: 'Alpa', label: 'Alpa' },
+              ]}
+              className="w-full sm:w-auto"
+            />
+          </FilterBar>
 
           {/* Desktop Table (hidden on mobile) */}
           <div className="hidden md:block bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
@@ -752,13 +719,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredRecords.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="px-4 py-10 text-center text-slate-400">
-                        <Calendar className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                        <p className="font-semibold text-slate-500">Tidak ada rekaman presensi tim</p>
-                        <p className="text-[11px] mt-0.5">Coba ubah filter periode atau status</p>
-                      </td>
-                    </tr>
+                    <EmptyState
+                      variant="table"
+                      colSpan={9}
+                      icon={<Calendar className="w-8 h-8 text-slate-300" />}
+                      title="Tidak ada rekaman presensi tim"
+                      message="Coba ubah filter periode atau status kehadiran."
+                    />
                   ) : (
                     filteredRecords.map((record) => (
                       <tr key={record.id} className="h-14 hover:bg-slate-50/80 transition-colors">
@@ -881,11 +848,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           {/* Mobile Card Feed (hidden on desktop) */}
           <div className="md:hidden space-y-3">
             {filteredRecords.length === 0 ? (
-              <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
-                <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
-                <p className="font-semibold text-slate-500 text-sm">Tidak ada rekaman presensi tim</p>
-                <p className="text-xs text-slate-400 mt-1">Coba ubah filter periode atau status</p>
-              </div>
+              <EmptyState
+                variant="card"
+                icon={<Calendar className="w-8 h-8 text-slate-300" />}
+                title="Tidak ada rekaman presensi tim"
+                message="Coba ubah filter periode atau status kehadiran."
+              />
             ) : (
               filteredRecords.map((record) => {
                 const isOffice = record.siteId === 'SITE-HQ' || record.shift.includes('Kantor');

@@ -3,7 +3,7 @@
 import React from 'react';
 import { PropertySite, Employee, AttendanceRecord, ApprovalItem, ActiveNavModule } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
-import { StatusBadge } from '@/components/ui';
+import { StatusBadge, KPICard, PageHeader } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import {
   Users,
@@ -176,52 +176,49 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* 1. Mobile Native Greeting & Status Card */}
-      <div className="bg-linear-to-r from-slate-900 via-slate-800 to-[#0f766e] text-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-1.5 text-emerald-300 text-[11px] font-semibold tracking-wider uppercase mb-1">
+      <PageHeader
+        variant="hero"
+        title={`${greeting}, ${currentUser?.name ? currentUser.name.split(' ')[0] : 'Bapak/Ibu'} 👋`}
+        subtitle={`${currentUser?.roleLabel || 'Manajemen Properti'} · ${filteredSites[0]?.name || 'Griya Bumi Raya'}`}
+        badge={
+          <div className="flex items-center gap-1.5 text-emerald-300 text-[11px] font-semibold tracking-wider uppercase mb-0.5">
             <Calendar className="w-3.5 h-3.5" />
             <span>{todayFormatted}</span>
           </div>
-          <h1 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
-            {greeting}, {currentUser?.name ? currentUser.name.split(' ')[0] : 'Bapak/Ibu'} 👋
-          </h1>
-          <p className="text-xs text-slate-300 mt-0.5">
-            {currentUser?.roleLabel || 'Manajemen Properti'} · {filteredSites[0]?.name || 'Griya Bumi Raya'}
-          </p>
-        </div>
-
-        {/* Action Button: Manajerial (Bukan Presensi GPS Lapangan) */}
-        {role === 'SUPER_ADMIN' ? (
-          pendingApprovals.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => onNavigateModule('approvals')}
-              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
-            >
-              <CheckSquare className="w-4 h-4" />
-              <span>{pendingApprovals.length} Butuh Persetujuan</span>
-            </button>
+        }
+        actions={
+          role === 'SUPER_ADMIN' ? (
+            pendingApprovals.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => onNavigateModule('approvals')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
+              >
+                <CheckSquare className="w-4 h-4" />
+                <span>{pendingApprovals.length} Butuh Persetujuan</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onNavigateModule('attendance')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/15 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 transition-all active:scale-95 cursor-pointer"
+              >
+                <Clock className="w-4 h-4 text-emerald-300" />
+                <span>Pantau Presensi Tim</span>
+              </button>
+            )
           ) : (
             <button
               type="button"
               onClick={() => onNavigateModule('attendance')}
-              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-white/15 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 transition-all active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
             >
-              <Clock className="w-4 h-4 text-emerald-300" />
-              <span>Pantau Presensi Tim</span>
+              <Clock className="w-4 h-4" />
+              <span>Rekap Presensi Tim</span>
             </button>
           )
-        ) : (
-          <button
-            type="button"
-            onClick={() => onNavigateModule('attendance')}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
-          >
-            <Clock className="w-4 h-4" />
-            <span>Rekap Presensi Tim</span>
-          </button>
-        )}
-      </div>
+        }
+      />
 
       {/* 2. Quick Actions (Menu Cepat Native Mobile) */}
       <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -260,94 +257,73 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* 3. Compact 2x2 KPI Grid (Glanceable on Mobile) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* KPI 1: Tim */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 border-t-2 border-t-[#0f766e] shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
-              Total Tim
-            </span>
-            <Users className="w-4 h-4 text-[#0f766e]" />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-slate-900 tabular-nums">
-              {totalHeadcount}
-            </span>
-            <span className="text-[11px] text-slate-500 truncate">Karyawan</span>
-          </div>
-          <div className="mt-2 flex items-center gap-1 text-[10px] sm:text-[11px] text-emerald-700 font-medium truncate">
-            <TrendingUp className="w-3 h-3 shrink-0" />
-            <span className="truncate">1 Proyek Aktif</span>
-          </div>
-        </div>
+        <KPICard
+          label="Total Tim"
+          value={totalHeadcount}
+          unit="Karyawan"
+          icon={<Users className="w-4 h-4 text-[#0f766e]" />}
+          color="primary"
+          footer={
+            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-emerald-700 font-medium truncate">
+              <TrendingUp className="w-3 h-3 shrink-0" />
+              <span className="truncate">1 Proyek Aktif</span>
+            </div>
+          }
+        />
 
         {/* KPI 2: Kehadiran Hari Ini */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 border-t-2 border-t-[#0f766e] shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
-              Kehadiran
-            </span>
-            <Clock className="w-4 h-4 text-[#0f766e]" />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-slate-900 tabular-nums">
-              {totalCheckedIn}/{totalHeadcount}
-            </span>
-            <span className="text-[11px] text-emerald-700 font-medium">Hadir</span>
-          </div>
-          <div className="mt-2 text-[10px] sm:text-[11px] text-slate-500 flex items-center gap-1 truncate font-mono">
-            <span>Tepat: <strong className="text-slate-800">{presentCount}</strong></span>
-            <span>·</span>
-            <span>Telat: <strong className="text-amber-700">{lateCount}</strong></span>
-          </div>
-        </div>
+        <KPICard
+          label="Kehadiran"
+          value={`${totalCheckedIn}/${totalHeadcount}`}
+          unit="Hadir"
+          icon={<Clock className="w-4 h-4 text-[#0f766e]" />}
+          color="primary"
+          footer={
+            <div className="text-[10px] sm:text-[11px] text-slate-500 flex items-center gap-1 truncate font-mono">
+              <span>Tepat: <strong className="text-slate-800">{presentCount}</strong></span>
+              <span>·</span>
+              <span>Telat: <strong className="text-amber-700">{lateCount}</strong></span>
+            </div>
+          }
+        />
 
         {/* KPI 3: Persetujuan Menunggu */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 border-t-2 border-t-amber-500 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
-              Perlu ACC
-            </span>
-            <AlertTriangle className="w-4 h-4 text-amber-500" />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-amber-700 tabular-nums">
-              {pendingApprovals.length}
-            </span>
-            <span className="text-[11px] text-slate-500 truncate">Menunggu</span>
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[10px] sm:text-[11px]">
-            <span className="text-slate-500 truncate">Izin / Kasbon</span>
-            <button
-              onClick={() => onNavigateModule('approvals')}
-              className="text-[#0f766e] font-semibold hover:underline inline-flex items-center gap-0.5 shrink-0"
-            >
-              Lihat <ArrowUpRight className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
+        <KPICard
+          label="Perlu ACC"
+          value={pendingApprovals.length}
+          unit="Menunggu"
+          icon={<AlertTriangle className="w-4 h-4 text-amber-500" />}
+          color="amber"
+          footer={
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px]">
+              <span className="text-slate-500 truncate">Izin / Kasbon</span>
+              <button
+                type="button"
+                onClick={() => onNavigateModule('approvals')}
+                className="text-[#0f766e] font-semibold hover:underline inline-flex items-center gap-0.5 shrink-0 cursor-pointer"
+              >
+                Lihat <ArrowUpRight className="w-3 h-3" />
+              </button>
+            </div>
+          }
+        />
 
         {/* KPI 4: Progres Proyek */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 border-t-2 border-t-[#0f766e] shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
-              Progres Fisik
-            </span>
-            <Building2 className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-[#065f46] tabular-nums">
-              {filteredSites[0]?.projectProgressPercentage ?? 0}%
-            </span>
-            <span className="text-[11px] text-emerald-700 font-medium">Selesai</span>
-          </div>
-          <div className="mt-2.5">
+        <KPICard
+          label="Progres Fisik"
+          value={`${filteredSites[0]?.projectProgressPercentage ?? 0}%`}
+          unit="Selesai"
+          icon={<Building2 className="w-4 h-4 text-emerald-600" />}
+          color="emerald"
+          footer={
             <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
               <div
                 className="bg-[#0f766e] h-full rounded-full"
                 style={{ width: `${filteredSites[0]?.projectProgressPercentage ?? 0}%` }}
               />
             </div>
-          </div>
-        </div>
+          }
+        />
       </div>
 
       {/* 4. Proyek Aktif */}

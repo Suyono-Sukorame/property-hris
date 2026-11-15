@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { PropertySite } from '@/types/hris';
+import { PageHeader } from '@/components/ui';
 import {
   Building,
   MapPin,
@@ -50,6 +51,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* 1. Standard Page Header */}
+      <PageHeader
+        title="Pengaturan Sistem & Proyek"
+        subtitle="Konfigurasi radius geofence GPS proyek, toleransi jam kerja, dan parameter payroll."
+        icon={<Building className="w-5 h-5 text-[#0f766e]" />}
+        badge={
+          <span className="px-2.5 py-0.5 rounded-full bg-teal-50 text-[#0f766e] font-mono text-[10px] font-bold border border-teal-200">
+            {sites.length} Lokasi Terdaftar
+          </span>
+        }
+      />
+
       {/* Save Success Notice */}
       {savedNotice && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2.5 text-xs shadow-xs animate-in fade-in duration-150">

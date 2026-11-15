@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Employee, PropertySite } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
-import { StatusBadge } from '@/components/ui';
+import { StatusBadge, PageHeader, FilterBar, SearchInput, Select, EmptyState } from '@/components/ui';
 import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -108,62 +108,72 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
     : allJobdescs.filter(j => j.jobCode === selectedJobCode);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
+      {/* 1. Standard Page Header */}
+      <PageHeader
+        title="Data Personil & Jabatan"
+        subtitle="Kelola profil personil proyek perumahan, NIK, penempatan tapak, kepatuhan K3, dan standar jobdesk."
+        icon={<Users className="w-5 h-5 text-[#0f766e]" />}
+        badge={
+          <span className="px-2.5 py-0.5 rounded-full bg-teal-50 text-[#0f766e] font-mono text-[10px] font-bold border border-teal-200">
+            {filteredEmployees.length} Personil Terdaftar
+          </span>
+        }
+        actions={
+          mainTab === 'EMPLOYEES' ? (
+            <>
+              <button
+                type="button"
+                onClick={exportCSV}
+                className="h-9 inline-flex items-center justify-center gap-1.5 px-3.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span>Ekspor CSV</span>
+              </button>
+              {isSuperAdmin && (
+                <button
+                  type="button"
+                  onClick={onOpenAddModal}
+                  className="h-9 inline-flex items-center justify-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>+ Tambah Karyawan</span>
+                </button>
+              )}
+            </>
+          ) : undefined
+        }
+      />
+
       {/* =========================================================================
           MAIN TOP SWITCHER: [Daftar Personil Karyawan] vs [Katalog Jobdesc & Standar Jabatan]
           ========================================================================= */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 bg-white p-2 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl w-full sm:w-auto">
-          <button
-            type="button"
-            onClick={() => setMainTab('EMPLOYEES')}
-            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              mainTab === 'EMPLOYEES'
-                ? 'bg-white text-[#0f766e] shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Users className="w-4 h-4 text-[#0f766e]" />
-            <span className="sm:hidden">Tim ({filteredEmployees.length})</span>
-            <span className="hidden sm:inline">Daftar Karyawan ({filteredEmployees.length})</span>
-          </button>
+      <div className="flex items-center gap-1 p-1.5 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+        <button
+          type="button"
+          onClick={() => setMainTab('EMPLOYEES')}
+          className={`flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mainTab === 'EMPLOYEES'
+              ? 'bg-[#0f766e] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>Daftar Karyawan ({filteredEmployees.length})</span>
+        </button>
 
-          <button
-            type="button"
-            onClick={() => setMainTab('JOBDESCS')}
-            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              mainTab === 'JOBDESCS'
-                ? 'bg-white text-[#0f766e] shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Briefcase className="w-4 h-4 text-[#0f766e]" />
-            <span className="sm:hidden">Jobdesk ({allJobdescs.length})</span>
-            <span className="hidden sm:inline">Katalog Jabatan & Jobdesk ({allJobdescs.length})</span>
-          </button>
-        </div>
-
-        {mainTab === 'EMPLOYEES' && (
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <button
-              onClick={exportCSV}
-              className="flex-1 sm:flex-initial h-9 inline-flex items-center justify-center gap-1.5 px-3 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Ekspor CSV</span>
-            </button>
-            {isSuperAdmin && (
-              <button
-                type="button"
-                onClick={onOpenAddModal}
-                className="flex-1 sm:flex-initial h-9 inline-flex items-center justify-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>+ Tambah</span>
-              </button>
-            )}
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={() => setMainTab('JOBDESCS')}
+          className={`flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            mainTab === 'JOBDESCS'
+              ? 'bg-[#0f766e] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+          }`}
+        >
+          <Briefcase className="w-4 h-4" />
+          <span>Katalog Jobdesk ({allJobdescs.length})</span>
+        </button>
       </div>
 
       {/* =========================================================================
@@ -172,70 +182,70 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
       {mainTab === 'EMPLOYEES' && (
         <div className="space-y-4">
           {/* Top Filter and Controls Bar */}
-          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
-            {/* Search */}
-            <div className="relative w-full md:w-80">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama, NIK, atau jabatan..."
-                className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] focus:bg-white transition-all"
-              />
-            </div>
-
-            {/* Division & Status Dropdowns */}
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <select
-                value={divisionFilter}
-                onChange={(e) => setDivisionFilter(e.target.value)}
-                aria-label="Filter Divisi"
-                className="h-9 px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
-              >
-                <option value="ALL">Semua Divisi</option>
-                {divisions.map((div) => (
-                  <option key={div} value={div}>
-                    {div}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                aria-label="Filter Status Karyawan"
-                className="h-9 px-3 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 cursor-pointer"
-              >
-                <option value="ALL">Semua Status</option>
-                <option value="Aktif">Aktif</option>
-                <option value="Cuti">Cuti</option>
-                <option value="Nonaktif">Nonaktif</option>
-              </select>
-
-              {/* Table / Cards toggle */}
-              <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+          <FilterBar
+            summary={
+              <span className="text-slate-500 text-xs">
+                Menampilkan <strong className="text-slate-800">{filteredEmployees.length}</strong> karyawan
+              </span>
+            }
+            actions={
+              <div className="hidden md:flex items-center border border-slate-200 rounded-xl p-0.5 bg-slate-50">
                 <button
+                  type="button"
                   onClick={() => setViewMode('table')}
-                  className={`p-1.5 rounded-md text-xs transition-colors cursor-pointer ${
-                    viewMode === 'table' ? 'bg-white shadow-xs text-[#0f766e]' : 'text-slate-500 hover:text-slate-900'
+                  className={`p-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    viewMode === 'table' ? 'bg-white shadow-2xs text-[#0f766e]' : 'text-slate-400 hover:text-slate-600'
                   }`}
                   title="Tampilan Tabel"
+                  aria-label="Tampilan Tabel"
                 >
                   <List className="w-4 h-4" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => setViewMode('cards')}
-                  className={`p-1.5 rounded-md text-xs transition-colors cursor-pointer ${
-                    viewMode === 'cards' ? 'bg-white shadow-xs text-[#0f766e]' : 'text-slate-500 hover:text-slate-900'
+                  className={`p-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    viewMode === 'cards' ? 'bg-white shadow-2xs text-[#0f766e]' : 'text-slate-400 hover:text-slate-600'
                   }`}
                   title="Tampilan Kartu"
+                  aria-label="Tampilan Kartu"
                 >
                   <LayoutGrid className="w-4 h-4" />
                 </button>
               </div>
-            </div>
-          </div>
+            }
+          >
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Cari nama, NIK, atau jabatan..."
+              className="w-full md:w-72"
+            />
+
+            <Select
+              value={divisionFilter}
+              onChange={setDivisionFilter}
+              ariaLabel="Filter Divisi"
+              options={[
+                { value: 'ALL', label: 'Semua Divisi' },
+                ...divisions.map((div) => ({ value: div, label: div })),
+              ]}
+              className="w-full sm:w-auto"
+            />
+
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              ariaLabel="Filter Status Karyawan"
+              options={[
+                { value: 'ALL', label: 'Semua Status' },
+                { value: 'Aktif', label: 'Aktif' },
+                { value: 'Cuti', label: 'Cuti' },
+                { value: 'Nonaktif', label: 'Nonaktif' },
+              ]}
+              className="w-full sm:w-auto"
+            />
+          </FilterBar>
 
           {/* Desktop Table View */}
           <div className={`${viewMode === 'table' ? 'hidden md:block' : 'hidden'} bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden`}>
@@ -254,11 +264,11 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredEmployees.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="px-4 py-12 text-center text-slate-400">
-                          Tidak ada karyawan yang sesuai dengan kriteria filter.
-                        </td>
-                      </tr>
+                      <EmptyState
+                        variant="table"
+                        colSpan={7}
+                        message="Tidak ada karyawan yang sesuai dengan kriteria filter atau pencarian."
+                      />
                     ) : (
                       filteredEmployees.map((emp) => (
                         <tr key={emp.id} className="h-14 hover:bg-slate-50/80 transition-colors">
@@ -353,8 +363,14 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
 
           {/* Cards View (Active when viewMode === 'cards' OR on mobile screens) */}
           <div className={`${viewMode === 'cards' ? 'block' : 'block md:hidden'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
-              {filteredEmployees.map((emp) => (
+            {filteredEmployees.length === 0 ? (
+              <EmptyState
+                variant="card"
+                message="Tidak ada karyawan yang sesuai dengan kriteria filter atau pencarian."
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+                {filteredEmployees.map((emp) => (
                 <div
                   key={emp.id}
                   className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
@@ -432,6 +448,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 </div>
               ))}
             </div>
+            )}
           </div>
         </div>
       )}
