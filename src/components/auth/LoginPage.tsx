@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { DEMO_USERS } from '@/data/authUsers';
 import { ShieldCheck, Lock, Mail, ArrowRight, Building2, DollarSign, Megaphone, HardHat, UserCheck, AlertCircle } from 'lucide-react';
+import { PWAInstallButton } from '@/components/pwa';
 
 export const LoginPage: React.FC = () => {
   const { login, loginAsDemo } = useAuth();
@@ -211,7 +212,20 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        <p className="text-center text-[10px] text-slate-600 mt-4">
+        {/* Pasang Aplikasi di HP / Tablet */}
+        <div className="mt-4 flex flex-col items-center justify-center gap-1.5">
+          <PWAInstallButton
+            variant="pill"
+            size="sm"
+            customLabel="Pasang Aplikasi di Layar Utama HP"
+            className="w-full sm:w-auto"
+          />
+          <p className="text-[10px] text-slate-500 text-center">
+            Mendukung Android &amp; iPhone · Akses 1-Ketuk Fullscreen
+          </p>
+        </div>
+
+        <p className="text-center text-[10px] text-slate-600 mt-3">
           Griya Bumi Raya · Kalimantan Selatan
         </p>
       </div>

@@ -8,6 +8,7 @@ import {
   LayoutDashboard, Users, Clock, Banknote, CheckSquare,
   BarChart3, Building, LogOut, X,
 } from 'lucide-react';
+import { PWAInstallButton } from '@/components/pwa';
 
 interface SidebarProps {
   activeModule: ActiveNavModule;
@@ -204,9 +205,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* =========================================================================
-          ZONA 3: FOOTER SIMPEL (VERSI RINTISAN)
+          ZONA 3: FOOTER SIMPEL & TOMBOL PASANG PWA
           ========================================================================= */}
-      <div className="shrink-0 bg-slate-900 border-t border-slate-800/80 p-3 pb-8 md:pb-3">
+      <div className="shrink-0 bg-slate-900 border-t border-slate-800/80 p-3 pb-8 md:pb-3 space-y-2">
+        <PWAInstallButton
+          variant="pill"
+          size="xs"
+          customLabel="Pasang di Layar HP"
+          className="w-full text-slate-300 hover:text-white"
+        />
         <p className="text-[10px] text-slate-600 text-center">
           Property HRIS · Mode Rintisan v1
         </p>

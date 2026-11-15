@@ -28,9 +28,22 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://property-hris.vercel.app'),
   title: 'HRIS - Griya Bumi Raya',
   description: 'Sistem Manajemen SDM & Presensi Lapangan untuk Bumi Raya Propertindo.',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Property HRIS',
+  },
   icons: {
-    icon: '/property-hris.png',
-    apple: '/property-hris.png',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/property-hris.png', sizes: '1254x1254', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/property-hris.png', sizes: '1254x1254', type: 'image/png' },
+    ],
   },
   openGraph: {
     title: 'HRIS - Griya Bumi Raya | Bumi Raya Propertindo',

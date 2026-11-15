@@ -23,7 +23,7 @@ import {
   EditEmployeeModal,
   EditAttendanceModal,
 } from '@/components/modals';
-import { DynamicAlertToast } from '@/components/ui';
+import { DynamicAlertToast, PWAInstallBanner } from '@/components/ui';
 
 function HRISApp() {
   const { currentUser, isLoading: isAuthLoading } = useAuth();
@@ -122,7 +122,12 @@ function HRISApp() {
 
   // Not logged in -> Show Login Page
   if (!currentUser) {
-    return <LoginPage />;
+    return (
+      <>
+        <LoginPage />
+        <PWAInstallBanner position="bottom" />
+      </>
+    );
   }
 
   // Role helpers
@@ -345,6 +350,9 @@ function HRISApp() {
 
       {/* Floating Dynamic Island Notification */}
       <DynamicAlertToast alert={dynamicAlert} onDismiss={dismissDynamicAlert} />
+
+      {/* Smart PWA Install Banner (Android Chrome & iOS Safari Support) */}
+      <PWAInstallBanner position="bottom" />
     </div>
   );
 }
