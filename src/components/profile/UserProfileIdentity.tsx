@@ -60,9 +60,9 @@ export const UserProfileIdentity: React.FC<UserProfileIdentityProps> = ({ user, 
         </div>
       </div>
 
-      {/* Grid Rincian Kerja A-Z */}
-      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs">
-        <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-0.5">
+      {/* Grid Rincian Kerja A-Z (Responsif 1 Kolom di Dropdown Mobile, 2 Kolom di Layar Lebar) */}
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-1.5 sm:gap-2 pt-2 border-t border-slate-100 text-xs">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-0.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <Building2 className="w-3 h-3 text-[#0f766e]" />
             Lokasi Tugas
@@ -72,7 +72,7 @@ export const UserProfileIdentity: React.FC<UserProfileIdentityProps> = ({ user, 
           </p>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-0.5">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-0.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <Briefcase className="w-3 h-3 text-[#0f766e]" />
             Divisi Kerja
@@ -82,7 +82,7 @@ export const UserProfileIdentity: React.FC<UserProfileIdentityProps> = ({ user, 
           </p>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-0.5">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-0.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <Hash className="w-3 h-3 text-[#0f766e]" />
             ID Pegawai / Akun
@@ -92,7 +92,7 @@ export const UserProfileIdentity: React.FC<UserProfileIdentityProps> = ({ user, 
           </p>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-0.5">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-0.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <MapPin className="w-3 h-3 text-[#0f766e]" />
             Status Kerja
