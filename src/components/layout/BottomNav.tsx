@@ -1,18 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActiveNavModule } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
+import { useHRIS } from '@/context/HRISContext';
 import {
   LayoutDashboard,
-  Clock,
+  CalendarCheck,
   Banknote,
   Fingerprint,
+  LogOut,
+  CheckCircle2,
   Users,
   CheckSquare,
   Building,
   BarChart3,
   Menu,
+  Clock,
 } from 'lucide-react';
 
 interface BottomNavProps {
@@ -29,10 +33,62 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onToggleMobileDrawer,
 }) => {
   const { currentUser } = useAuth();
+  const { attendanceRecords } = useHRIS();
   const role = currentUser?.role || 'SUPER_ADMIN';
 
+  // Mount-safe check for today's date (prevents Next.js prerender mismatch)
+  const [todayStr, setTodayStr] = useState<string>('');
+  useEffect(() => {
+    setTodayStr(new Date().toISOString().slice(0, 10));
+  }, []);
+
+  // Check personal attendance status today
+  const myEmpId = currentUser?.employeeId;
+  const myTodayRecord =
+    todayStr && myEmpId
+      ? attendanceRecords.find((r) => r.employeeId === myEmpId && r.date === todayStr)
+      : null;
+
+  const hasCheckedIn =
+    !!myTodayRecord &&
+    myTodayRecord.status !== 'Cuti' &&
+    myTodayRecord.status !== 'Izin Lapangan';
+  const hasCheckedOut = !!myTodayRecord?.checkOutTime && myTodayRecord.checkOutTime !== '-';
+
+  // Dynamic center button config based on current status
+  const getCenterAction = () => {
+    if (hasCheckedIn && hasCheckedOut) {
+      return {
+        label: 'Selesai',
+        Icon: CheckCircle2,
+        btnColor: 'bg-emerald-800 hover:bg-emerald-900 border-slate-900',
+        textColor: 'text-emerald-300',
+        title: 'Presensi Hari Ini Selesai',
+      };
+    }
+    if (hasCheckedIn) {
+      return {
+        label: 'Pulang',
+        Icon: LogOut,
+        btnColor: 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/30 border-slate-900',
+        textColor: 'text-amber-400',
+        title: 'Absen Pulang Sekarang',
+      };
+    }
+    return {
+      label: 'Masuk',
+      Icon: Fingerprint,
+      btnColor: 'bg-[#0f766e] hover:bg-[#115e59] shadow-[#0f766e]/30 border-slate-900',
+      textColor: 'text-emerald-400',
+      title: 'Absen Masuk Sekarang',
+    };
+  };
+
+  const centerAction = getCenterAction();
+  const CenterIcon = centerAction.Icon;
+
   // 1. SUPER_ADMIN Navigation (Direktur / Pemilik)
-  // [Beranda] [Karyawan] [🟢 Presensi GPS] [Persetujuan] [Pengaturan]
+  // [Beranda] [Karyawan] [🟢 Masuk] [Persetujuan] [Pengaturan]
   if (role === 'SUPER_ADMIN') {
     const isReports = activeModule === 'reports';
     const isPayroll = activeModule === 'payroll';
@@ -67,18 +123,18 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span>Karyawan</span>
         </button>
 
-        {/* Center Tab: Action Button (Absen Masuk/Pulang) */}
+        {/* Center Tab: Action Button (Masuk/Pulang) */}
         <div className="-mt-5 flex flex-col items-center">
           <button
             type="button"
             onClick={onOpenLiveCheckIn}
-            title="Absen Sekarang"
-            className="w-12 h-12 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white flex items-center justify-center shadow-lg shadow-[#0f766e]/30 border-3 border-slate-900 active:scale-95 transition-all cursor-pointer"
+            title={centerAction.title}
+            className={`w-12 h-12 rounded-full ${centerAction.btnColor} text-white flex items-center justify-center shadow-lg border-3 active:scale-95 transition-all cursor-pointer`}
           >
-            <Fingerprint className="w-5 h-5 text-emerald-100" />
+            <CenterIcon className="w-5 h-5 text-white" />
           </button>
-          <span className="text-[9px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider">
-            Absen
+          <span className={`text-[9px] font-extrabold ${centerAction.textColor} mt-0.5 uppercase tracking-wider`}>
+            {centerAction.label}
           </span>
         </div>
 
@@ -147,17 +203,18 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span>Karyawan</span>
         </button>
 
+        {/* Center Tab: Action Button (Masuk/Pulang) */}
         <div className="-mt-5 flex flex-col items-center">
           <button
             type="button"
             onClick={onOpenLiveCheckIn}
-            title="Absen Sekarang"
-            className="w-12 h-12 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white flex items-center justify-center shadow-lg shadow-[#0f766e]/30 border-3 border-slate-900 active:scale-95 transition-all cursor-pointer"
+            title={centerAction.title}
+            className={`w-12 h-12 rounded-full ${centerAction.btnColor} text-white flex items-center justify-center shadow-lg border-3 active:scale-95 transition-all cursor-pointer`}
           >
-            <Fingerprint className="w-5 h-5 text-emerald-100" />
+            <CenterIcon className="w-5 h-5 text-white" />
           </button>
-          <span className="text-[9px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider">
-            Absen
+          <span className={`text-[9px] font-extrabold ${centerAction.textColor} mt-0.5 uppercase tracking-wider`}>
+            {centerAction.label}
           </span>
         </div>
 
@@ -169,7 +226,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           }`}
         >
           <Clock className="w-4 h-4 mb-0.5" />
-          <span>Presensi</span>
+          <span>Monitoring</span>
         </button>
 
         <button
@@ -187,8 +244,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   }
 
   // 3. EMPLOYEE Navigation (Self-Service: Andi / Rudi)
+  // [Riwayat] [Slip Gaji] (🟢 Masuk / Pulang) [Pengajuan] [Menu]
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
+      {/* Tab 1: Riwayat (Halaman Riwayat Presensi & Kehadiran) */}
       <button
         type="button"
         onClick={() => onSelectModule('attendance')}
@@ -196,10 +255,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           activeModule === 'attendance' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
         }`}
       >
-        <Clock className="w-4 h-4 mb-0.5" />
-        <span>Presensi</span>
+        <CalendarCheck className="w-4 h-4 mb-0.5" />
+        <span>Riwayat</span>
       </button>
 
+      {/* Tab 2: Slip Gaji */}
       <button
         type="button"
         onClick={() => onSelectModule('payroll')}
@@ -211,20 +271,22 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <span>Slip Gaji</span>
       </button>
 
+      {/* Center Tab: Action Button Dinamis (Masuk / Pulang / Selesai) */}
       <div className="-mt-5 flex flex-col items-center">
         <button
           type="button"
           onClick={onOpenLiveCheckIn}
-          title="Absen Sekarang"
-          className="w-12 h-12 rounded-full bg-[#0f766e] hover:bg-[#115e59] text-white flex items-center justify-center shadow-lg shadow-[#0f766e]/30 border-3 border-slate-900 active:scale-95 transition-all cursor-pointer"
+          title={centerAction.title}
+          className={`w-12 h-12 rounded-full ${centerAction.btnColor} text-white flex items-center justify-center shadow-lg border-3 active:scale-95 transition-all cursor-pointer`}
         >
-          <Fingerprint className="w-5 h-5 text-emerald-100" />
+          <CenterIcon className="w-5 h-5 text-white" />
         </button>
-        <span className="text-[9px] font-extrabold text-emerald-400 mt-0.5 uppercase tracking-wider">
-          Absen
+        <span className={`text-[9px] font-extrabold ${centerAction.textColor} mt-0.5 uppercase tracking-wider`}>
+          {centerAction.label}
         </span>
       </div>
 
+      {/* Tab 4: Pengajuan */}
       <button
         type="button"
         onClick={() => onSelectModule('approvals')}
@@ -236,6 +298,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <span>Pengajuan</span>
       </button>
 
+      {/* Tab 5: Menu */}
       <button
         type="button"
         onClick={onToggleMobileDrawer}
