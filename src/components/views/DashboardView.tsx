@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PropertySite, Employee, AttendanceRecord, ApprovalItem, ActiveNavModule } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
-import { StatusBadge, KPICard, PageHeader } from '@/components/ui';
+import { StatusBadge, KPICard, PageHeader, SegmentedTabs, AttendanceItemCard, EmptyState, type TabOption } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import {
   Users,
@@ -51,24 +51,51 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const { currentUser } = useAuth();
   const role = currentUser?.role || 'SUPER_ADMIN';
 
+  const [attendanceTab, setAttendanceTab] = useState<'ALL' | 'ON_TIME' | 'LATE' | 'ABSENT' | 'LEAVE'>('ALL');
+
   const filteredSites =
     selectedSiteFilter === 'ALL'
       ? sites
       : sites.filter((s) => s.id === selectedSiteFilter);
+
+  const targetEmployees =
+    selectedSiteFilter === 'ALL'
+      ? employees
+      : employees.filter((e) => e.siteId === selectedSiteFilter);
+
+  const totalHeadcount = targetEmployees.length;
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   const filteredAttendance =
     selectedSiteFilter === 'ALL'
       ? attendanceRecords
       : attendanceRecords.filter((a) => a.siteId === selectedSiteFilter);
 
-  const totalHeadcount = employees.length;
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const presentCount = attendanceRecords.filter(
-    (a) => a.status === 'Hadir' && a.date === todayStr
-  ).length;
-  const lateCount = attendanceRecords.filter(
-    (a) => a.status === 'Terlambat' && a.date === todayStr
-  ).length;
+  // Check if there are records for today
+  const hasTodayRecords = filteredAttendance.some((a) => a.date === todayStr);
+
+  // Active records to display: today's records if exist, or most recent records
+  const latestDate = filteredAttendance[0]?.date || todayStr;
+  const activeDate = hasTodayRecords ? todayStr : latestDate;
+  const isShowingToday = activeDate === todayStr;
+
+  const activeDayRecords = filteredAttendance.filter((a) => a.date === activeDate);
+
+  const onTimeRecords = activeDayRecords.filter((a) => a.status === 'Hadir');
+  const lateRecords = activeDayRecords.filter((a) => a.status === 'Terlambat');
+  const leaveRecords = activeDayRecords.filter(
+    (a) => a.status === 'Cuti' || a.status === 'Izin Lapangan'
+  );
+
+  // Absent employees (employees in target site who don't have a record on the active date)
+  const absentEmployees = targetEmployees.filter(
+    (emp) => !activeDayRecords.some((a) => a.employeeId === emp.id)
+  );
+
+  const presentCount = onTimeRecords.length;
+  const lateCount = lateRecords.length;
+  const absentCount = absentEmployees.length;
+  const leaveCount = leaveRecords.length;
   const pendingApprovals = approvals.filter((a) => a.status.includes('Menunggu'));
 
   // Live KPI calculations
@@ -283,6 +310,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>Tepat: <strong className="text-slate-800">{presentCount}</strong></span>
               <span>·</span>
               <span>Telat: <strong className="text-amber-700">{lateCount}</strong></span>
+              <span>·</span>
+              <span>Belum: <strong className={absentCount > 0 ? "text-rose-600 font-bold" : "text-slate-500"}>{absentCount}</strong></span>
             </div>
           }
         />
@@ -406,118 +435,167 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* 5. Two Column Section: Live Attendance Feed & Pending Approvals */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Attendance Activity (2 Cols) */}
-        <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#0f766e]" />
-                Presensi Hari Ini
-              </h2>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Log kehadiran tim di lapangan hari ini.
-              </p>
-            </div>
-            <button
-              onClick={() => onNavigateModule('attendance')}
-              className="text-xs font-semibold text-[#0f766e] hover:underline inline-flex items-center gap-1 cursor-pointer"
-            >
-              Semua <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Mobile Native Card List (No horizontal scroll needed!) */}
-          <div className="sm:hidden space-y-2.5">
-            {filteredAttendance.slice(0, 5).map((record) => {
-              const emp = employees.find((e) => e.id === record.employeeId);
-
-              return (
-                <div
-                  key={record.id}
-                  className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 flex items-center justify-between gap-2.5"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-full bg-[#0f766e]/10 text-[#0f766e] font-bold text-xs flex items-center justify-center shrink-0 border border-[#0f766e]/20">
-                      {record.employeeName.charAt(0)}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-bold text-xs text-slate-900 truncate">
-                        {record.employeeName}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-mono mt-0.5">
-                        <span>{record.checkInTime} WITA</span>
-                        <span>·</span>
-                        <span>{record.geofenceDistanceMeters}m</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <StatusBadge status={record.status} size="sm" />
-                    {emp && (
-                      <button
-                        onClick={() => onOpenEmployeeCard(emp)}
-                        className="px-2 py-1 text-[10px] font-bold text-[#0f766e] bg-white border border-slate-200 rounded-md hover:bg-emerald-50 transition-colors cursor-pointer"
-                      >
-                        ID Card
-                      </button>
-                    )}
-                  </div>
+        {/* Attendance Activity (2 Cols) - SMART EXECUTIVE ATTENDANCE HUB */}
+        <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-4">
+          <div>
+            {/* Header: Title, Subtitle, Date Badge, and Link */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-100 gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#0f766e]" />
+                    Presensi &amp; Kehadiran Tim
+                  </h2>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-50 text-[#0f766e] border border-teal-200">
+                    {isShowingToday ? 'Hari Ini' : `Riwayat: ${activeDate}`}
+                  </span>
                 </div>
-              );
-            })}
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Pantau jam masuk/pulang, radius geofence GPS, dan kepatuhan APD K3 seluruh personil.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onNavigateModule('attendance')}
+                className="self-start sm:self-auto text-xs font-bold text-[#0f766e] hover:text-[#115e59] hover:underline inline-flex items-center gap-1 cursor-pointer"
+              >
+                <span>Rekap Lengkap</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Segmented Filter Tabs (Swipeable/Scrollable on Compact Mobile) */}
+            <div className="mb-3.5">
+              <SegmentedTabs
+                size="sm"
+                activeId={attendanceTab}
+                onChange={(id) => setAttendanceTab(id as typeof attendanceTab)}
+                options={[
+                  {
+                    id: 'ALL',
+                    label: 'Semua',
+                    count: activeDayRecords.length,
+                  },
+                  {
+                    id: 'ON_TIME',
+                    label: 'Tepat Waktu',
+                    count: presentCount,
+                    variant: 'emerald',
+                  },
+                  {
+                    id: 'LATE',
+                    label: 'Terlambat',
+                    count: lateCount,
+                    variant: 'amber',
+                  },
+                  {
+                    id: 'ABSENT',
+                    label: 'Belum Absen',
+                    count: absentCount,
+                    variant: absentCount > 0 ? 'rose' : 'default',
+                  },
+                  {
+                    id: 'LEAVE',
+                    label: 'Cuti/Izin',
+                    count: leaveCount,
+                    variant: 'teal',
+                  },
+                ]}
+              />
+            </div>
+
+            {/* List of Attendance Cards (100% Mobile Compact Friendly, No Horizontal Scroll) */}
+            <div className="space-y-2.5">
+              {attendanceTab === 'ABSENT' ? (
+                absentEmployees.length === 0 ? (
+                  <EmptyState
+                    variant="card"
+                    icon={<CheckCircle2 className="w-8 h-8 text-emerald-600" />}
+                    title="Seluruh Personil Sudah Hadir!"
+                    message="Luar biasa, seluruh karyawan terdaftar telah melakukan presensi di lokasi proyek."
+                  />
+                ) : (
+                  absentEmployees.map((emp) => (
+                    <AttendanceItemCard
+                      key={emp.id}
+                      employee={emp}
+                      isAbsent={true}
+                      onOpenEmployeeCard={onOpenEmployeeCard}
+                    />
+                  ))
+                )
+              ) : (
+                (() => {
+                  let displayRecords = activeDayRecords;
+                  if (attendanceTab === 'ON_TIME') displayRecords = onTimeRecords;
+                  if (attendanceTab === 'LATE') displayRecords = lateRecords;
+                  if (attendanceTab === 'LEAVE') displayRecords = leaveRecords;
+
+                  if (displayRecords.length === 0) {
+                    return (
+                      <EmptyState
+                        variant="card"
+                        icon={<Clock className="w-8 h-8 text-slate-300" />}
+                        title="Tidak Ada Catatan Presensi"
+                        message="Tidak ada karyawan yang berada pada kategori filter ini."
+                      />
+                    );
+                  }
+
+                  return displayRecords.map((record) => {
+                    const emp =
+                      employees.find((e) => e.id === record.employeeId) || {
+                        id: record.employeeId,
+                        nik: 'EMP-PROPERTI',
+                        name: record.employeeName,
+                        title: record.jobCode,
+                        jobCode: record.jobCode,
+                        division: record.division,
+                        siteId: record.siteId,
+                        siteName: record.siteName,
+                        email: '-',
+                        phone: '081234567890',
+                        joinDate: '2025-01-01',
+                        status: 'Aktif' as const,
+                        contractType: 'PKWTT (Tetap)' as const,
+                        k3Certified: record.ppeCompliance,
+                        emergencyContact: '-',
+                        baseSalary: 0,
+                        siteAllowance: 0,
+                        k3Allowance: 0,
+                        transportMealAllowance: 0,
+                        bankAccount: '-',
+                        initials: record.employeeName.charAt(0),
+                        avatarColor: '#0f766e',
+                      };
+
+                    return (
+                      <AttendanceItemCard
+                        key={record.id}
+                        employee={emp}
+                        record={record}
+                        onOpenEmployeeCard={onOpenEmployeeCard}
+                      />
+                    );
+                  });
+                })()
+              )}
+            </div>
           </div>
 
-          {/* Desktop Responsive Table */}
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-xs text-left">
-              <thead>
-                <tr className="h-9 bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] tracking-wider font-semibold">
-                  <th className="px-3">Karyawan</th>
-                  <th className="px-3">Lokasi Proyek</th>
-                  <th className="px-3">Jam Masuk</th>
-                  <th className="px-3">Status</th>
-                  <th className="px-3">Jarak GPS</th>
-                  <th className="px-3 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredAttendance.slice(0, 5).map((record) => {
-                  const emp = employees.find((e) => e.id === record.employeeId);
-
-                  return (
-                    <tr key={record.id} className="h-12 hover:bg-slate-50/70 transition-colors">
-                      <td className="px-3">
-                        <div className="font-semibold text-slate-900">{record.employeeName}</div>
-                        <div className="text-[10px] font-mono text-slate-400">{record.jobCode}</div>
-                      </td>
-                      <td className="px-3 text-slate-700 truncate max-w-37.5">
-                        {record.siteName}
-                      </td>
-                      <td className="px-3 font-mono font-medium text-slate-800">
-                        {record.checkInTime}
-                      </td>
-                      <td className="px-3">
-                        <StatusBadge status={record.status} size="sm" />
-                      </td>
-                      <td className="px-3 font-mono text-slate-600">
-                        {record.geofenceDistanceMeters}m
-                      </td>
-                      <td className="px-3 text-right">
-                        {emp && (
-                          <button
-                            onClick={() => onOpenEmployeeCard(emp)}
-                            className="px-2 py-1 text-[11px] font-semibold text-[#0f766e] hover:bg-emerald-50 rounded border border-transparent hover:border-emerald-200 transition-colors cursor-pointer"
-                          >
-                            ID Card
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          {/* Bottom Card Summary */}
+          <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 gap-2">
+            <span>
+              Menampilkan data kehadiran: <strong className="text-slate-800">{filteredSites[0]?.name || 'Seluruh Kawasan'}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={() => onNavigateModule('attendance')}
+              className="text-[#0f766e] font-semibold hover:underline inline-flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+            >
+              Lihat Riwayat &amp; GPS Seluruh Tim <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 

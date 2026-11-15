@@ -9,3 +9,5 @@ export { FilterBar } from './FilterBar';
 export { AlertBanner } from './AlertBanner';
 export { EmptyState } from './EmptyState';
 export { DynamicAlertToast, type DynamicAlertData } from './DynamicAlertToast';
+export { SegmentedTabs, type TabOption } from './SegmentedTabs';
+export { AttendanceItemCard } from './AttendanceItemCard';
