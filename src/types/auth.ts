@@ -13,4 +13,5 @@ export interface AuthUser {
   avatarColor: string;
   initials: string;
   employeeId?: string; // Links to Employee record
+  phone?: string; // Nomor WhatsApp / kontak aktif
 }

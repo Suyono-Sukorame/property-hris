@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (email: string, password?: string) => { success: boolean; message?: string };
   loginAsDemo: (userId: string) => void;
   logout: () => void;
+  updateCurrentUser: (updates: Partial<AuthUser>) => void;
   hasRole: (allowedRoles: UserRole[]) => boolean;
 }
 
@@ -79,6 +80,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE_KEY);
   };
 
+  const updateCurrentUser = (updates: Partial<AuthUser>) => {
+    setCurrentUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updates };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to save updated session:', e);
+      }
+      return updated;
+    });
+  };
+
   const hasRole = (allowedRoles: UserRole[]) => {
     if (!currentUser) return false;
     return allowedRoles.includes(currentUser.role);
@@ -92,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         loginAsDemo,
         logout,
+        updateCurrentUser,
         hasRole,
       }}
     >

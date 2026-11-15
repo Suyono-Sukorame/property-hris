@@ -12,4 +12,4 @@ export { DynamicAlertToast, type DynamicAlertData } from './DynamicAlertToast';
 export { SegmentedTabs, type TabOption } from './SegmentedTabs';
 export { AttendanceItemCard } from './AttendanceItemCard';
 export { PWAInstallBanner, PWAInstallButton, IOSInstallModal } from '../pwa';
-export { UserProfileHub, UserProfileDrawer, UserProfileIdentity } from '../profile';
+export { UserProfileHub, UserProfileDrawer, UserProfileIdentity, EditProfileModal } from '../profile';

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { AuthUser } from '@/types/auth';
 import { UserProfileIdentity } from './UserProfileIdentity';
-import { X, LogOut, QrCode, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { X, LogOut, QrCode, ShieldCheck, AlertTriangle, UserCog } from 'lucide-react';
 
 interface UserProfileDrawerProps {
   isOpen: boolean;
@@ -11,6 +11,7 @@ interface UserProfileDrawerProps {
   user: AuthUser;
   onLogout: () => void;
   onOpenIDCard?: () => void;
+  onOpenEditProfile: () => void;
 }
 
 export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
@@ -19,6 +20,7 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
   user,
   onLogout,
   onOpenIDCard,
+  onOpenEditProfile,
 }) => {
   const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
 
@@ -68,12 +70,32 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
             {/* Kartu Identitas A-Z */}
             <UserProfileIdentity user={user} />
 
-            {/* Aksi Pintasan: Kartu ID Digital */}
-            {onOpenIDCard && (
-              <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-0.5">
-                  Akses Cepat Pegawai
+            {/* Aksi Pintasan: Edit Profil & Kartu ID */}
+            <div className="space-y-1.5 pt-2 border-t border-slate-100">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-0.5">
+                Pengaturan &amp; Akses Pengguna
+              </span>
+
+              {/* Tombol Edit Profil */}
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenEditProfile();
+                }}
+                className="w-full h-9 px-3 rounded-xl bg-[#0f766e]/10 hover:bg-[#0f766e]/15 border border-[#0f766e]/20 text-[#0f766e] font-semibold text-xs transition-colors flex items-center justify-between group cursor-pointer"
+              >
+                <span className="flex items-center gap-1.5 truncate">
+                  <UserCog className="w-3.5 h-3.5 text-[#0f766e] shrink-0" />
+                  <span className="truncate">Edit Profil Saya</span>
                 </span>
+                <span className="text-[10px] font-bold text-[#0f766e] group-hover:underline shrink-0">
+                  Ubah &rarr;
+                </span>
+              </button>
+
+              {/* Tombol Kartu ID Digital */}
+              {onOpenIDCard && (
                 <button
                   type="button"
                   onClick={() => {
@@ -83,15 +105,15 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
                   className="w-full h-9 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 font-semibold text-xs transition-colors flex items-center justify-between group cursor-pointer"
                 >
                   <span className="flex items-center gap-1.5 truncate">
-                    <QrCode className="w-3.5 h-3.5 text-[#0f766e] shrink-0" />
+                    <QrCode className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                     <span className="truncate">Kartu ID &amp; Barcode</span>
                   </span>
-                  <span className="text-[10px] font-bold text-[#0f766e] group-hover:underline shrink-0">
+                  <span className="text-[10px] font-bold text-slate-600 group-hover:underline shrink-0">
                     Buka &rarr;
                   </span>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Info Keamanan & Lisensi */}
             <div className="p-2 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex items-center gap-1.5 text-emerald-900 text-[10px]">

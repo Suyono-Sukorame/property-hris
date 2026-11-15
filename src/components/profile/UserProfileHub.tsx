@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { AuthUser } from '@/types/auth';
+import { useAuth } from '@/context/AuthContext';
 import { UserProfileDrawer } from './UserProfileDrawer';
+import { EditProfileModal } from './EditProfileModal';
 import { ChevronDown } from 'lucide-react';
 
 interface UserProfileHubProps {
@@ -18,12 +20,29 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({
   onOpenIDCard,
   className = '',
 }) => {
+  const { updateCurrentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
   if (!user) return null;
 
   // Nama panggilan pendek untuk tampilan tablet & desktop
   const firstName = user.name.split(' ')[0] || user.name;
+
+  const handleSaveProfile = (updates: {
+    name: string;
+    phone?: string;
+    avatarColor: string;
+    initials: string;
+    password?: string;
+  }) => {
+    updateCurrentUser({
+      name: updates.name,
+      phone: updates.phone,
+      avatarColor: updates.avatarColor,
+      initials: updates.initials,
+    });
+  };
 
   return (
     <>
@@ -67,6 +86,15 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({
         user={user}
         onLogout={onLogout}
         onOpenIDCard={onOpenIDCard}
+        onOpenEditProfile={() => setIsEditProfileOpen(true)}
+      />
+
+      {/* Modal Edit Profil Mandiri */}
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        user={user}
+        onSave={handleSaveProfile}
       />
     </>
   );
