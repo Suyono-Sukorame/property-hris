@@ -23,7 +23,7 @@ import {
   EditEmployeeModal,
   EditAttendanceModal,
 } from '@/components/modals';
-import { DynamicAlertToast, PWAInstallBanner } from '@/components/ui';
+import { DynamicAlertToast, PWAInstallBanner, DeveloperBranding } from '@/components/ui';
 
 function HRISApp() {
   const { currentUser, isLoading: isAuthLoading } = useAuth();
@@ -295,6 +295,12 @@ function HRISApp() {
               onUpdateSiteRadius={handleUpdateSiteRadius}
             />
           )}
+
+          {/* Global Content Page Footer */}
+          <footer className="mt-8 pt-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400">
+            <span>© 2026 PT Bumi Raya Propertindo · Sistem Manajemen HRIS Properti</span>
+            <DeveloperBranding variant="light" size="xs" />
+          </footer>
         </main>
       </div>
 

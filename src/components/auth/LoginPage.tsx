@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { DEMO_USERS } from '@/data/authUsers';
 import { ShieldCheck, Lock, Mail, ArrowRight, Building2, DollarSign, Megaphone, HardHat, UserCheck, AlertCircle } from 'lucide-react';
 import { PWAInstallButton } from '@/components/pwa';
+import { DeveloperBranding } from '@/components/ui';
 
 export const LoginPage: React.FC = () => {
   const { login, loginAsDemo } = useAuth();
@@ -225,9 +226,12 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        <p className="text-center text-[10px] text-slate-600 mt-3">
-          Griya Bumi Raya · Kalimantan Selatan
-        </p>
+        <div className="mt-4 flex flex-col items-center justify-center gap-1 text-[11px] text-slate-500">
+          <p className="text-center text-[10px] text-slate-500">
+            Griya Bumi Raya · Kalimantan Selatan
+          </p>
+          <DeveloperBranding variant="dark" size="xs" />
+        </div>
       </div>
     </div>
   );

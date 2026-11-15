@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { AuthUser } from '@/types/auth';
 import { UserProfileIdentity } from './UserProfileIdentity';
+import { DeveloperBranding } from '@/components/ui/DeveloperBranding';
 import { X, LogOut, QrCode, ShieldCheck, AlertTriangle, UserCog } from 'lucide-react';
 
 interface UserProfileDrawerProps {
@@ -115,10 +116,13 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
               )}
             </div>
 
-            {/* Info Keamanan & Lisensi */}
-            <div className="p-2 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex items-center gap-1.5 text-emerald-900 text-[10px]">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="truncate">Sesi aman · PT Bumi Raya Propertindo</span>
+            {/* Info Keamanan & Lisensi Pengembang */}
+            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-1 text-[10px]">
+              <div className="flex items-center gap-1.5 text-slate-600 truncate">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="truncate">Sesi Aman</span>
+              </div>
+              <DeveloperBranding variant="light" size="xs" />
             </div>
           </div>
 

@@ -9,6 +9,7 @@ import {
   BarChart3, Building, LogOut, X,
 } from 'lucide-react';
 import { PWAInstallButton } from '@/components/pwa';
+import { DeveloperBranding } from '@/components/ui';
 
 interface SidebarProps {
   activeModule: ActiveNavModule;
@@ -214,9 +215,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           customLabel="Pasang di Layar HP"
           className="w-full text-slate-300 hover:text-white"
         />
-        <p className="text-[10px] text-slate-600 text-center">
-          Property HRIS · Mode Rintisan v1
-        </p>
+        <div className="flex flex-col items-center justify-center gap-0.5 text-center">
+          <p className="text-[10px] text-slate-500">
+            Property HRIS · v1.0
+          </p>
+          <DeveloperBranding variant="dark" size="xs" />
+        </div>
       </div>
     </aside>
   );
