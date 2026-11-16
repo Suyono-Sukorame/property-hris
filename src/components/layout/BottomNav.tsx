@@ -64,10 +64,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       return;
     }
 
-    // Jika sedang bekerja (sudah masuk, belum pulang), absen pulang
-    if (hasCheckedIn && !hasCheckedOut && myTodayRecord) {
-      handleCheckOut(myTodayRecord.id);
-      onSelectModule('attendance');
+    // Jika sedang bekerja (sudah masuk, belum pulang), buka modal untuk selfie + GPS checkout
+    if (hasCheckedIn && !hasCheckedOut) {
+      onOpenLiveCheckIn();
       return;
     }
 

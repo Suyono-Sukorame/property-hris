@@ -63,7 +63,7 @@ interface HRISContextType {
   // Actions
   handleOpenPaySlipByEmployee: (emp: Employee) => void;
   handleCheckInSuccess: (newRecord: AttendanceRecord) => void;
-  handleCheckOut: (recordId: string) => void;
+  handleCheckOut: (recordId: string, photoUrl?: string) => void;
   handleEditAttendance: (recordId: string, updates: Partial<AttendanceRecord>) => void;
   handleAddEmployee: (newEmp: Employee) => void;
   handleUpdateEmployee: (updatedEmp: Employee) => void;
@@ -416,7 +416,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   };
 
   // Check-Out Callback — update checkOutTime, calculate lembur
-  const handleCheckOut = async (recordId: string) => {
+  const handleCheckOut = async (recordId: string, photoUrl?: string) => {
     const now = new Date();
     const hh = String(now.getHours()).padStart(2, '0');
     const mm = String(now.getMinutes()).padStart(2, '0');
@@ -441,7 +441,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     setAttendanceRecords((prev) =>
       prev.map((r) =>
         r.id === recordId
-          ? { ...r, checkOutTime }
+          ? { ...r, checkOutTime, ...(photoUrl ? { photoUrl } : {}) }
           : r
       )
     );
@@ -482,9 +482,11 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     }
 
     try {
+      const checkOutUpdates: Record<string, unknown> = { check_out_time: checkOutTime };
+      if (photoUrl) checkOutUpdates.photo_url = photoUrl;
       await supabase
         .from('attendance_records')
-        .update({ check_out_time: checkOutTime })
+        .update(checkOutUpdates)
         .eq('id', recordId);
     } catch (e) {
       console.error('Failed to sync check-out to Supabase:', e);

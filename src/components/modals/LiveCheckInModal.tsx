@@ -33,7 +33,7 @@ interface LiveCheckInModalProps {
   sites: PropertySite[];
   attendanceRecords?: AttendanceRecord[];
   onCheckInSuccess: (record: AttendanceRecord) => void;
-  onCheckOut?: (recordId: string) => void;
+  onCheckOut?: (recordId: string, photoUrl?: string) => void;
   initialTab?: 'ATTENDANCE' | 'LEAVE';
 }
 
@@ -229,9 +229,9 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
     const currentTime = `${hh}:${mm} WITA`;
 
     setTimeout(() => {
-      if (onCheckOut) onCheckOut(todayRecord.id);
+      if (onCheckOut) onCheckOut(todayRecord.id, selfiePhoto || undefined);
       setIsProcessing(false);
-      setSubmittedRecord({ ...todayRecord, checkOutTime: currentTime });
+      setSubmittedRecord({ ...todayRecord, checkOutTime: currentTime, photoUrl: selfiePhoto || todayRecord.photoUrl });
     }, 450);
   };
 
@@ -514,22 +514,52 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                 {/* ── TAB 1: ABSEN MASUK / PULANG ──────────────────────── */}
                 {modalTab === 'ATTENDANCE' && (
                   <>
-                    {/* STATUS: SUDAH ABSEN MASUK, BELUM PULANG */}
+                    {/* STATUS: SUDAH ABSEN MASUK, BELUM PULANG → Form Checkout dengan Selfie */}
                     {hasCheckedIn && !hasCheckedOut ? (
-                      <div className="p-4 rounded-xl border border-emerald-300 bg-emerald-50 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
-                            <CheckCircle className="w-4 h-4 text-[#0f766e]" />
-                            Sedang Bekerja
-                          </span>
-                          <span className="font-mono text-xs font-bold bg-emerald-200/80 text-[#065f46] px-2 py-0.5 rounded-lg">
-                            {todayRecord?.checkInTime}
-                          </span>
+                      <div className="space-y-3.5">
+                        {/* Info Status Masuk */}
+                        <div className="p-3.5 rounded-xl border border-emerald-300 bg-emerald-50 space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
+                              <CheckCircle className="w-4 h-4 text-[#0f766e]" />
+                              Sedang Bekerja
+                            </span>
+                            <span className="font-mono text-xs font-bold bg-emerald-200/80 text-[#065f46] px-2 py-0.5 rounded-lg">
+                              Masuk: {todayRecord?.checkInTime}
+                            </span>
+                          </div>
+                          <div className="text-xs text-emerald-800 pt-1 border-t border-emerald-200">
+                            <span className="text-emerald-600">Lokasi:</span>{' '}
+                            <span className="font-semibold">{todayRecord?.siteName}</span>
+                          </div>
                         </div>
-                        <div className="text-xs text-emerald-800 pt-1 border-t border-emerald-200">
-                          <span className="text-emerald-600">Lokasi:</span>{' '}
-                          <span className="font-semibold">{todayRecord?.siteName}</span>
+
+                        {/* Label instruksi */}
+                        <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                          Verifikasi Absen Pulang
                         </div>
+
+                        {/* Geofence GPS Status */}
+                        <GeofenceStatusCard
+                          targetSite={currentSite}
+                          isSimulated={isSimulatedGeofence}
+                          onToggleSimulated={setIsSimulatedGeofence}
+                          coordinates={coordinates}
+                          distanceMeters={realDistance}
+                          isWithinRadius={isRealWithinRadius}
+                          isLoadingGPS={isLoadingGPS}
+                          gpsError={gpsError}
+                          onRefreshGPS={handleRefreshGPS}
+                          showDemoToggle={true}
+                        />
+
+                        {/* Selfie Camera View untuk Checkout */}
+                        <SelfieCameraView
+                          onPhotoCaptured={setSelfiePhoto}
+                          employeeName={currentEmp.name}
+                          employeeInitials={currentEmp.initials}
+                          avatarColor={currentEmp.avatarColor}
+                        />
                       </div>
 
                     ) : hasCheckedIn && hasCheckedOut ? (
@@ -693,11 +723,19 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                 <button
                   type="button"
                   onClick={handleExecuteCheckOut}
-                  disabled={isProcessing}
-                  className="w-full py-3.5 text-sm font-bold text-white bg-[#0f766e] hover:bg-[#115e59] rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  disabled={isProcessing || !selfiePhoto}
+                  className={`w-full py-3.5 text-sm font-bold text-white rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 active:scale-98 ${
+                    !selfiePhoto
+                      ? 'bg-slate-400 cursor-not-allowed opacity-80 shadow-none'
+                      : 'bg-[#0f766e] hover:bg-[#115e59] shadow-emerald-700/20 cursor-pointer'
+                  }`}
                 >
                   <LogOut className="w-4.5 h-4.5" />
-                  {isProcessing ? 'Memproses...' : 'Absen Pulang Sekarang'}
+                  {isProcessing
+                    ? 'Memproses...'
+                    : !selfiePhoto
+                    ? 'Ambil Foto Selfie Pulang Dahulu'
+                    : 'Absen Pulang Sekarang'}
                 </button>
               ) : hasCheckedIn && hasCheckedOut ? (
                 <button

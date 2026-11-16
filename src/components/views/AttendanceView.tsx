@@ -402,7 +402,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         hasCheckedOut={hasMyCheckOut}
                         isLeaveToday={isMyLeave}
                         onOpenCheckInModal={onOpenLiveCheckIn}
-                        onCheckOut={() => myTodayRecord && onCheckOut(myTodayRecord.id)}
+                        onCheckOut={() => onOpenLiveCheckIn('ATTENDANCE')}
                         variant="hero"
                         className="w-full"
                       />
@@ -471,15 +471,15 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Check-Out Button (Primary Action) */}
+                  {/* Check-Out Button (Primary Action) — via modal agar selfie wajib */}
                   <div className="flex flex-col sm:flex-row gap-2.5">
                     <button
                       type="button"
-                      onClick={() => onCheckOut(myTodayRecord.id)}
+                      onClick={() => onOpenLiveCheckIn('ATTENDANCE')}
                       className="flex-1 py-3.5 px-4 rounded-xl bg-linear-to-r from-emerald-600 to-[#0f766e] hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-sm shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <LogOut className="w-5 h-5" />
-                      <span>Absen Pulang Sekarang (Check-Out)</span>
+                      <span>Absen Pulang + Selfie (Check-Out)</span>
                     </button>
 
                     {canEditAttendance && (
