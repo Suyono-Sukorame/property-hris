@@ -238,6 +238,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
           biometricVerified: a.biometric_verified,
           ppeCompliance: a.ppe_compliance,
           deviceInfo: a.device_info,
+          photoUrl: a.photo_url || undefined,
           notes: a.notes,
         }));
         setAttendanceRecords(autoArchiveAttendanceRecords(mapped));
@@ -376,7 +377,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
 
     // Persist to Supabase
     try {
-      await supabase.from('attendance_records').insert({
+      const payload: any = {
         id: newRecord.id,
         employee_id: newRecord.employeeId,
         employee_name: newRecord.employeeName,
@@ -395,8 +396,20 @@ export function HRISProvider({ children }: { children: ReactNode }) {
         biometric_verified: newRecord.biometricVerified,
         ppe_compliance: newRecord.ppeCompliance,
         device_info: newRecord.deviceInfo,
+        photo_url: newRecord.photoUrl || null,
         notes: newRecord.notes || null,
-      });
+      };
+
+      const { error: insertErr } = await supabase.from('attendance_records').insert(payload);
+      if (insertErr) {
+        // Fallback jika kolom photo_url belum ada di Supabase
+        if (insertErr.message?.includes('photo_url')) {
+          delete payload.photo_url;
+          await supabase.from('attendance_records').insert(payload);
+        } else {
+          console.error('Failed to sync attendance to Supabase:', insertErr);
+        }
+      }
     } catch (e) {
       console.error('Failed to sync attendance to Supabase:', e);
     }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { AttendanceRecord, PropertySite } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
-import { StatusBadge, KPICard, FilterBar, SearchInput, Select, EmptyState, GeofenceBadge } from '@/components/ui';
+import { StatusBadge, KPICard, FilterBar, SearchInput, Select, EmptyState, GeofenceBadge, SelfieThumbnail } from '@/components/ui';
 import {
   Clock,
   MapPin,
@@ -332,12 +332,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <div className="bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-4 sm:p-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm text-white shadow-xs shrink-0"
-                    style={{ backgroundColor: currentUser?.avatarColor || '#0f766e' }}
-                  >
-                    {currentUser?.initials || 'ME'}
-                  </div>
+                  <SelfieThumbnail
+                    photoUrl={myTodayRecord?.photoUrl}
+                    employeeName={currentUser?.name || 'Karyawan'}
+                    initials={currentUser?.initials || 'ME'}
+                    avatarColor={currentUser?.avatarColor || '#0f766e'}
+                    size="md"
+                    caption={`${currentUser?.name || 'Karyawan'} · Presensi Hari Ini`}
+                  />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h2 className="text-sm sm:text-base font-bold text-white truncate">
@@ -736,8 +738,19 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     filteredRecords.map((record) => (
                       <tr key={record.id} className="h-14 hover:bg-slate-50/80 transition-colors">
                         <td className="px-4">
-                          <div className="font-bold text-slate-900">{record.employeeName}</div>
-                          <div className="font-mono text-[10px] text-slate-400">{record.jobCode}</div>
+                          <div className="flex items-center gap-2.5">
+                            <SelfieThumbnail
+                              photoUrl={record.photoUrl}
+                              employeeName={record.employeeName}
+                              initials={getInitials(record.employeeName)}
+                              size="sm"
+                              caption={`${record.employeeName} · ${record.shift} (${record.checkInTime})`}
+                            />
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 truncate">{record.employeeName}</div>
+                              <div className="font-mono text-[10px] text-slate-400">{record.jobCode}</div>
+                            </div>
+                          </div>
                         </td>
 
                         <td className="px-4 text-slate-700 truncate max-w-42.5">
@@ -861,11 +874,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                   <div key={record.id} className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
                     {/* Card Header */}
                     <div className="flex items-center gap-3 p-3.5 border-b border-slate-100">
-                      <div className="w-10 h-10 rounded-full bg-[#0f766e]/10 flex items-center justify-center shrink-0">
-                        <span className="text-sm font-bold text-[#0f766e]">
-                          {getInitials(record.employeeName)}
-                        </span>
-                      </div>
+                      <SelfieThumbnail
+                        photoUrl={record.photoUrl}
+                        employeeName={record.employeeName}
+                        initials={getInitials(record.employeeName)}
+                        size="md"
+                        caption={`${record.employeeName} · ${record.shift} (${record.checkInTime})`}
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-slate-900 text-sm truncate">{record.employeeName}</div>
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">

@@ -82,6 +82,7 @@ export interface AttendanceRecord {
   ppeCompliance: boolean;
   workMode?: 'WFO' | 'WFH' | 'Dinas Luar' | 'Site Proyek';
   deviceInfo: string;
+  photoUrl?: string;
   notes?: string;
 }
 

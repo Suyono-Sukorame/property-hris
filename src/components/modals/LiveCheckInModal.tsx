@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { StatusBadge } from '@/components/ui';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { calculateHaversineDistance, formatDistance, formatCoordinates } from '@/lib/geo';
-import { GeofenceStatusCard, GeofenceBadge } from '@/components/attendance';
+import { GeofenceStatusCard, GeofenceBadge, SelfieCameraView } from '@/components/attendance';
 import {
   X,
   MapPin,
@@ -65,6 +65,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
   const [workMode, setWorkMode] = useState<'WFO' | 'Dinas Luar' | 'WFH'>('WFO');
   const [isProcessing, setIsProcessing] = useState(false);
   const [submittedRecord, setSubmittedRecord] = useState<AttendanceRecord | null>(null);
+  const [selfiePhoto, setSelfiePhoto] = useState<string | null>(null);
 
   // Leave form
   const [leaveType, setLeaveType] = useState<'Izin' | 'Sakit' | 'Cuti' | 'Dinas Luar'>('Izin');
@@ -74,6 +75,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
     if (isOpen) {
       setSubmittedRecord(null);
       setIsProcessing(false);
+      setSelfiePhoto(null);
       setModalTab(initialTab || 'ATTENDANCE');
       if (initialEmp) {
         setSelectedEmpId(initialEmp.id);
@@ -197,6 +199,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
       ppeCompliance: isPpeComplete,
       workMode: isOffice ? workMode : 'Site Proyek',
       deviceInfo: deviceInfoStr,
+      photoUrl: selfiePhoto || undefined,
       notes: defaultNotes,
     };
 
@@ -326,6 +329,23 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                 Data tersimpan di sistem HRIS.
               </p>
             </div>
+
+            {/* Selfie Photo Preview di Struk */}
+            {submittedRecord.photoUrl && (
+              <div className="flex items-center justify-center pt-0.5">
+                <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-md">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={submittedRecord.photoUrl}
+                    alt="Selfie Presensi"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-1 right-1 bg-emerald-600 text-white p-0.5 rounded-full shadow-2xs">
+                    <CheckCircle2 className="w-2.5 h-2.5" />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
@@ -544,6 +564,14 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                           showDemoToggle={true}
                         />
 
+                        {/* Selfie Camera View */}
+                        <SelfieCameraView
+                          onPhotoCaptured={setSelfiePhoto}
+                          employeeName={currentEmp.name}
+                          employeeInitials={currentEmp.initials}
+                          avatarColor={currentEmp.avatarColor}
+                        />
+
                         {/* Mode Kehadiran (hanya untuk kantor) */}
                         {isOffice && (
                           <div className="space-y-2">
@@ -681,9 +709,9 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                 <button
                   type="button"
                   onClick={handleExecuteCheckIn}
-                  disabled={isProcessing || !isWithinGeofence}
+                  disabled={isProcessing || !isWithinGeofence || !selfiePhoto}
                   className={`w-full py-3.5 text-sm font-bold text-white rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 active:scale-98 ${
-                    !isWithinGeofence
+                    !isWithinGeofence || !selfiePhoto
                       ? 'bg-slate-400 hover:bg-slate-400 cursor-not-allowed opacity-80 shadow-none'
                       : 'bg-[#0f766e] hover:bg-[#115e59] shadow-emerald-700/20 cursor-pointer'
                   }`}
@@ -693,6 +721,8 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                     ? 'Memverifikasi...'
                     : !isWithinGeofence
                     ? `Di Luar Radius (${formatDistance(realDistance)})`
+                    : !selfiePhoto
+                    ? 'Ambil Foto Selfie Dahulu'
                     : isOffice
                     ? workMode === 'WFO'
                       ? 'Absen Masuk — Kantor'

@@ -1,7 +1,7 @@
 import React from 'react';
 import { AttendanceRecord, Employee } from '@/types/hris';
 import { StatusBadge } from './StatusBadge';
-import { GeofenceBadge } from '@/components/attendance';
+import { GeofenceBadge, SelfieThumbnail } from '@/components/attendance';
 import {
   Clock,
   MapPin,
@@ -108,13 +108,17 @@ export const AttendanceItemCard: React.FC<AttendanceItemCardProps> = ({
       className={`p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 bg-white hover:border-slate-300 shadow-2xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${className}`}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-2xs relative"
-          style={{ backgroundColor: employee.avatarColor || '#0f766e' }}
-        >
-          {employee.initials}
+        <div className="relative shrink-0">
+          <SelfieThumbnail
+            photoUrl={record.photoUrl}
+            employeeName={record.employeeName}
+            initials={employee.initials}
+            avatarColor={employee.avatarColor}
+            size="md"
+            caption={`${record.employeeName} · ${record.shift} (${record.checkInTime})`}
+          />
           <span
-            className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white ring-1 ${
+            className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white ring-1 z-10 ${
               record.status === 'Hadir'
                 ? 'bg-emerald-500 ring-emerald-200'
                 : record.status === 'Terlambat'
