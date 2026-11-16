@@ -484,7 +484,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     try {
       await supabase
         .from('attendance_records')
-        .update({ check_out_time: checkOutTime, updated_at: now.toISOString() })
+        .update({ check_out_time: checkOutTime })
         .eq('id', recordId);
     } catch (e) {
       console.error('Failed to sync check-out to Supabase:', e);
@@ -498,13 +498,14 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     );
 
     // Build Supabase column map for known updatable fields
-    const dbUpdates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    const dbUpdates: Record<string, unknown> = {};
     if (updates.checkInTime !== undefined) dbUpdates.check_in_time = updates.checkInTime;
     if (updates.checkOutTime !== undefined) dbUpdates.check_out_time = updates.checkOutTime;
     if (updates.status !== undefined) dbUpdates.status = updates.status;
     if (updates.lateMinutes !== undefined) dbUpdates.late_minutes = updates.lateMinutes;
     if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
     if (updates.ppeCompliance !== undefined) dbUpdates.ppe_compliance = updates.ppeCompliance;
+    if (updates.photoUrl !== undefined) dbUpdates.photo_url = updates.photoUrl;
 
     try {
       await supabase.from('attendance_records').update(dbUpdates).eq('id', recordId);

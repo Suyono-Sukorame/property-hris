@@ -48,18 +48,23 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 
     setIsSupported(true);
 
-    if ('permissions' in navigator && navigator.permissions.query) {
-      navigator.permissions
-        .query({ name: 'geolocation' as PermissionName })
-        .then((status) => {
-          setPermissionState(status.state);
-          status.onchange = () => {
+    try {
+      if ('permissions' in navigator && typeof navigator.permissions?.query === 'function') {
+        navigator.permissions
+          .query({ name: 'geolocation' as PermissionName })
+          .then((status) => {
             setPermissionState(status.state);
-          };
-        })
-        .catch(() => {
-          setPermissionState('unknown');
-        });
+            status.onchange = () => {
+              setPermissionState(status.state);
+            };
+          })
+          .catch(() => {
+            setPermissionState('unknown');
+          });
+      }
+    } catch {
+      // Safari / WebKit throws synchronous TypeError on query({ name: 'geolocation' })
+      setPermissionState('unknown');
     }
   }, []);
 

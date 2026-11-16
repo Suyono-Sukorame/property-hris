@@ -52,14 +52,18 @@ function getDateRangeLabel(range: DateRangeFilter): string {
   return labels[range];
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase();
+function getInitials(name?: string): string {
+  if (!name || typeof name !== 'string') return 'KR';
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase() || 'KR'
+  );
 }
 
 function isInDateRange(dateStr: string, range: DateRangeFilter): boolean {

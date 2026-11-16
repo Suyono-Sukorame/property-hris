@@ -54,19 +54,12 @@ export function useCamera(options: UseCameraOptions = {}) {
       });
 
       streamRef.current = stream;
+      setIsStreaming(true);
+      setIsLoadingStream(false);
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().catch((e) => {
-            console.error('Video play error:', e);
-          });
-          setIsStreaming(true);
-          setIsLoadingStream(false);
-        };
-      } else {
-        setIsStreaming(true);
-        setIsLoadingStream(false);
+        videoRef.current.play().catch(() => {});
       }
     } catch (err: any) {
       setIsLoadingStream(false);
@@ -102,6 +95,16 @@ export function useCamera(options: UseCameraOptions = {}) {
     setCapturedImage(null);
     startCamera();
   }, [startCamera]);
+
+  // Ensure stream is bound to video element whenever it is rendered/mounted
+  useEffect(() => {
+    if (isStreaming && videoRef.current && streamRef.current) {
+      if (videoRef.current.srcObject !== streamRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+        videoRef.current.play().catch(() => {});
+      }
+    }
+  }, [isStreaming]);
 
   // Clean up stream on unmount
   useEffect(() => {

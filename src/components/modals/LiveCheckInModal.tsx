@@ -88,9 +88,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
     }
   }, [isOpen, initialTab, currentUser, initialEmp, sites]);
 
-  if (!isOpen) return null;
-
-  // Geolocation & Simulation State
+  // Geolocation & Simulation State (Always call hooks unconditionally before any early returns)
   const [isSimulatedGeofence, setIsSimulatedGeofence] = useState<boolean>(true);
   const {
     coordinates,
@@ -99,8 +97,17 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
     refreshPosition: handleRefreshGPS,
   } = useGeolocation({ autoRequest: isOpen });
 
+  if (!isOpen) return null;
+
   const currentEmp = employees.find((e) => e.id === selectedEmpId) || initialEmp || employees[0];
-  const currentSite = sites.find((s) => s.id === selectedSiteId) || sites[0];
+  const currentSite = sites.find((s) => s.id === selectedSiteId) || sites[0] || {
+    id: 'SITE-01',
+    name: 'Griya Bumi Raya',
+    category: 'Perumahan',
+    latitude: -3.4125,
+    longitude: 114.7082,
+    geofenceRadiusMeters: 500,
+  };
 
   const isOffice =
     currentSite?.category === 'Corporate Head Office' ||
@@ -109,7 +116,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayRecord = attendanceRecords.find(
-    (r) => r.employeeId === currentEmp.id && r.date === todayStr
+    (r) => r.employeeId === currentEmp?.id && r.date === todayStr
   );
 
   const hasCheckedIn =
@@ -118,17 +125,20 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
   const isLeaveToday =
     todayRecord?.status === 'Cuti' || todayRecord?.status === 'Izin Lapangan';
 
-  // Distance calculation via Haversine formula
+  // Distance calculation via Haversine formula (dengan fallback aman)
+  const siteLat = currentSite?.latitude ?? -3.4125;
+  const siteLng = currentSite?.longitude ?? 114.7082;
+  const allowedRadius = currentSite?.geofenceRadiusMeters || 500;
+
   const realDistance = coordinates
     ? calculateHaversineDistance(
         coordinates.latitude,
         coordinates.longitude,
-        currentSite.latitude,
-        currentSite.longitude
+        siteLat,
+        siteLng
       )
     : 0;
 
-  const allowedRadius = currentSite.geofenceRadiusMeters || 500;
   const isRealWithinRadius = coordinates ? realDistance <= allowedRadius : false;
 
   // In simulated mode: distance = 0m and verified
