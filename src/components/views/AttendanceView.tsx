@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { AttendanceRecord, PropertySite } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
-import { StatusBadge, KPICard, FilterBar, SearchInput, Select, EmptyState, GeofenceBadge, SelfieThumbnail } from '@/components/ui';
+import { StatusBadge, KPICard, FilterBar, SearchInput, Select, EmptyState, GeofenceBadge, SelfieThumbnail, AttendanceActionButton } from '@/components/ui';
 import {
   Clock,
   MapPin,
@@ -390,17 +390,19 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Main Action Buttons: 1-Tap Direct Attendance */}
+                  {/* Main Action Buttons: Verifikasi Selfie & GPS Terpadu */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={handleDirectCheckIn}
-                      disabled={isCheckingInDirect}
-                      className="sm:col-span-2 py-3.5 px-4 rounded-xl bg-linear-to-r from-[#0f766e] to-teal-700 hover:from-[#115e59] hover:to-teal-800 text-white font-bold text-sm shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-60"
-                    >
-                      <Fingerprint className="w-5 h-5 text-emerald-200" />
-                      <span>{isCheckingInDirect ? 'Mencatat Kehadiran...' : 'Presensi Masuk Sekarang'}</span>
-                    </button>
+                    <div className="sm:col-span-2">
+                      <AttendanceActionButton
+                        hasCheckedIn={hasMyCheckIn}
+                        hasCheckedOut={hasMyCheckOut}
+                        isLeaveToday={isMyLeave}
+                        onOpenCheckInModal={onOpenLiveCheckIn}
+                        onCheckOut={() => myTodayRecord && onCheckOut(myTodayRecord.id)}
+                        variant="hero"
+                        className="w-full"
+                      />
+                    </div>
 
                     <button
                       type="button"
