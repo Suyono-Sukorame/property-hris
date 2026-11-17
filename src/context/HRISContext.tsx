@@ -18,6 +18,7 @@ import {
   INITIAL_APPROVALS,
 } from '@/data/mockData';
 import { supabase } from '@/lib/supabase';
+import { createEmployeeAccount } from '@/lib/accounts';
 import { DynamicAlertData } from '@/components/ui';
 
 interface HRISContextType {
@@ -554,7 +555,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
 
     // Persist to Supabase
     try {
-      await supabase.from('employees').insert({
+      const { error: employeeError } = await supabase.from('employees').insert({
         id: newEmp.id,
         nik: newEmp.nik,
         name: newEmp.name,
@@ -578,8 +579,10 @@ export function HRISProvider({ children }: { children: ReactNode }) {
         bank_account: newEmp.bankAccount,
         initials: newEmp.initials,
         avatar_color: newEmp.avatarColor,
-        photo_url: newEmp.photoUrl || null,
       });
+      if (employeeError) throw employeeError;
+
+      await createEmployeeAccount(newEmp);
 
       await supabase.from('payroll_records').insert({
         id: newPay.id,
@@ -687,7 +690,6 @@ export function HRISProvider({ children }: { children: ReactNode }) {
           emergency_contact: finalEmp.emergencyContact,
           join_date: finalEmp.joinDate,
           initials: finalEmp.initials,
-          photo_url: finalEmp.photoUrl || null,
         })
         .eq('id', finalEmp.id);
     } catch (e) {

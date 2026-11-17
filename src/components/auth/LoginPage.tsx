@@ -3,19 +3,20 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
-import { DEMO_USERS } from '@/data/authUsers';
-import { ShieldCheck, Lock, Mail, ArrowRight, Building2, DollarSign, Megaphone, HardHat, UserCheck, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 import { PWAInstallButton } from '@/components/pwa';
 import { DeveloperBranding } from '@/components/ui';
+import { AccountOptionButton } from '@/components/auth/AccountOptionButton';
+import { DEFAULT_ACCOUNT_PASSWORD } from '@/lib/accounts';
 
 export const LoginPage: React.FC = () => {
-  const { login, loginAsDemo } = useAuth();
+  const { login, loginAsDemo, accounts, isAccountsLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -25,13 +26,14 @@ export const LoginPage: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      const res = login(email, password);
+    try {
+      const res = await login(email, password);
       if (!res.success) {
         setErrorMessage(res.message || 'Login gagal.');
       }
+    } finally {
       setIsSubmitting(false);
-    }, 400);
+    }
   };
 
   return (
@@ -103,9 +105,12 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider block mb-1">
-                Kata Sandi
-              </label>
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <label className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+                  Kata Sandi
+                </label>
+                <span className="text-[10px] text-slate-500">Default akun baru: {DEFAULT_ACCOUNT_PASSWORD}</span>
+              </div>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -140,67 +145,15 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Demo Role Switcher Buttons */}
+          {/* Daftar akun diambil dari user_profiles (termasuk karyawan baru) */}
           <div className="space-y-2">
-            {DEMO_USERS.map((user) => {
-              const isSuper = user.role === 'SUPER_ADMIN';
-              const isSite = user.role === 'SITE_MANAGER';
-              const isMarketing = user.division?.includes('Pemasaran');
-
-              // Ikon & badge warna berbasis peran; teks jabatan selalu lengkap dari data user
-              let Icon = UserCheck;
-              const roleBadge = user.title || user.roleLabel || 'Staf';
-              let roleBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60';
-              let dutyDescription = 'Presensi Proyek, Slip Gaji & Ajukan Izin';
-
-              if (isSuper) {
-                Icon = Building2;
-                roleBadgeClass = 'bg-teal-950/80 text-teal-300 border-teal-700/60';
-                dutyDescription = 'Persetujuan Kasbon, Cuti & Ringkasan Bisnis';
-              } else if (isSite) {
-                Icon = DollarSign;
-                roleBadgeClass = 'bg-sky-950/80 text-sky-300 border-sky-700/60';
-                dutyDescription = 'Kelola Gaji, Kasbon, & Rekap Presensi';
-              } else if (isMarketing) {
-                Icon = Megaphone;
-                roleBadgeClass = 'bg-amber-950/80 text-amber-300 border-amber-700/60';
-                dutyDescription = 'Presensi Harian, Slip Gaji & Izin';
-              } else {
-                Icon = HardHat;
-                roleBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60';
-                dutyDescription = 'Presensi Proyek, Slip Gaji & Izin';
-              }
-
-              return (
-                <button
-                  key={user.id}
-                  type="button"
-                  onClick={() => loginAsDemo(user.id)}
-                  className="w-full p-3 rounded-xl bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-left transition-all flex items-center gap-3 group cursor-pointer"
-                >
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
-                    style={{ backgroundColor: user.avatarColor }}
-                  >
-                    <Icon className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors truncate">
-                        {user.name}
-                      </span>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${roleBadgeClass}`}>
-                        {roleBadge}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
-                      {dutyDescription}
-                    </p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition-colors shrink-0" />
-                </button>
-              );
-            })}
+            {isAccountsLoading ? (
+              <p className="text-center text-[11px] text-slate-500 py-2">Memuat akun...</p>
+            ) : (
+              accounts.map((user) => (
+                <AccountOptionButton key={user.id} user={user} onSelect={loginAsDemo} />
+              ))
+            )}
           </div>
 
           <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-center gap-2 text-[11px] text-slate-500">

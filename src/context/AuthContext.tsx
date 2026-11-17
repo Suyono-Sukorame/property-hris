@@ -4,12 +4,16 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { AuthUser, UserRole } from '@/types/auth';
 import { DEMO_USERS } from '@/data/authUsers';
 import { supabase } from '@/lib/supabase';
+import { findAccountByEmail, getAccounts, mapProfileToAuthUser } from '@/lib/accounts';
 
 interface AuthContextType {
   currentUser: AuthUser | null;
   isLoading: boolean;
-  login: (email: string, password?: string) => { success: boolean; message?: string };
-  loginAsDemo: (userId: string) => void;
+  accounts: AuthUser[];
+  isAccountsLoading: boolean;
+  refreshAccounts: () => Promise<void>;
+  login: (email: string, password?: string) => Promise<{ success: boolean; message?: string }>;
+  loginAsDemo: (user: AuthUser) => void;
   logout: () => void;
   updateCurrentUser: (updates: Partial<AuthUser>) => void;
   hasRole: (allowedRoles: UserRole[]) => boolean;
@@ -22,6 +26,24 @@ const STORAGE_KEY = 'property_hris_session_v1';
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [accounts, setAccounts] = useState<AuthUser[]>(DEMO_USERS);
+  const [isAccountsLoading, setIsAccountsLoading] = useState(true);
+
+  const refreshAccounts = async () => {
+    setIsAccountsLoading(true);
+    try {
+      setAccounts(await getAccounts());
+    } finally {
+      setIsAccountsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAccounts()
+      .then((list) => setAccounts(list))
+      .catch(() => setAccounts(DEMO_USERS))
+      .finally(() => setIsAccountsLoading(false));
+  }, []);
 
   // Load session from storage on mount & sync latest profile from Supabase
   useEffect(() => {
@@ -39,21 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .eq('id', parsed.id)
                 .single();
               if (dbUser) {
-                const refreshed: AuthUser = {
-                  ...parsed,
-                  name: dbUser.name,
-                  email: dbUser.email,
-                  phone: dbUser.phone,
-                  avatarColor: dbUser.avatar_color,
-                  initials: dbUser.initials,
-                  role: dbUser.role,
-                  roleLabel: dbUser.role_label,
-                  title: dbUser.title,
-                  division: dbUser.division,
-                  siteId: dbUser.site_id,
-                  siteName: dbUser.site_name,
-                  employeeId: dbUser.employee_id,
-                };
+                const refreshed = mapProfileToAuthUser(dbUser);
                 setCurrentUser(refreshed);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(refreshed));
               }
@@ -70,45 +78,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const login = (email: string) => {
-    const cleanEmail = email.trim().toLowerCase();
-    const user = DEMO_USERS.find((u) => u.email.toLowerCase() === cleanEmail);
-    if (user) {
-      setCurrentUser(user);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-      return { success: true };
+  const login = async (email: string, password?: string) => {
+    const user = await findAccountByEmail(email);
+    if (!user) {
+      return { success: false, message: 'Email tidak terdaftar. Hubungi admin HRIS.' };
     }
 
-    // Default fallback: masuk sebagai Direktur / Pemilik
-    const genericUser: AuthUser = {
-      id: `USR-${Date.now()}`,
-      name: email.split('@')[0],
-      email: email,
-      role: 'SUPER_ADMIN',
-      roleLabel: 'Pemilik / Direktur',
-      title: 'Direktur Utama',
-      division: 'Manajemen',
-      siteId: 'SITE-01',
-      siteName: 'Griya Bumi Raya',
-      avatarColor: '#0f766e',
-      initials: email.substring(0, 2).toUpperCase(),
-    };
-    setCurrentUser(genericUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(genericUser));
+    if (user.password && password !== user.password) {
+      return { success: false, message: 'Kata sandi salah.' };
+    }
+
+    setCurrentUser(user);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
     return { success: true };
   };
 
-  const loginAsDemo = (userId: string) => {
-    const user = DEMO_USERS.find((u) => u.id === userId);
-    if (user) {
-      setCurrentUser(user);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    }
+  const loginAsDemo = (user: AuthUser) => {
+    setCurrentUser(user);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
   };
 
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem(STORAGE_KEY);
+    refreshAccounts();
   };
 
   const updateCurrentUser = (updates: Partial<AuthUser>) => {
@@ -163,6 +156,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         currentUser,
         isLoading,
+        accounts,
+        isAccountsLoading,
+        refreshAccounts,
         login,
         loginAsDemo,
         logout,
