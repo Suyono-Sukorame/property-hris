@@ -136,65 +136,6 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Direct 1-Tap Attendance states
-  const [isCheckingInDirect, setIsCheckingInDirect] = useState(false);
-  const [directFeedback, setDirectFeedback] = useState<string | null>(null);
-
-  const handleDirectCheckIn = () => {
-    setIsCheckingInDirect(true);
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    const currentTimeStr = `${hh}:${mm}`;
-
-    const currentSite = sites.find((s) => s.id === (currentUser?.siteId || 'SITE-GRIYA')) || sites[0];
-    const isOffice = currentSite?.category === 'Corporate Head Office' || currentSite?.id === 'SITE-HQ' || currentSite?.category === 'Kantor';
-
-    const isLate = isOffice
-      ? now.getHours() > 8 || (now.getHours() === 8 && now.getMinutes() > 30)
-      : now.getHours() > 8 || (now.getHours() === 8 && now.getMinutes() > 0);
-    const lateMinutes = isOffice
-      ? isLate ? (now.getHours() - 8) * 60 + (now.getMinutes() - 30) : 0
-      : isLate ? (now.getHours() - 8) * 60 + now.getMinutes() : 0;
-
-    const shiftLabel = isOffice
-      ? 'Shift Kantor Pusat (08:30 - 17:30)'
-      : 'Shift Proyek Pagi (07:00 - 16:00)';
-
-    const defaultNotes = isOffice
-      ? 'Presensi operasional kantor pusat'
-      : 'Presensi langsung diverifikasi di area proyek';
-
-    const newRecord: AttendanceRecord = {
-      id: `ATT-${Date.now()}`,
-      employeeId: currentUser?.employeeId || 'EMP-2025-003',
-      employeeName: currentUser?.name || 'Rudi Hartono',
-      jobCode: (currentUser as any)?.jobCode || 'LAP-001',
-      division: (currentUser as any)?.division || 'Operasional Lapangan',
-      siteId: currentSite?.id || 'SITE-GRIYA',
-      siteName: currentSite?.name || currentUser?.siteName || 'Griya Bumi Raya',
-      date: new Date().toISOString().slice(0, 10),
-      checkInTime: `${currentTimeStr} WITA`,
-      shift: shiftLabel,
-      status: isLate ? 'Terlambat' : 'Hadir',
-      lateMinutes,
-      geofenceDistanceMeters: 0,
-      geofenceVerified: true,
-      biometricVerified: true,
-      ppeCompliance: true,
-      workMode: isOffice ? 'WFO' : 'Site Proyek',
-      deviceInfo: 'Smartphone GPS Geotagged (1-Tap Direct)',
-      notes: defaultNotes,
-    };
-
-    if (onCheckInSuccess) {
-      onCheckInSuccess(newRecord);
-    }
-    setIsCheckingInDirect(false);
-    setDirectFeedback(`Presensi Masuk Berhasil! (${currentTimeStr} WITA)`);
-    setTimeout(() => setDirectFeedback(null), 4000);
-  };
-
   // Filter states for Team Monitoring
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -754,7 +695,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             />
                             <div className="min-w-0">
                               <div className="font-bold text-slate-900 truncate">{record.employeeName}</div>
-                              <div className="font-mono text-[10px] text-slate-400">{record.jobCode}</div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-[10px] text-slate-400">{record.jobCode}</span>
+                                {!record.photoUrl && (
+                                  <span className="px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-[9px] font-bold text-amber-800 flex items-center gap-0.5">
+                                    ⚠️ Tanpa Foto
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>
@@ -894,6 +842,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           <span className="text-slate-300">·</span>
                           <span className="text-[10px] text-slate-500 truncate">{record.siteName}</span>
                         </div>
+                        {!record.photoUrl && (
+                          <div className="mt-1">
+                            <span className="px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-[9px] font-bold text-amber-800 inline-flex items-center gap-0.5">
+                              ⚠️ Tanpa Foto Selfie
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div className="shrink-0 flex flex-col items-end gap-1">
                         <StatusBadge status={record.status} size="sm" />

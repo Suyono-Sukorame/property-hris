@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { AttendanceRecord, AttendanceStatus } from '@/types/hris';
-import { X, ClipboardEdit, CheckCircle, AlertTriangle } from 'lucide-react';
+import { X, ClipboardEdit, CheckCircle, AlertTriangle, Camera, ImageOff } from 'lucide-react';
+import { SelfieThumbnail } from '@/components/ui';
 
 interface EditAttendanceModalProps {
   record: AttendanceRecord | null;
@@ -97,6 +98,50 @@ export const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
             <span>
               Koreksi ini akan disimpan ke sistem dan Supabase. Pastikan data yang diubah sudah diverifikasi.
             </span>
+          </div>
+
+          {/* Preview Foto Selfie (Read-Only) */}
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block mb-2">
+              Foto Selfie Presensi
+            </label>
+            {record.photoUrl ? (
+              <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <SelfieThumbnail
+                  photoUrl={record.photoUrl}
+                  employeeName={record.employeeName}
+                  initials={record.employeeName.substring(0, 2).toUpperCase()}
+                  avatarColor="#0f766e"
+                  size="lg"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 text-emerald-700">
+                    <Camera className="w-3.5 h-3.5" />
+                    <span className="font-bold text-xs">Foto Tersedia</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    Klik thumbnail untuk melihat foto ukuran penuh
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-300 rounded-lg">
+                <div className="p-2 rounded-lg bg-amber-100">
+                  <ImageOff className="w-5 h-5 text-amber-700" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 text-amber-800">
+                    <span className="font-bold text-xs">Tanpa Foto Selfie</span>
+                    <span className="px-1.5 py-0.5 rounded bg-amber-200 text-[10px] font-bold text-amber-900">
+                      ⚠️
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-700 mt-0.5">
+                    Presensi ini tidak dilengkapi dengan foto selfie verifikasi
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Check-In / Check-Out Time */}
