@@ -5,7 +5,9 @@ import { Employee, PropertySite } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
 import { StatusBadge, PageHeader, FilterBar, SearchInput, Select, EmptyState, SelfieThumbnail } from '@/components/ui';
 import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
+import { JobDescription } from '@/types/jobdesc';
 import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui';
 import {
   Search,
   CreditCard,
@@ -27,6 +29,7 @@ import {
   AlertTriangle,
   UserPlus,
 } from 'lucide-react';
+import { JobDescriptionModal } from '@/components/modals';
 
 interface EmployeesViewProps {
   employees: Employee[];
@@ -60,8 +63,101 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
   const [deleteMode, setDeleteMode] = useState<'deactivate' | 'permanent'>('deactivate');
   const [expandedJobCode, setExpandedJobCode] = useState<string | null>(null);
+  const [isJobDescModalOpen, setIsJobDescModalOpen] = useState(false);
+  const [editingJobdesc, setEditingJobdesc] = useState<JobDescription | null>(null);
+  const [deleteJobdescCode, setDeleteJobdescCode] = useState<string | null>(null);
 
-  // Filter employees
+  // Load job descriptions from localStorage (CRUD) or fallback to static
+  const [jobdescs, setJobdescs] = useState<JobDescription[]>(() => {
+    try {
+      const saved = localStorage.getItem('jobdescs');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error('Failed to load jobdescs from localStorage:', e);
+    }
+    return Object.values(JOB_DESCRIPTIONS);
+  });
+
+  const allJobdescs = jobdescs;
+
+  // CRUD Handlers for Job Descriptions
+  const handleAddJobdesc = (formData: any) => {
+    const newJobdesc: JobDescription = {
+      jobCode: formData.jobCode,
+      title: formData.title,
+      division: formData.division,
+      level: formData.level,
+      reportsTo: formData.reportsTo,
+      purpose: formData.purpose,
+      responsibilities: formData.responsibilities,
+      authorities: formData.authorities,
+      kpiTargets: formData.kpiTargets,
+      qualifications: formData.qualifications,
+    };
+
+    setJobdescs(prev => {
+      const updated = [newJobdesc, ...prev];
+      try {
+        localStorage.setItem('jobdescs', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save jobdescs:', e);
+      }
+      return updated;
+    });
+
+    setIsJobDescModalOpen(false);
+  };
+
+  const handleUpdateJobdesc = (formData: any) => {
+    const updatedJobdesc: JobDescription = {
+      jobCode: formData.jobCode,
+      title: formData.title,
+      division: formData.division,
+      level: formData.level,
+      reportsTo: formData.reportsTo,
+      purpose: formData.purpose,
+      responsibilities: formData.responsibilities,
+      authorities: formData.authorities,
+      kpiTargets: formData.kpiTargets,
+      qualifications: formData.qualifications,
+    };
+
+    setJobdescs(prev => {
+      const updated = prev.map(j => 
+        j.jobCode === formData.jobCode ? updatedJobdesc : j
+      );
+      try {
+        localStorage.setItem('jobdescs', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save jobdescs:', e);
+      }
+      return updated;
+    });
+
+    setIsJobDescModalOpen(false);
+    setEditingJobdesc(null);
+  };
+
+  const handleDeleteJobdesc = (jobCode: string) => {
+    setJobdescs(prev => {
+      const updated = prev.filter(j => j.jobCode !== jobCode);
+      try {
+        localStorage.setItem('jobdescs', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save jobdescs:', e);
+      }
+      return updated;
+    });
+    setDeleteJobdescCode(null);
+  };
+
+  const handleEditJobdesc = (job: JobDescription) => {
+    setEditingJobdesc(job);
+    setIsJobDescModalOpen(true);
+  };
+
   const filteredEmployees = employees.filter((emp) => {
     const matchSite =
       selectedSiteFilter === 'ALL' || emp.siteId === selectedSiteFilter;
@@ -102,7 +198,6 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   };
 
   const divisions = Array.from(new Set(employees.map((e) => e.division)));
-  const allJobdescs = Object.values(JOB_DESCRIPTIONS);
   const filteredJobdescs = selectedJobCode === 'ALL' 
     ? allJobdescs 
     : allJobdescs.filter(j => j.jobCode === selectedJobCode);
@@ -141,7 +236,20 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 </button>
               )}
             </>
-          ) : undefined
+          ) : (
+            <>
+              {isSuperAdmin && (
+                <button
+                  type="button"
+                  onClick={() => { setEditingJobdesc(null); setIsJobDescModalOpen(true); }}
+                  className="h-9 inline-flex items-center justify-center gap-1.5 px-3.5 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>+ Tambah Jobdesk</span>
+                </button>
+              )}
+            </>
+          )
         }
       />
 
@@ -592,15 +700,32 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 </div>
 
                 {/* Card Action Footer */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-emerald-700 text-[11px] font-semibold">
                     <Target className="w-3.5 h-3.5 text-[#0f766e]" />
                     <span>{job.kpiTargets.length} Indikator KPI</span>
                   </div>
 
-                  <span className="text-[10px] font-mono text-slate-400">
-                    SK-DIR/BRP/2026
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleEditJobdesc(job)}
+                      disabled={!isSuperAdmin}
+                      className="p-1.5 text-emerald-700 hover:text-emerald-950 hover:bg-emerald-50 rounded-lg border border-emerald-200/60 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Edit Jobdesk"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteJobdescCode(job.jobCode)}
+                      disabled={!isSuperAdmin}
+                      className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg border border-rose-200/60 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Hapus Jobdesk"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -689,6 +814,67 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
               >
                 {deleteMode === 'permanent' ? 'Ya, Hapus Permanen' : 'Ya, Nonaktifkan'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL Tambah/Edit Jobdesk
+          ========================================================================= */}
+      <JobDescriptionModal
+        isOpen={isJobDescModalOpen}
+        onClose={() => { setIsJobDescModalOpen(false); setEditingJobdesc(null); }}
+        mode={editingJobdesc ? 'edit' : 'add'}
+        initialData={editingJobdesc}
+        onSubmit={editingJobdesc ? handleUpdateJobdesc : handleAddJobdesc}
+        onDelete={handleDeleteJobdesc}
+        existingJobCodes={jobdescs.filter(j => j.jobCode !== (editingJobdesc?.jobCode || '')).map(j => j.jobCode)}
+      />
+
+      {/* =========================================================================
+          DIALOG KONFIRMASI HAPUS JOBDESK
+          ========================================================================= */}
+      {deleteJobdescCode && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-2xs p-4">
+          <div
+            className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">
+                  Hapus Jobdesk
+                </h3>
+                <p className="text-xs text-slate-600 mt-1">
+                  Anda akan menghapus jobdesk <strong className="text-rose-700">#{deleteJobdescCode}</strong>.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700">
+              ⚠️ <strong>Catatan Penting:</strong> Tindakan ini tidak dapat dibatalkan. Jobdesk akan hilang dari katalog dan tidak bisa dipilih untuk karyawan baru.
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setDeleteJobdescCode(null)}
+              >
+                Batal
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => handleDeleteJobdesc(deleteJobdescCode)}
+              >
+                Ya, Hapus Jobdesk
+              </Button>
             </div>
           </div>
         </div>
