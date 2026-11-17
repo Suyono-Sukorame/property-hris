@@ -19,7 +19,7 @@ export const FormField: React.FC<FormFieldProps> = ({
 }) => {
   return (
     <div className={className}>
-      <label className="text-xs sm:text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1.5 sm:mb-1">
+      <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
         {label}
         {required && <span className="text-rose-500 ml-0.5">*</span>}
       </label>

@@ -32,9 +32,9 @@ interface EmployeeFormFieldsProps {
 }
 
 const INPUT_CLASS =
-  'w-full h-10 sm:h-9 px-3 bg-white border border-slate-300 rounded-lg text-sm sm:text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] transition-colors';
+  'w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] transition-colors';
 const SELECT_CLASS =
-  'w-full h-10 sm:h-9 px-3 bg-white border border-slate-300 rounded-lg text-sm sm:text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] transition-colors cursor-pointer';
+  'w-full h-9 px-2.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] transition-colors cursor-pointer';
 
 const DIVISIONS = [
   'Manajemen',
@@ -43,7 +43,7 @@ const DIVISIONS = [
   'Teknis Lapangan',
 ];
 
-const SECTION_HEADER = 'text-xs sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 sm:text-slate-400 pb-2 sm:pb-1 border-b border-slate-200 sm:border-slate-100 mb-3.5 sm:mb-3';
+const SECTION_HEADER = 'text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1.5 border-b border-slate-100 mb-2.5';
 
 export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
   data,
@@ -53,12 +53,12 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
   mode = 'add',
 }) => {
   return (
-    <div className="space-y-5 text-xs text-slate-800">
+    <div className="space-y-4 text-xs text-slate-800">
       {/* ── Section 1: Identitas ─────────────────────────── */}
       <div>
         <p className={SECTION_HEADER}>1. Identitas Karyawan</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <FormField label="Nama Lengkap & Gelar" required error={errors.name} className="sm:col-span-2">
+        <div className="grid grid-cols-2 gap-2.5">
+          <FormField label="Nama Lengkap & Gelar" required error={errors.name} className="col-span-2">
             <input
               type="text"
               value={data.name}
@@ -68,19 +68,19 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             />
           </FormField>
 
-          <FormField label="Nomor Induk Kependudukan (NIK)" required error={errors.nik}>
+          <FormField label="NIK KTP" required error={errors.nik}>
             <input
               type="text"
               value={data.nik}
               onChange={(e) => onChange('nik', e.target.value)}
-              placeholder="16 Digit NIK KTP"
+              placeholder="16 Digit NIK"
               maxLength={16}
               className={`${INPUT_CLASS} font-mono`}
             />
           </FormField>
 
           {(mode === 'add' || mode === 'edit') && (
-            <FormField label="Tanggal Bergabung" error={errors.joinDate}>
+            <FormField label="Tgl. Bergabung" error={errors.joinDate}>
               <input
                 type="date"
                 value={data.joinDate}
@@ -95,8 +95,8 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
       {/* ── Section 2: Jabatan & Penugasan ───────────────── */}
       <div>
         <p className={SECTION_HEADER}>2. Jabatan & Penugasan</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <FormField label="Jabatan / Posisi Kerja" required error={errors.title}>
+        <div className="grid grid-cols-2 gap-2.5">
+          <FormField label="Jabatan / Posisi" required error={errors.title} className="col-span-2">
             <input
               type="text"
               value={data.title}
@@ -106,7 +106,7 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             />
           </FormField>
 
-          <FormField label="Divisi / Departemen" error={errors.division}>
+          <FormField label="Divisi" error={errors.division}>
             <select
               value={data.division}
               onChange={(e) => onChange('division', e.target.value)}
@@ -118,15 +118,27 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             </select>
           </FormField>
 
-          <FormField label="Lokasi Proyek" error={errors.siteId}>
+          <FormField label="Jenis Kontrak" error={errors.contractType}>
+            <select
+              value={data.contractType}
+              onChange={(e) => onChange('contractType', e.target.value as EmployeeFormData['contractType'])}
+              className={SELECT_CLASS}
+            >
+              <option value="PKWTT (Tetap)">Tetap (PKWTT)</option>
+              <option value="PKWT (Kontrak Proyek)">Kontrak (PKWT)</option>
+              <option value="Konsultan Ahli">Konsultan Ahli</option>
+            </select>
+          </FormField>
+
+          <FormField label="Lokasi Proyek" error={errors.siteId} className="col-span-2">
             <select
               value={data.siteId}
               onChange={(e) => onChange('siteId', e.target.value)}
               className={SELECT_CLASS}
             >
               {sites.map((site) => {
-                const displayName = site.name.length > 35 
-                  ? `${site.name.substring(0, 35)}...` 
+                const displayName = site.name.length > 40
+                  ? `${site.name.substring(0, 40)}...`
                   : site.name;
                 return (
                   <option key={site.id} value={site.id}>
@@ -136,25 +148,13 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
               })}
             </select>
           </FormField>
-
-          <FormField label="Jenis Kontrak" error={errors.contractType}>
-            <select
-              value={data.contractType}
-              onChange={(e) => onChange('contractType', e.target.value as EmployeeFormData['contractType'])}
-              className={SELECT_CLASS}
-            >
-              <option value="PKWTT (Tetap)">Karyawan Tetap (PKWTT)</option>
-              <option value="PKWT (Kontrak Proyek)">Kontrak Proyek (PKWT)</option>
-              <option value="Konsultan Ahli">Konsultan Ahli</option>
-            </select>
-          </FormField>
         </div>
       </div>
 
       {/* ── Section 3: Kontak ─────────────────────────────── */}
       <div>
         <p className={SECTION_HEADER}>3. Kontak</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-2 gap-2.5">
           <FormField label="Email" error={errors.email}>
             <input
               type="email"
@@ -165,17 +165,17 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             />
           </FormField>
 
-          <FormField label="No. HP / WhatsApp" error={errors.phone}>
+          <FormField label="No. HP / WA" error={errors.phone}>
             <input
               type="text"
               value={data.phone}
               onChange={(e) => onChange('phone', e.target.value)}
-              placeholder="+62 812-xxxx-xxxx"
+              placeholder="+62 812-xxxx"
               className={`${INPUT_CLASS} font-mono`}
             />
           </FormField>
 
-          <FormField label="Kontak Darurat (Keluarga)" error={errors.emergencyContact} className="sm:col-span-2">
+          <FormField label="Kontak Darurat (Keluarga)" error={errors.emergencyContact} className="col-span-2">
             <input
               type="text"
               value={data.emergencyContact}
@@ -190,8 +190,8 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
       {/* ── Section 4: Kompensasi ────────────────────────── */}
       <div>
         <p className={SECTION_HEADER}>4. Kompensasi & Rekening</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <FormField label="Gaji Pokok (IDR/bulan)" error={errors.baseSalary}>
+        <div className="grid grid-cols-2 gap-2.5">
+          <FormField label="Gaji Pokok (IDR)" error={errors.baseSalary}>
             <input
               type="number"
               min="0"
@@ -202,7 +202,7 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             />
           </FormField>
 
-          <FormField label="Tunjangan Lapangan (IDR/bulan)" error={errors.siteAllowance}>
+          <FormField label="Tunjangan Lapangan" error={errors.siteAllowance}>
             <input
               type="number"
               min="0"
@@ -213,7 +213,7 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             />
           </FormField>
 
-          <FormField label="Tunjangan Makan + Transport (IDR/bulan)" error={errors.transportMealAllowance}>
+          <FormField label="Tunjangan Makan+Transport" error={errors.transportMealAllowance}>
             <input
               type="number"
               min="0"
@@ -224,12 +224,12 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             />
           </FormField>
 
-          <FormField label="Rekening Bank Pembayaran Gaji" error={errors.bankAccount}>
+          <FormField label="Rekening Bank" error={errors.bankAccount}>
             <input
               type="text"
               value={data.bankAccount}
               onChange={(e) => onChange('bankAccount', e.target.value)}
-              placeholder="Contoh: Bank BRI 0001-01-xxxxxx a.n Nama"
+              placeholder="BRI 0001-01-xxxxxx"
               className={INPUT_CLASS}
             />
           </FormField>
@@ -239,7 +239,7 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
       {/* ── Section 5: Medis & K3 ─────────────────────────── */}
       <div>
         <p className={SECTION_HEADER}>5. Medis & K3</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-2 gap-2.5">
           <FormField label="Golongan Darah" error={errors.bloodType}>
             <select
               value={data.bloodType}
@@ -255,15 +255,15 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             </select>
           </FormField>
 
-          <div className="flex items-center pt-5">
+          <div className="flex items-center">
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={data.k3Certified}
                 onChange={(e) => onChange('k3Certified', e.target.checked)}
-                className="rounded text-[#0f766e] focus:ring-[#0f766e] accent-[#0f766e] w-4 h-4"
+                className="rounded text-[#0f766e] focus:ring-[#0f766e] accent-[#0f766e] w-4 h-4 shrink-0"
               />
-              <span className="text-xs font-semibold text-slate-700">
+              <span className="text-[11px] font-semibold text-slate-700 leading-tight">
                 Sertifikat K3 AK3 Umum / Konstruksi
               </span>
             </label>

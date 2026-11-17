@@ -48,7 +48,7 @@ export const Modal: React.FC<ModalProps> = ({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden my-4`}
+        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-white rounded-2xl border border-slate-200 shadow-2xl flex flex-col my-4 max-h-[calc(100dvh-2rem)]`}
         role="dialog"
         aria-modal="true"
       >
@@ -81,11 +81,11 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Body */}
-        <div className="p-4 sm:p-6">{children}</div>
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 overscroll-contain">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-4 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200">
+          <div className="shrink-0 px-4 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200">
             {footer}
           </div>
         )}

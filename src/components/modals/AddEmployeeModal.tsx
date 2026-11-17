@@ -151,9 +151,9 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
       subtitle="Pendaftaran Anggota Tim & Master Payroll"
       maxWidth="2xl"
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Foto Profil Avatar Upload Header */}
-        <div className="flex flex-col items-center justify-center p-3 sm:p-4 bg-slate-50 border border-slate-200/80 rounded-xl sm:rounded-2xl">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Foto Profil Avatar Upload Header — compact on mobile */}
+        <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
           <AvatarUpload
             photoUrl={formData.photoUrl}
             employeeName={formData.name || 'Calon Karyawan'}
@@ -167,20 +167,22 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                     .join('')
                 : 'EM'
             }
-            size="lg"
+            size="md"
             onPhotoChange={(url) => handleChange('photoUrl', url || undefined)}
           />
-          <p className="text-xs sm:text-[11px] font-semibold text-slate-700 mt-2">
-            {formData.photoUrl ? 'Foto Profil Terpasang' : 'Unggah Foto Profil'}
-          </p>
-          <p className="text-[11px] sm:text-[10px] text-slate-400 text-center px-2">
-            Klik avatar untuk memilih foto (JPG/PNG, otomatis dikompresi)
-          </p>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-slate-700">
+              {formData.photoUrl ? '✅ Foto Profil Terpasang' : '📷 Foto Profil'}
+            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
+              Klik avatar untuk unggah foto (JPG/PNG, otomatis dikompresi)
+            </p>
+          </div>
         </div>
 
         {generalError && (
-          <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
+            <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
             <span>{generalError}</span>
           </div>
         )}
@@ -195,7 +197,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
         />
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 pt-4 pb-safe border-t border-slate-200 bg-white flex items-center justify-end gap-2.5 -mx-4 sm:-mx-6 px-4 sm:px-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="sticky bottom-0 pt-3 pb-safe border-t border-slate-200 bg-white flex items-center justify-end gap-2 -mx-4 sm:-mx-6 px-4 sm:px-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <Button type="button" variant="secondary" onClick={onClose}>
             Batal
           </Button>
