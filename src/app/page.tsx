@@ -341,6 +341,7 @@ function HRISApp() {
         onClose={() => setIsAddEmployeeOpen(false)}
         sites={sites}
         onAddEmployee={handleAddEmployee}
+        existingNiks={employees.map((e) => e.nik)}
       />
 
       <EditEmployeeModal

@@ -212,6 +212,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
             bankAccount: e.bank_account,
             initials: e.initials,
             avatarColor: e.avatar_color,
+            photoUrl: e.photo_url || undefined,
           }))
         );
       }
@@ -519,9 +520,11 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   // Add Employee Callback
   const handleAddEmployee = async (newEmp: Employee) => {
     setEmployees((prev) => [newEmp, ...prev]);
+    const now = new Date();
+    const period = `${now.toLocaleString('id-ID', { month: 'long' })} ${now.getFullYear()}`;
     const newPay: PayrollRecord = {
       id: `PAY-${Date.now()}`,
-      period: 'Oktober 2026',
+      period: period,
       employeeId: newEmp.id,
       employeeName: newEmp.name,
       nik: newEmp.nik,
@@ -547,6 +550,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
       paymentMethod: newEmp.bankAccount,
     };
     setPayrollRecords((prev) => [newPay, ...prev]);
+    showDynamicAlert({ type: 'CHECK_IN', title: 'Karyawan Berhasil Ditambahkan! 🎉', subtitle: `${newEmp.name} · ${newEmp.title}`, time: new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'}), meta: `NIK: ${newEmp.nik} · ${newEmp.siteName}` });
 
     // Persist to Supabase
     try {
@@ -574,6 +578,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
         bank_account: newEmp.bankAccount,
         initials: newEmp.initials,
         avatar_color: newEmp.avatarColor,
+        photo_url: newEmp.photoUrl || null,
       });
 
       await supabase.from('payroll_records').insert({
@@ -616,8 +621,10 @@ export function HRISProvider({ children }: { children: ReactNode }) {
 
   // Update Employee
   const handleUpdateEmployee = async (updatedEmp: Employee) => {
+    const newInitials = updatedEmp.name.trim().split(/\s+/).filter(Boolean).slice(0,2).map(n=>n[0].toUpperCase()).join('') || 'EM';
+    const finalEmp = { ...updatedEmp, initials: newInitials };
     setEmployees((prev) =>
-      prev.map((e) => (e.id === updatedEmp.id ? updatedEmp : e))
+      prev.map((e) => (e.id === finalEmp.id ? finalEmp : e))
     );
 
     // Synchronize matching payroll record if exists
@@ -660,31 +667,46 @@ export function HRISProvider({ children }: { children: ReactNode }) {
       await supabase
         .from('employees')
         .update({
-          name: updatedEmp.name,
-          nik: updatedEmp.nik,
-          title: updatedEmp.title,
-          division: updatedEmp.division,
-          site_id: updatedEmp.siteId,
-          site_name: updatedEmp.siteName,
-          email: updatedEmp.email,
-          phone: updatedEmp.phone,
-          status: updatedEmp.status,
-          contract_type: updatedEmp.contractType,
-          base_salary: updatedEmp.baseSalary,
-          transport_meal_allowance: updatedEmp.transportMealAllowance,
-          site_allowance: updatedEmp.siteAllowance,
-          bank_account: updatedEmp.bankAccount,
-          emergency_contact: updatedEmp.emergencyContact,
-          updated_at: new Date().toISOString(),
+          name: finalEmp.name,
+          nik: finalEmp.nik,
+          title: finalEmp.title,
+          division: finalEmp.division,
+          site_id: finalEmp.siteId,
+          site_name: finalEmp.siteName,
+          email: finalEmp.email,
+          phone: finalEmp.phone,
+          status: finalEmp.status,
+          contract_type: finalEmp.contractType,
+          k3_certified: finalEmp.k3Certified,
+          blood_type: finalEmp.bloodType || null,
+          base_salary: finalEmp.baseSalary,
+          transport_meal_allowance: finalEmp.transportMealAllowance,
+          site_allowance: finalEmp.siteAllowance,
+          k3_allowance: finalEmp.k3Allowance || 0,
+          bank_account: finalEmp.bankAccount,
+          emergency_contact: finalEmp.emergencyContact,
+          join_date: finalEmp.joinDate,
+          initials: finalEmp.initials,
+          photo_url: finalEmp.photoUrl || null,
         })
-        .eq('id', updatedEmp.id);
+        .eq('id', finalEmp.id);
     } catch (e) {
       console.error('Failed to sync employee update to Supabase:', e);
     }
+
+    showDynamicAlert({
+      type: 'CHECK_IN',
+      title: 'Data Karyawan Diperbarui ✅',
+      subtitle: `${finalEmp.name} · ${finalEmp.title}`,
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      meta: `Penempatan: ${finalEmp.siteName} (${finalEmp.status})`,
+    });
   };
 
   // Delete / Deactivate Employee
   const handleDeleteEmployee = async (empId: string, permanent: boolean = false) => {
+    const empToDelete = employees.find((e) => e.id === empId);
+
     if (permanent) {
       setEmployees((prev) => prev.filter((e) => e.id !== empId));
       try {
@@ -702,13 +724,20 @@ export function HRISProvider({ children }: { children: ReactNode }) {
           .from('employees')
           .update({
             status: 'Nonaktif',
-            updated_at: new Date().toISOString(),
           })
           .eq('id', empId);
       } catch (e) {
         console.error('Failed to deactivate employee in Supabase:', e);
       }
     }
+
+    showDynamicAlert({
+      type: 'CHECK_OUT',
+      title: permanent ? 'Karyawan Dihapus Permanen 🗑️' : 'Karyawan Dinonaktifkan ⏸️',
+      subtitle: empToDelete?.name || empId,
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      meta: permanent ? 'Data dihapus permanen dari sistem' : 'Status berhasil diubah ke Nonaktif',
+    });
   };
 
   // Update Approval Status

@@ -60,6 +60,7 @@ export interface Employee {
   bankAccount: string;
   initials: string;
   avatarColor: string;
+  photoUrl?: string;    // foto profil karyawan (data URL atau URL storage)
 }
 
 export interface AttendanceRecord {

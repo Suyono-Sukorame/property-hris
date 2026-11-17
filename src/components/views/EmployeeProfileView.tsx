@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { Employee } from '@/types/hris';
-import { StatusBadge } from '@/components/ui';
+import { StatusBadge, SelfieThumbnail } from '@/components/ui';
 import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
 import {
   ArrowLeft,
@@ -152,26 +151,40 @@ export const EmployeeProfileView: React.FC<EmployeeProfileViewProps> = ({
       {/* 2. Hero Profile Banner */}
       <div className="bg-linear-to-r from-slate-900 via-slate-800 to-[#0f766e] text-white p-5 sm:p-7 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-800 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 relative z-10">
-          {/* Avatar Box with Blood Type & K3 Badge */}
-          <div className="relative shrink-0">
-            <div
-              className="w-22 h-26 sm:w-28 sm:h-32 rounded-2xl flex flex-col items-center justify-center text-white font-bold text-3xl shadow-md border-3 border-white/20 relative overflow-hidden"
-              style={{ backgroundColor: employee.avatarColor }}
-            >
-              <span>{employee.initials}</span>
-              <span className="absolute bottom-1.5 text-[10px] font-mono tracking-widest uppercase bg-black/40 px-2 py-0.5 rounded-md font-bold">
-                Gol. {employee.bloodType}
-              </span>
+          {/* Avatar Box with Photo, Blood Type & K3 Badge */}
+          <div className="relative shrink-0 flex flex-col items-center gap-2">
+            <div className="relative">
+              <SelfieThumbnail
+                photoUrl={employee.photoUrl}
+                employeeName={employee.name}
+                initials={employee.initials}
+                avatarColor={employee.avatarColor}
+                size="lg"
+                showModalOnClick={!!employee.photoUrl}
+                caption={`${employee.name} · ${employee.title}`}
+              />
+              {employee.k3Certified && (
+                <div
+                  className="absolute -top-2 -right-2 bg-amber-400 text-slate-950 p-1.5 rounded-full shadow-md border-2 border-slate-900"
+                  title="Sertifikasi AK3 Konstruksi Aktif"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+              )}
             </div>
 
-            {employee.k3Certified && (
-              <div
-                className="absolute -top-2 -right-2 bg-amber-400 text-slate-950 p-1.5 rounded-full shadow-md border-2 border-slate-900"
-                title="Sertifikasi AK3 Konstruksi Aktif"
-              >
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-            )}
+            {/* Photo & Blood Type Badge */}
+            <div className="flex flex-col items-center gap-1">
+              {employee.photoUrl
+                ? <span className="text-[10px] text-emerald-300 bg-emerald-900/50 border border-emerald-500/40 px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">📸 Foto Tersedia</span>
+                : <span className="text-[10px] text-slate-400 bg-white/10 border border-white/20 px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">🖼 Belum Ada Foto</span>
+              }
+              {employee.bloodType && (
+                <span className="text-[10px] font-mono tracking-widest uppercase bg-black/40 px-2 py-0.5 rounded-md font-bold text-white/80 whitespace-nowrap">
+                  Gol. {employee.bloodType}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Profile Core Data */}

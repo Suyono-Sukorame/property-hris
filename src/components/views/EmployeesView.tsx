@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Employee, PropertySite } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
-import { StatusBadge, PageHeader, FilterBar, SearchInput, Select, EmptyState } from '@/components/ui';
+import { StatusBadge, PageHeader, FilterBar, SearchInput, Select, EmptyState, SelfieThumbnail } from '@/components/ui';
 import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -274,12 +274,15 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                         <tr key={emp.id} className="h-14 hover:bg-slate-50/80 transition-colors">
                           <td className="px-4">
                             <div className="flex items-center gap-2.5">
-                              <div
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0"
-                                style={{ backgroundColor: emp.avatarColor }}
-                              >
-                                {emp.initials}
-                              </div>
+                              <SelfieThumbnail
+                                photoUrl={emp.photoUrl}
+                                employeeName={emp.name}
+                                initials={emp.initials}
+                                avatarColor={emp.avatarColor}
+                                size="sm"
+                                showModalOnClick={!!emp.photoUrl}
+                                caption={`${emp.name} · ${emp.title}`}
+                              />
                               <div>
                                 <div className="font-bold text-slate-900">{emp.name}</div>
                                 <div className="font-mono text-[11px] text-slate-400">{emp.nik}</div>
@@ -378,12 +381,15 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                   <div>
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
-                          style={{ backgroundColor: emp.avatarColor }}
-                        >
-                          {emp.initials}
-                        </div>
+                        <SelfieThumbnail
+                          photoUrl={emp.photoUrl}
+                          employeeName={emp.name}
+                          initials={emp.initials}
+                          avatarColor={emp.avatarColor}
+                          size="md"
+                          showModalOnClick={!!emp.photoUrl}
+                          caption={`${emp.name} · ${emp.title}`}
+                        />
                         <div>
                           <h4 className="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1">{emp.name}</h4>
                           <span className="font-mono text-[10px] text-slate-400">{emp.nik}</span>

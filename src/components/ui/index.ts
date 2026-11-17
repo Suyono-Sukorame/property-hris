@@ -1,4 +1,6 @@
 export { StatusBadge } from './StatusBadge';
+export { FormField } from './FormField';
+export { AvatarUpload } from './AvatarUpload';
 export { Button } from './Button';
 export { Modal } from './Modal';
 export { KPICard, type KPIColor } from './KPICard';

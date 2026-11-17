@@ -1,13 +1,19 @@
 'use client';
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Employee, PropertySite } from '@/types/hris';
-import { X, UserPlus } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
+import { AvatarUpload } from '@/components/ui/AvatarUpload';
+import { EmployeeFormFields, EmployeeFormData } from '@/components/employee/EmployeeFormFields';
+import { UserPlus, AlertCircle } from 'lucide-react';
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
   onClose: () => void;
   sites: PropertySite[];
   onAddEmployee: (emp: Employee) => void;
+  existingNiks?: string[];
 }
 
 export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
@@ -15,59 +21,122 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   onClose,
   sites,
   onAddEmployee,
+  existingNiks = [],
 }) => {
-  const [name, setName] = useState('');
-  const [nik, setNik] = useState('');
-  const [title, setTitle] = useState('');
-  const [division, setDivision] = useState('Pemasaran & Penjualan');
-  const [siteId, setSiteId] = useState(sites[0]?.id || 'SITE-01');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [contractType, setContractType] = useState<'PKWTT (Tetap)' | 'PKWT (Kontrak Proyek)'>('PKWTT (Tetap)');
-  const [k3Certified, setK3Certified] = useState(false);
-  const [bloodType, setBloodType] = useState<'A+' | 'B+' | 'AB+' | 'O+' | 'O-'>('O+');
-  const [emergencyContact, setEmergencyContact] = useState('');
-  const [baseSalary, setBaseSalary] = useState(3500000);
-  const [siteAllowance, setSiteAllowance] = useState(0);
+  const getInitialFormData = (): EmployeeFormData => ({
+    name: '',
+    nik: '',
+    title: '',
+    division: 'Pemasaran & Penjualan',
+    siteId: sites[0]?.id || 'SITE-01',
+    email: '',
+    phone: '',
+    contractType: 'PKWTT (Tetap)',
+    k3Certified: false,
+    bloodType: 'O+',
+    emergencyContact: '',
+    baseSalary: 3500000,
+    siteAllowance: 0,
+    transportMealAllowance: 500000,
+    bankAccount: '',
+    joinDate: new Date().toISOString().slice(0, 10),
+    photoUrl: undefined,
+  });
 
-  if (!isOpen) return null;
+  const [formData, setFormData] = useState<EmployeeFormData>(getInitialFormData());
+  const [errors, setErrors] = useState<Partial<Record<keyof EmployeeFormData, string>>>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(getInitialFormData());
+      setErrors({});
+      setGeneralError(null);
+    }
+  }, [isOpen, sites]);
+
+  const handleChange = (field: keyof EmployeeFormData, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear field-level error
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+    if (generalError) setGeneralError(null);
+  };
+
+  const validate = (): boolean => {
+    const newErrors: Partial<Record<keyof EmployeeFormData, string>> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Nama lengkap wajib diisi.';
+    }
+
+    if (!formData.nik.trim()) {
+      newErrors.nik = 'NIK wajib diisi.';
+    } else if (!/^\d{16}$/.test(formData.nik.trim())) {
+      newErrors.nik = 'NIK harus berupa 16 digit angka.';
+    } else if (existingNiks.includes(formData.nik.trim())) {
+      newErrors.nik = 'NIK ini sudah terdaftar di sistem. Gunakan NIK yang berbeda.';
+    }
+
+    if (!formData.title.trim()) {
+      newErrors.title = 'Jabatan / posisi kerja wajib diisi.';
+    }
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      setGeneralError('Silakan lengkapi kolom yang bertanda merah di atas.');
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !nik || !title) return;
+    if (!validate()) return;
 
-    const matchedSite = sites.find((s) => s.id === siteId) || sites[0];
-    const initials = name
-      .split(' ')
-      .filter((n) => !n.includes('.') && n.length > 0)
-      .slice(0, 2)
-      .map((n) => n[0].toUpperCase())
-      .join('') || 'EM';
+    const matchedSite = sites.find((s) => s.id === formData.siteId) || sites[0] || {
+      id: 'SITE-01',
+      name: 'Griya Bumi Raya',
+    };
+
+    const initials =
+      formData.name
+        .trim()
+        .split(/\s+/)
+        .filter((n) => !n.includes('.') && n.length > 0)
+        .slice(0, 2)
+        .map((n) => n[0].toUpperCase())
+        .join('') || 'EM';
 
     const newEmp: Employee = {
-      id: `EMP-${Date.now().toString().slice(-4)}`,
-      nik,
-      name,
-      title,
+      id: `EMP-${Date.now()}`,
+      nik: formData.nik.trim(),
+      name: formData.name.trim(),
+      title: formData.title.trim(),
       jobCode: `PRJ-${Math.floor(100 + Math.random() * 900)}`,
-      division,
+      division: formData.division,
       siteId: matchedSite.id,
       siteName: matchedSite.name,
-      email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@bumiraya.co.id`,
-      phone: phone || '+62 812-9988-7700',
-      joinDate: new Date().toISOString().slice(0, 10),
+      email:
+        formData.email.trim() ||
+        `${formData.name.toLowerCase().trim().replace(/\s+/g, '.')}@bumiraya.co.id`,
+      phone: formData.phone.trim() || '+62 812-9988-7700',
+      joinDate: formData.joinDate || new Date().toISOString().slice(0, 10),
       status: 'Aktif',
-      contractType,
-      k3Certified,
-      bloodType,
-      emergencyContact: emergencyContact || 'Kontak Darurat Keluarga Terdaftar',
-      baseSalary: Number(baseSalary) || 3500000,
-      siteAllowance: Number(siteAllowance) || 0,
-      k3Allowance: k3Certified ? 500000 : 0,
-      transportMealAllowance: 500000,
-      bankAccount: 'Bank BRI a.n ' + name,
+      contractType: formData.contractType,
+      k3Certified: formData.k3Certified,
+      bloodType: formData.bloodType ? (formData.bloodType as Employee['bloodType']) : undefined,
+      emergencyContact: formData.emergencyContact.trim() || 'Kontak Darurat Keluarga Terdaftar',
+      baseSalary: Number(formData.baseSalary) || 3500000,
+      siteAllowance: Number(formData.siteAllowance) || 0,
+      k3Allowance: formData.k3Certified ? 500000 : 0,
+      transportMealAllowance: Number(formData.transportMealAllowance) || 500000,
+      bankAccount: formData.bankAccount.trim() || `Bank BRI a.n ${formData.name.trim()}`,
       initials,
       avatarColor: '#0f766e',
+      photoUrl: formData.photoUrl,
     };
 
     onAddEmployee(newEmp);
@@ -75,195 +144,70 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div 
-        className="relative w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden my-4"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="bg-[#0f766e] px-6 py-4 text-white flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-emerald-200" />
-            <h2 className="text-sm font-bold tracking-tight text-white">
-              Tambah Karyawan Baru
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-md text-emerald-100 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label="Tutup"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Tambah Karyawan Baru"
+      subtitle="Pendaftaran Anggota Tim & Master Payroll"
+      maxWidth="2xl"
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Foto Profil Avatar Upload Header */}
+        <div className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200/80 rounded-2xl">
+          <AvatarUpload
+            photoUrl={formData.photoUrl}
+            employeeName={formData.name || 'Calon Karyawan'}
+            initials={
+              formData.name
+                ? formData.name
+                    .trim()
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((n) => n[0].toUpperCase())
+                    .join('')
+                : 'EM'
+            }
+            size="lg"
+            onPhotoChange={(url) => handleChange('photoUrl', url || undefined)}
+          />
+          <p className="text-[11px] font-semibold text-slate-700 mt-2">
+            {formData.photoUrl ? 'Foto Profil Terpasang' : 'Unggah Foto Profil'}
+          </p>
+          <p className="text-[10px] text-slate-400">
+            Klik avatar untuk memilih foto (JPG/PNG, otomatis dikompresi)
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 text-slate-800 text-xs space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-                Nama Lengkap & Gelar *
-              </label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Contoh: Ir. Muhammad Ridwan, S.T."
-                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-                Nomor Induk Kependudukan (NIK) *
-              </label>
-              <input
-                type="text"
-                required
-                value={nik}
-                onChange={(e) => setNik(e.target.value)}
-                placeholder="16 Digit NIK KTP"
-                maxLength={16}
-                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-                Jabatan / Posisi Kerja *
-              </label>
-              <input
-                type="text"
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Contoh: Site QA/QC Inspector"
-                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-                Divisi / Departemen
-              </label>
-              <select
-                value={division}
-                onChange={(e) => setDivision(e.target.value)}
-                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              >
-                <option value="Manajemen">Manajemen</option>
-                <option value="Administrasi & Keuangan">Administrasi & Keuangan</option>
-                <option value="Pemasaran & Penjualan">Pemasaran & Penjualan</option>
-                <option value="Teknis Lapangan">Teknis Lapangan</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-                Penempatan Lokasi Proyek
-              </label>
-              <select
-                value={siteId}
-                onChange={(e) => setSiteId(e.target.value)}
-                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              >
-                {sites.map((site) => (
-                  <option key={site.id} value={site.id}>
-                    {site.name} ({site.category})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-                Status Perjanjian Kerja
-              </label>
-              <select
-                value={contractType}
-                onChange={(e) => setContractType(e.target.value as 'PKWTT (Tetap)' | 'PKWT (Kontrak Proyek)')}
-                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              >
-                <option value="PKWTT (Tetap)">Karyawan Tetap</option>
-                <option value="PKWT (Kontrak Proyek)">Kontrak Proyek</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-                Gaji Pokok Dasar (IDR)
-              </label>
-              <input
-                type="number"
-                step="500000"
-                value={baseSalary}
-                onChange={(e) => setBaseSalary(Number(e.target.value))}
-                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-                Tunjangan Lapangan (IDR)
-              </label>
-              <input
-                type="number"
-                step="250000"
-                value={siteAllowance}
-                onChange={(e) => setSiteAllowance(Number(e.target.value))}
-                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-                Golongan Darah
-              </label>
-              <select
-                value={bloodType}
-                onChange={(e) => setBloodType(e.target.value as 'A+' | 'B+' | 'AB+' | 'O+' | 'O-')}
-                className="w-full h-9.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e]"
-              >
-                <option value="A+">A+</option>
-                <option value="B+">B+</option>
-                <option value="AB+">AB+</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-              </select>
-            </div>
-
-            <div className="flex items-center pt-6">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={k3Certified}
-                  onChange={(e) => setK3Certified(e.target.checked)}
-                  className="rounded text-[#0f766e] focus:ring-[#0f766e]"
-                />
-                <span className="text-xs font-semibold text-slate-800">
-                  Memiliki Sertifikat AK3 Umum / Konstruksi
-                </span>
-              </label>
-            </div>
+        {generalError && (
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{generalError}</span>
           </div>
+        )}
 
-          <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-xs font-semibold text-white bg-[#0f766e] rounded-lg hover:bg-[#115e59] transition-colors shadow-2xs"
-            >
-              Simpan & Daftarkan Karyawan
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        {/* Shared Form Fields */}
+        <EmployeeFormFields
+          data={formData}
+          onChange={handleChange}
+          sites={sites}
+          errors={errors}
+          mode="add"
+        />
+
+        {/* Footer Actions */}
+        <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2.5">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Batal
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            icon={<UserPlus className="w-4 h-4" />}
+          >
+            Simpan &amp; Daftarkan Karyawan
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 };
