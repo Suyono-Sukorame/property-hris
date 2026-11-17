@@ -147,30 +147,26 @@ export const LoginPage: React.FC = () => {
               const isSite = user.role === 'SITE_MANAGER';
               const isMarketing = user.division?.includes('Pemasaran');
 
-              // Ikon & Badge berbasis peran nyata
+              // Ikon & badge warna berbasis peran; teks jabatan selalu lengkap dari data user
               let Icon = UserCheck;
-              let roleBadge = 'Staf';
+              const roleBadge = user.title || user.roleLabel || 'Staf';
               let roleBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60';
               let dutyDescription = 'Presensi Proyek, Slip Gaji & Ajukan Izin';
 
               if (isSuper) {
                 Icon = Building2;
-                roleBadge = 'Pemilik / Direktur';
                 roleBadgeClass = 'bg-teal-950/80 text-teal-300 border-teal-700/60';
                 dutyDescription = 'Persetujuan Kasbon, Cuti & Ringkasan Bisnis';
               } else if (isSite) {
                 Icon = DollarSign;
-                roleBadge = 'Admin & Keuangan';
                 roleBadgeClass = 'bg-sky-950/80 text-sky-300 border-sky-700/60';
                 dutyDescription = 'Kelola Gaji, Kasbon, & Rekap Presensi';
               } else if (isMarketing) {
                 Icon = Megaphone;
-                roleBadge = 'Marketing';
                 roleBadgeClass = 'bg-amber-950/80 text-amber-300 border-amber-700/60';
                 dutyDescription = 'Presensi Harian, Slip Gaji & Izin';
               } else {
                 Icon = HardHat;
-                roleBadge = 'Pengawas';
                 roleBadgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60';
                 dutyDescription = 'Presensi Proyek, Slip Gaji & Izin';
               }

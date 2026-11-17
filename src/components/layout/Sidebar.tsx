@@ -174,9 +174,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const badgeCount = item.badge ? pendingApprovalsCount : 0;
 
           return (
-            <button
+            <a
               key={item.id}
-              onClick={() => handleItemClick(item.id)}
+              href={`/${item.id}`}
+              aria-current={isActive ? 'page' : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                handleItemClick(item.id);
+              }}
               className={`w-full flex items-center justify-between px-2.5 py-1.5 sm:py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 isActive
                   ? 'bg-[#0f766e] text-white shadow-xs font-bold'
@@ -195,7 +200,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {badgeCount}
                 </span>
               )}
-            </button>
+            </a>
           );
         })}
       </div>

@@ -111,9 +111,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     return (
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-2 px-3 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
         {/* Tab 1: Beranda */}
-        <button
-          type="button"
-          onClick={() => onSelectModule('dashboard')}
+        <a
+          href="/dashboard"
+          onClick={(e) => { e.preventDefault(); onSelectModule('dashboard'); }}
+          aria-current={activeModule === 'dashboard' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'dashboard'
               ? 'text-emerald-400 font-bold bg-white/5'
@@ -122,12 +123,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         >
           <LayoutDashboard className="w-4.5 h-4.5 mb-1" />
           <span>Beranda</span>
-        </button>
+        </a>
 
         {/* Tab 2: Data Tim */}
-        <button
-          type="button"
-          onClick={() => onSelectModule('employees')}
+        <a
+          href="/employees"
+          onClick={(e) => { e.preventDefault(); onSelectModule('employees'); }}
+          aria-current={activeModule === 'employees' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'employees'
               ? 'text-emerald-400 font-bold bg-white/5'
@@ -136,12 +138,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         >
           <Users className="w-4.5 h-4.5 mb-1" />
           <span>Data Tim</span>
-        </button>
+        </a>
 
         {/* Tab 3: Gaji & Kasbon */}
-        <button
-          type="button"
-          onClick={() => onSelectModule('payroll')}
+        <a
+          href="/payroll"
+          onClick={(e) => { e.preventDefault(); onSelectModule('payroll'); }}
+          aria-current={activeModule === 'payroll' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'payroll'
               ? 'text-emerald-400 font-bold bg-white/5'
@@ -150,12 +153,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         >
           <Banknote className="w-4.5 h-4.5 mb-1" />
           <span>Gaji & Kasbon</span>
-        </button>
+        </a>
 
         {/* Tab 4: Persetujuan */}
-        <button
-          type="button"
-          onClick={() => onSelectModule('approvals')}
+        <a
+          href="/approvals"
+          onClick={(e) => { e.preventDefault(); onSelectModule('approvals'); }}
+          aria-current={activeModule === 'approvals' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer relative ${
             activeModule === 'approvals'
               ? 'text-emerald-400 font-bold bg-white/5'
@@ -171,7 +175,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             )}
           </div>
           <span>Persetujuan</span>
-        </button>
+        </a>
       </nav>
     );
   }
@@ -181,42 +185,46 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   if (role === 'SITE_MANAGER') {
     return (
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-2 px-3 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
-        <button
-          type="button"
-          onClick={() => onSelectModule('dashboard')}
+        <a
+          href="/dashboard"
+          onClick={(e) => { e.preventDefault(); onSelectModule('dashboard'); }}
+          aria-current={activeModule === 'dashboard' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'dashboard' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
           <LayoutDashboard className="w-4.5 h-4.5 mb-1" />
           <span>Beranda</span>
-        </button>
+        </a>
 
-        <button
-          type="button"
-          onClick={() => onSelectModule('attendance')}
+        <a
+          href="/attendance"
+          onClick={(e) => { e.preventDefault(); onSelectModule('attendance'); }}
+          aria-current={activeModule === 'attendance' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'attendance' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
           <Clock className="w-4.5 h-4.5 mb-1" />
           <span>Presensi Tim</span>
-        </button>
+        </a>
 
-        <button
-          type="button"
-          onClick={() => onSelectModule('payroll')}
+        <a
+          href="/payroll"
+          onClick={(e) => { e.preventDefault(); onSelectModule('payroll'); }}
+          aria-current={activeModule === 'payroll' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'payroll' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
           <Banknote className="w-4.5 h-4.5 mb-1" />
           <span>Gaji & Kasbon</span>
-        </button>
+        </a>
 
-        <button
-          type="button"
-          onClick={() => onSelectModule('approvals')}
+        <a
+          href="/approvals"
+          onClick={(e) => { e.preventDefault(); onSelectModule('approvals'); }}
+          aria-current={activeModule === 'approvals' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer relative ${
             activeModule === 'approvals' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
@@ -230,7 +238,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             )}
           </div>
           <span>Verifikasi</span>
-        </button>
+        </a>
       </nav>
     );
   }
@@ -240,28 +248,30 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
       {/* Tab 1: Riwayat (Halaman Riwayat Presensi & Kehadiran) */}
-      <button
-        type="button"
-        onClick={() => onSelectModule('attendance')}
+      <a
+        href="/attendance"
+        onClick={(e) => { e.preventDefault(); onSelectModule('attendance'); }}
+        aria-current={activeModule === 'attendance' ? 'page' : undefined}
         className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
           activeModule === 'attendance' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
         }`}
       >
         <CalendarCheck className="w-4 h-4 mb-0.5" />
         <span>Riwayat</span>
-      </button>
+      </a>
 
       {/* Tab 2: Slip Gaji */}
-      <button
-        type="button"
-        onClick={() => onSelectModule('payroll')}
+      <a
+        href="/payroll"
+        onClick={(e) => { e.preventDefault(); onSelectModule('payroll'); }}
+        aria-current={activeModule === 'payroll' ? 'page' : undefined}
         className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
           activeModule === 'payroll' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
         }`}
       >
         <Banknote className="w-4 h-4 mb-0.5" />
         <span>Slip Gaji</span>
-      </button>
+      </a>
 
       {/* Center Tab: Action Button Dinamis 1-Tap (Masuk / Pulang / Selesai) */}
       <div className="-mt-5 flex flex-col items-center">
@@ -279,16 +289,17 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       </div>
 
       {/* Tab 4: Pengajuan */}
-      <button
-        type="button"
-        onClick={() => onSelectModule('approvals')}
+      <a
+        href="/approvals"
+        onClick={(e) => { e.preventDefault(); onSelectModule('approvals'); }}
+        aria-current={activeModule === 'approvals' ? 'page' : undefined}
         className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
           activeModule === 'approvals' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'
         }`}
       >
         <CheckSquare className="w-4 h-4 mb-0.5" />
         <span>Pengajuan</span>
-      </button>
+      </a>
 
       {/* Tab 5: Menu */}
       <button
