@@ -16,7 +16,7 @@ interface AvatarUploadProps {
 const sizeClasses = {
   sm: 'w-14 h-14 text-base',
   md: 'w-20 h-20 text-xl',
-  lg: 'w-28 h-28 text-2xl',
+  lg: 'w-24 sm:w-28 h-24 sm:h-28 text-xl sm:text-2xl',
 };
 
 const removeButtonSize = {

@@ -32,9 +32,9 @@ interface EmployeeFormFieldsProps {
 }
 
 const INPUT_CLASS =
-  'w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] transition-colors';
+  'w-full h-10 sm:h-9 px-3 bg-white border border-slate-300 rounded-lg text-sm sm:text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] transition-colors';
 const SELECT_CLASS =
-  'w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] transition-colors cursor-pointer';
+  'w-full h-10 sm:h-9 px-3 bg-white border border-slate-300 rounded-lg text-sm sm:text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] transition-colors cursor-pointer';
 
 const DIVISIONS = [
   'Manajemen',
@@ -43,7 +43,7 @@ const DIVISIONS = [
   'Teknis Lapangan',
 ];
 
-const SECTION_HEADER = 'text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100 mb-3';
+const SECTION_HEADER = 'text-xs sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 sm:text-slate-400 pb-2 sm:pb-1 border-b border-slate-200 sm:border-slate-100 mb-3.5 sm:mb-3';
 
 export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
   data,
@@ -124,11 +124,16 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
               onChange={(e) => onChange('siteId', e.target.value)}
               className={SELECT_CLASS}
             >
-              {sites.map((site) => (
-                <option key={site.id} value={site.id}>
-                  {site.name} ({site.category})
-                </option>
-              ))}
+              {sites.map((site) => {
+                const displayName = site.name.length > 35 
+                  ? `${site.name.substring(0, 35)}...` 
+                  : site.name;
+                return (
+                  <option key={site.id} value={site.id}>
+                    {displayName}
+                  </option>
+                );
+              })}
             </select>
           </FormField>
 

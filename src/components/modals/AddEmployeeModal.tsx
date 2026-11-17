@@ -153,7 +153,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Foto Profil Avatar Upload Header */}
-        <div className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200/80 rounded-2xl">
+        <div className="flex flex-col items-center justify-center p-3 sm:p-4 bg-slate-50 border border-slate-200/80 rounded-xl sm:rounded-2xl">
           <AvatarUpload
             photoUrl={formData.photoUrl}
             employeeName={formData.name || 'Calon Karyawan'}
@@ -170,10 +170,10 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
             size="lg"
             onPhotoChange={(url) => handleChange('photoUrl', url || undefined)}
           />
-          <p className="text-[11px] font-semibold text-slate-700 mt-2">
+          <p className="text-xs sm:text-[11px] font-semibold text-slate-700 mt-2">
             {formData.photoUrl ? 'Foto Profil Terpasang' : 'Unggah Foto Profil'}
           </p>
-          <p className="text-[10px] text-slate-400">
+          <p className="text-[11px] sm:text-[10px] text-slate-400 text-center px-2">
             Klik avatar untuk memilih foto (JPG/PNG, otomatis dikompresi)
           </p>
         </div>
@@ -195,7 +195,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
         />
 
         {/* Footer Actions */}
-        <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2.5">
+        <div className="sticky bottom-0 pt-4 pb-safe border-t border-slate-200 bg-white flex items-center justify-end gap-2.5 -mx-4 sm:-mx-6 px-4 sm:px-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <Button type="button" variant="secondary" onClick={onClose}>
             Batal
           </Button>
@@ -204,7 +204,8 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
             variant="primary"
             icon={<UserPlus className="w-4 h-4" />}
           >
-            Simpan &amp; Daftarkan Karyawan
+            <span className="hidden sm:inline">Simpan &amp; Daftarkan Karyawan</span>
+            <span className="sm:hidden">Simpan</span>
           </Button>
         </div>
       </form>

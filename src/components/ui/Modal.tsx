@@ -81,11 +81,11 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Body */}
-        <div className="p-6">{children}</div>
+        <div className="p-4 sm:p-6">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200">
+          <div className="px-4 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200">
             {footer}
           </div>
         )}
