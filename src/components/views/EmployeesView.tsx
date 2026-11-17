@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Employee, PropertySite } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
 import { StatusBadge, PageHeader, FilterBar, SearchInput, Select, EmptyState, SelfieThumbnail } from '@/components/ui';
 import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
 import { JobDescription } from '@/types/jobdesc';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui';
 import {
   Search,
@@ -30,6 +31,45 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { JobDescriptionModal } from '@/components/modals';
+
+type JobDescriptionRow = {
+  job_code: string;
+  title: string;
+  division: string;
+  level: JobDescription['level'];
+  reports_to: string | null;
+  purpose: string;
+  responsibilities: JobDescription['responsibilities'];
+  authorities: string[];
+  kpi_targets: JobDescription['kpiTargets'];
+  qualifications: JobDescription['qualifications'];
+};
+
+const mapJobDescriptionRow = (row: JobDescriptionRow): JobDescription => ({
+  jobCode: row.job_code,
+  title: row.title,
+  division: row.division,
+  level: row.level,
+  reportsTo: row.reports_to ?? '-',
+  purpose: row.purpose,
+  responsibilities: row.responsibilities ?? [],
+  authorities: row.authorities ?? [],
+  kpiTargets: row.kpi_targets ?? [],
+  qualifications: row.qualifications ?? { education: '', experience: '', certifications: [] },
+});
+
+const mapJobDescriptionToRow = (job: JobDescription) => ({
+  job_code: job.jobCode,
+  title: job.title,
+  division: job.division,
+  level: job.level,
+  reports_to: job.reportsTo,
+  purpose: job.purpose,
+  responsibilities: job.responsibilities,
+  authorities: job.authorities,
+  kpi_targets: job.kpiTargets,
+  qualifications: job.qualifications,
+});
 
 interface EmployeesViewProps {
   employees: Employee[];
@@ -67,89 +107,100 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   const [editingJobdesc, setEditingJobdesc] = useState<JobDescription | null>(null);
   const [deleteJobdescCode, setDeleteJobdescCode] = useState<string | null>(null);
 
-  // Load job descriptions from localStorage (CRUD) or fallback to static
-  const [jobdescs, setJobdescs] = useState<JobDescription[]>(() => {
-    try {
-      const saved = localStorage.getItem('jobdescs');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error('Failed to load jobdescs from localStorage:', e);
-    }
-    return Object.values(JOB_DESCRIPTIONS);
-  });
+  // Job descriptions dimuat dari Supabase (fallback ke katalog statis)
+  const [jobdescs, setJobdescs] = useState<JobDescription[]>(() => Object.values(JOB_DESCRIPTIONS));
+  const [isJobdescSaving, setIsJobdescSaving] = useState(false);
 
   const allJobdescs = jobdescs;
 
-  // CRUD Handlers for Job Descriptions
-  const handleAddJobdesc = (formData: any) => {
-    const newJobdesc: JobDescription = {
-      jobCode: formData.jobCode,
-      title: formData.title,
-      division: formData.division,
-      level: formData.level,
-      reportsTo: formData.reportsTo,
-      purpose: formData.purpose,
-      responsibilities: formData.responsibilities,
-      authorities: formData.authorities,
-      kpiTargets: formData.kpiTargets,
-      qualifications: formData.qualifications,
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadJobdescs = async () => {
+      const { data, error } = await supabase.from('job_descriptions').select('*');
+      if (!isMounted) return;
+
+      if (error) {
+        console.error('Gagal memuat jobdesk dari Supabase:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setJobdescs(data.map(mapJobDescriptionRow));
+        return;
+      }
+
+      // Tabel masih kosong: isi sekali dari katalog statis agar data awal tersedia
+      const seedRows = Object.values(JOB_DESCRIPTIONS).map(mapJobDescriptionToRow);
+      const { error: seedError } = await supabase
+        .from('job_descriptions')
+        .upsert(seedRows, { onConflict: 'job_code', ignoreDuplicates: true });
+      if (!isMounted) return;
+
+      if (seedError) {
+        console.error('Gagal mengisi jobdesk ke Supabase:', seedError);
+        return;
+      }
+
+      const { data: seeded } = await supabase.from('job_descriptions').select('*');
+      if (isMounted && seeded) {
+        setJobdescs(seeded.map(mapJobDescriptionRow));
+      }
     };
 
-    setJobdescs(prev => {
-      const updated = [newJobdesc, ...prev];
-      try {
-        localStorage.setItem('jobdescs', JSON.stringify(updated));
-      } catch (e) {
-        console.error('Failed to save jobdescs:', e);
-      }
-      return updated;
-    });
+    loadJobdescs();
+    return () => { isMounted = false; };
+  }, []);
 
+  // CRUD Handlers for Job Descriptions (Supabase)
+  const handleAddJobdesc = async (formData: JobDescription) => {
+    setIsJobdescSaving(true);
+    const { data, error } = await supabase
+      .from('job_descriptions')
+      .insert(mapJobDescriptionToRow(formData))
+      .select()
+      .single();
+    setIsJobdescSaving(false);
+
+    if (error) {
+      alert(`Gagal menyimpan jobdesk: ${error.message}`);
+      return;
+    }
+
+    const newJobdesc = mapJobDescriptionRow(data as JobDescriptionRow);
+    setJobdescs(prev => [newJobdesc, ...prev]);
     setIsJobDescModalOpen(false);
   };
 
-  const handleUpdateJobdesc = (formData: any) => {
-    const updatedJobdesc: JobDescription = {
-      jobCode: formData.jobCode,
-      title: formData.title,
-      division: formData.division,
-      level: formData.level,
-      reportsTo: formData.reportsTo,
-      purpose: formData.purpose,
-      responsibilities: formData.responsibilities,
-      authorities: formData.authorities,
-      kpiTargets: formData.kpiTargets,
-      qualifications: formData.qualifications,
-    };
+  const handleUpdateJobdesc = async (formData: JobDescription) => {
+    setIsJobdescSaving(true);
+    const { error } = await supabase
+      .from('job_descriptions')
+      .update(mapJobDescriptionToRow(formData))
+      .eq('job_code', formData.jobCode);
+    setIsJobdescSaving(false);
 
-    setJobdescs(prev => {
-      const updated = prev.map(j => 
-        j.jobCode === formData.jobCode ? updatedJobdesc : j
-      );
-      try {
-        localStorage.setItem('jobdescs', JSON.stringify(updated));
-      } catch (e) {
-        console.error('Failed to save jobdescs:', e);
-      }
-      return updated;
-    });
+    if (error) {
+      alert(`Gagal memperbarui jobdesk: ${error.message}`);
+      return;
+    }
 
+    setJobdescs(prev => prev.map(j => (j.jobCode === formData.jobCode ? formData : j)));
     setIsJobDescModalOpen(false);
     setEditingJobdesc(null);
   };
 
-  const handleDeleteJobdesc = (jobCode: string) => {
-    setJobdescs(prev => {
-      const updated = prev.filter(j => j.jobCode !== jobCode);
-      try {
-        localStorage.setItem('jobdescs', JSON.stringify(updated));
-      } catch (e) {
-        console.error('Failed to save jobdescs:', e);
-      }
-      return updated;
-    });
+  const handleDeleteJobdesc = async (jobCode: string) => {
+    setIsJobdescSaving(true);
+    const { error } = await supabase.from('job_descriptions').delete().eq('job_code', jobCode);
+    setIsJobdescSaving(false);
+
+    if (error) {
+      alert(`Gagal menghapus jobdesk: ${error.message}`);
+      return;
+    }
+
+    setJobdescs(prev => prev.filter(j => j.jobCode !== jobCode));
     setDeleteJobdescCode(null);
   };
 
@@ -830,6 +881,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
         onSubmit={editingJobdesc ? handleUpdateJobdesc : handleAddJobdesc}
         onDelete={handleDeleteJobdesc}
         existingJobCodes={jobdescs.filter(j => j.jobCode !== (editingJobdesc?.jobCode || '')).map(j => j.jobCode)}
+        isLoading={isJobdescSaving}
       />
 
       {/* =========================================================================
