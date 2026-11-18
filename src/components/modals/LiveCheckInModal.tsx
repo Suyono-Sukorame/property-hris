@@ -287,41 +287,51 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/70 backdrop-blur-xs p-0 sm:p-4 overflow-hidden">
-      <div
-        className="relative w-full max-w-sm bg-white rounded-t-2xl sm:rounded-2xl border border-slate-200 shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[80vh] overflow-hidden animate-in slide-in-from-bottom duration-200"
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* ── HEADER ─────────────────────────────────────────────────────── */}
-        <div className="bg-[#0f766e] px-5 py-3.5 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
-              <Fingerprint className="w-4.5 h-4.5 text-emerald-100" />
+    <div className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-150">
+      {/* Backdrop overlay (click to close) */}
+      <div className="fixed inset-0" onClick={handleCloseModal} aria-hidden="true" />
+
+      {/* Sheet / Modal Container:
+          - Mobile: Mengambang di atas Mobile Bottom Navigation (bottom-16), max-h calc, BottomNav tetap utuh
+          - Desktop: Terpusat di tengah layar (sm:items-center)
+      */}
+      <div className="fixed inset-x-0 bottom-16 sm:inset-0 z-45 sm:z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
+        <div
+          className="pointer-events-auto relative w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl border-t sm:border border-slate-200/90 shadow-2xl flex flex-col max-h-[calc(100dvh-4.75rem)] sm:max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom-2 duration-200 select-none"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* ── HEADER (Ringkas & Memuat Identitas Karyawan) ─────────────────── */}
+          <div className="bg-[#0f766e] px-4 py-3 text-white flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+                <Fingerprint className="w-4.5 h-4.5 text-emerald-100" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold tracking-tight text-white truncate">
+                  {submittedRecord
+                    ? submittedRecord.checkOutTime && submittedRecord.checkOutTime !== '-'
+                      ? 'Absen Pulang Tercatat'
+                      : submittedRecord.status === 'Cuti' || submittedRecord.status === 'Izin Lapangan'
+                      ? 'Laporan Izin Diterima'
+                      : 'Absen Masuk Tercatat'
+                    : hasCheckedIn && !hasCheckedOut
+                    ? 'Presensi Pulang'
+                    : 'Presensi Harian'}
+                </h2>
+                <p className="text-[11px] text-emerald-100/90 truncate">
+                  {currentEmp.name} · <span className="text-emerald-200">{currentSite.name}</span>
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-sm font-bold tracking-tight text-white">
-                {submittedRecord
-                  ? submittedRecord.checkOutTime && submittedRecord.checkOutTime !== '-'
-                    ? 'Absen Pulang Tercatat'
-                    : submittedRecord.status === 'Cuti' || submittedRecord.status === 'Izin Lapangan'
-                    ? 'Laporan Izin Diterima'
-                    : 'Absen Masuk Tercatat'
-                  : 'Presensi Harian'}
-              </h2>
-              <p className="text-[11px] text-emerald-200/80">
-                PT Bumi Raya Propertindo
-              </p>
-            </div>
+            <button
+              onClick={handleCloseModal}
+              className="p-1.5 rounded-lg text-emerald-100 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
+              aria-label="Tutup"
+            >
+              <X className="w-4.5 h-4.5" />
+            </button>
           </div>
-          <button
-            onClick={handleCloseModal}
-            className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
-            aria-label="Tutup"
-          >
-            <X className="w-4.5 h-4.5" />
-          </button>
-        </div>
 
         {/* ── SUCCESS RECEIPT ─────────────────────────────────────────────── */}
         {submittedRecord ? (
@@ -453,34 +463,11 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                 </button>
               </div>
 
-              <div className="p-4 space-y-3.5">
+              <div className="p-3 sm:p-4 space-y-3">
 
-                {/* ── IDENTITY CARD ─────────────────────────────────────── */}
-                {isEmployeeUser ? (
-                  <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm"
-                      style={{ backgroundColor: currentEmp.avatarColor || '#0f766e' }}
-                    >
-                      {currentEmp.initials}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-bold text-slate-900 text-sm truncate">
-                          {currentEmp.name}
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-200 text-[#065f46] text-[9px] font-bold uppercase tracking-wide shrink-0">
-                          Akun Anda
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                        {currentEmp.title} · {currentSite.name}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  /* Admin / Kiosk: pilih karyawan */
-                  <div className="space-y-2.5 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                {/* ── PILIH KARYAWAN (Hanya untuk Admin / Kiosk mode) ──────── */}
+                {!isEmployeeUser && (
+                  <div className="space-y-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
                     <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
                       Pilih Karyawan
                     </label>
@@ -491,7 +478,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                         setSelectedEmpId(e.target.value);
                         if (emp?.siteId) setSelectedSiteId(emp.siteId);
                       }}
-                      className="w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] cursor-pointer"
+                      className="w-full h-8.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] cursor-pointer"
                     >
                       {employees.map((emp) => (
                         <option key={emp.id} value={emp.id}>
@@ -502,7 +489,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                     <select
                       value={selectedSiteId}
                       onChange={(e) => setSelectedSiteId(e.target.value)}
-                      className="w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] cursor-pointer"
+                      className="w-full h-8.5 px-3 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] cursor-pointer"
                     >
                       {sites.map((site) => (
                         <option key={site.id} value={site.id}>
@@ -816,5 +803,6 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
         )}
       </div>
     </div>
-  );
+  </div>
+);
 };

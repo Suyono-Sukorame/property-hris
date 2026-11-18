@@ -113,8 +113,8 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Zone 3: Primary Action Buttons & Mobile Logout */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        {/* Tombol Presensi GPS di Header hanya untuk Admin/Site Manager di Desktop (disembunyikan di Mobile & untuk Karyawan) */}
-        {!isSuperAdmin && userRole !== 'SITE_MANAGER' ? null : (
+        {/* Tombol Presensi GPS di Header hanya untuk Site Manager di Desktop (disembunyikan di Mobile, Karyawan, & Pemilik/SUPER_ADMIN) */}
+        {userRole === 'SITE_MANAGER' && (
           <button
             type="button"
             onClick={onOpenLiveCheckIn}

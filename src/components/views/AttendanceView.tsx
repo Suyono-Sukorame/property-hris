@@ -121,13 +121,21 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   canEditAttendance = true,
 }) => {
   const { currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
   const isEmployee = currentUser?.role === 'EMPLOYEE' || isEmployeeView;
   const canMonitorTeam = !isEmployee;
 
   // Tab switch: 'MY_ATTENDANCE' (Presensi Saya) vs 'TEAM_MONITORING' (Monitoring Tim)
+  // Khusus SUPER_ADMIN (Pemilik / Direktur), 100% langsung ke 'TEAM_MONITORING' eksekutif
   const [activeTab, setActiveTab] = useState<'MY_ATTENDANCE' | 'TEAM_MONITORING'>(
-    isEmployee ? 'MY_ATTENDANCE' : 'MY_ATTENDANCE'
+    isSuperAdmin ? 'TEAM_MONITORING' : isEmployee ? 'MY_ATTENDANCE' : 'TEAM_MONITORING'
   );
+
+  useEffect(() => {
+    if (isSuperAdmin) {
+      setActiveTab('TEAM_MONITORING');
+    }
+  }, [isSuperAdmin]);
 
   // Live real-time clock
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -229,8 +237,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* ─── DUAL INTERFACE TAB SWITCHER (For Admin & Site Manager) ─── */}
-      {canMonitorTeam && (
+      {/* ─── DUAL INTERFACE TAB SWITCHER (Hanya untuk Admin & Site Manager Operasional, Pemilik Bebas Absen) ─── */}
+      {canMonitorTeam && !isSuperAdmin && (
         <div className="bg-white p-1.5 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-1.5">
           <button
             type="button"

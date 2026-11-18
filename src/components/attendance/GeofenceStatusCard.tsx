@@ -26,6 +26,7 @@ export interface GeofenceStatusCardProps {
   onRefreshGPS: () => void;
   className?: string;
   showDemoToggle?: boolean;
+  compact?: boolean;
 }
 
 export const GeofenceStatusCard: React.FC<GeofenceStatusCardProps> = ({
@@ -40,8 +41,77 @@ export const GeofenceStatusCard: React.FC<GeofenceStatusCardProps> = ({
   onRefreshGPS,
   className = '',
   showDemoToggle = true,
+  compact = true,
 }) => {
   const allowedRadius = targetSite.geofenceRadiusMeters || 500;
+
+  if (compact) {
+    return (
+      <div
+        className={`rounded-xl border transition-all ${
+          isSimulated || isWithinRadius
+            ? 'bg-emerald-50/80 border-emerald-200'
+            : 'bg-rose-50/80 border-rose-200'
+        } p-2.5 sm:p-3 ${className}`}
+      >
+        <div className="flex items-center justify-between gap-2">
+          {/* Sisi Kiri: Lokasi & Status */}
+          <div className="flex items-center gap-2 min-w-0">
+            <div
+              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border ${
+                isSimulated || isWithinRadius
+                  ? 'bg-emerald-100 border-emerald-300 text-[#0f766e]'
+                  : 'bg-rose-100 border-rose-300 text-rose-700'
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs font-bold text-slate-900 truncate">
+                  {targetSite.name}
+                </span>
+                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/90 px-1.5 py-0.2 rounded-full border border-emerald-200 inline-flex items-center gap-0.5">
+                  <CheckCircle2 className="w-2.5 h-2.5 text-[#0f766e]" />
+                  {isSimulated ? 'Lokasi Sesuai (0m)' : isWithinRadius ? 'Dalam Radius' : 'Luar Radius'}
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 truncate">
+                {targetSite.category} · Radius max {allowedRadius}m
+              </p>
+            </div>
+          </div>
+
+          {/* Sisi Kanan: Mini Toggle GPS / Demo (tanpa makan tempat) */}
+          {showDemoToggle && (
+            <button
+              type="button"
+              onClick={() => onToggleSimulated(!isSimulated)}
+              title={isSimulated ? 'Beralih ke GPS Asli HP' : 'Beralih ke Simulasi 0m'}
+              className="shrink-0 px-2 py-1 rounded-md text-[10px] font-medium bg-white/90 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <SlidersHorizontal className="w-3 h-3 text-[#0f766e]" />
+              <span className="hidden sm:inline">{isSimulated ? 'Simulasi' : 'GPS HP'}</span>
+            </button>
+          )}
+        </div>
+
+        {/* Error jika GPS gagal saat mode asli */}
+        {!isSimulated && gpsError && (
+          <div className="mt-2 pt-2 border-t border-rose-200/80 flex items-center justify-between text-[10px] text-rose-700">
+            <span className="truncate">{gpsError.message}</span>
+            <button
+              type="button"
+              onClick={() => onToggleSimulated(true)}
+              className="underline font-bold shrink-0 ml-2 cursor-pointer"
+            >
+              Pakai Simulasi
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
