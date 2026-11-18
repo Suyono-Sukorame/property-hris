@@ -1,1 +1,0 @@
-Rollback navigation changes - restore original sidebar + bottom nav structure
