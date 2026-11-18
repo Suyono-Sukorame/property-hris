@@ -36,17 +36,17 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
         aria-hidden="true"
       />
 
-      {/* Dropdown Mengambang dari Kanan Atas (Lebar ~50% Layar Mobile, Menempel di Icon User) */}
-      <div className="fixed top-14 sm:top-16 right-2 sm:right-4 w-[55vw] min-w-70 max-w-sm sm:w-96 z-50 origin-top-right animate-in fade-in slide-in-from-top-2 zoom-in-95 duration-150">
+      {/* Dropdown Mengambang dari Kanan Atas (Lebar Ringkas & Pas) */}
+      <div className="fixed top-14 sm:top-16 right-2 sm:right-4 w-72 sm:w-80 z-50 origin-top-right animate-in fade-in slide-in-from-top-2 zoom-in-95 duration-150 select-none">
         <div
-          className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[82vh] ring-1 ring-slate-900/5"
+          className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col ring-1 ring-slate-900/5"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Panel Header */}
-          <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
-            <div className="flex items-center gap-2">
+          <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+            <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
                 Profil Pengguna
               </h3>
             </div>
@@ -63,29 +63,24 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
             </button>
           </div>
 
-          {/* Panel Body (Scrollable) */}
-          <div className="p-3.5 sm:p-4 overflow-y-auto space-y-3 text-xs">
-            {/* Kartu Identitas A-Z */}
+          {/* Panel Body: Identitas Ringkas + Tombol Edit Profil */}
+          <div className="p-3.5 space-y-3">
+            {/* Kartu Identitas Ringkas (Avatar + Nama + Email + Jabatan) */}
             <UserProfileIdentity user={user} />
 
-            {/* Aksi Pintasan: Edit Profil */}
-            <div className="space-y-1.5 pt-2 border-t border-slate-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-0.5">
-                Pengaturan &amp; Akses Pengguna
-              </span>
-
-              {/* Tombol Edit Profil */}
+            {/* Aksi CRUD Profil & Keamanan Akun */}
+            <div className="pt-2.5 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => {
                   onClose();
                   onOpenEditProfile();
                 }}
-                className="w-full h-9 px-3 rounded-xl bg-[#0f766e]/10 hover:bg-[#0f766e]/15 border border-[#0f766e]/20 text-[#0f766e] font-semibold text-xs transition-colors flex items-center justify-between group cursor-pointer"
+                className="w-full h-9.5 px-3 rounded-xl bg-teal-50/70 hover:bg-teal-100/70 border border-teal-200/80 text-[#0f766e] font-semibold text-xs transition-all flex items-center justify-between group cursor-pointer"
               >
-                <span className="flex items-center gap-1.5 truncate">
-                  <UserCog className="w-3.5 h-3.5 text-[#0f766e] shrink-0" />
-                  <span className="truncate">Edit Profil Saya</span>
+                <span className="flex items-center gap-2 truncate">
+                  <UserCog className="w-4 h-4 text-[#0f766e] shrink-0" />
+                  <span className="truncate">Edit Profil &amp; Kata Sandi</span>
                 </span>
                 <span className="text-[10px] font-bold text-[#0f766e] group-hover:underline shrink-0">
                   Ubah &rarr;
@@ -94,8 +89,8 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
             </div>
           </div>
 
-          {/* Panel Footer: Zona Keluar Akun */}
-          <div className="p-3 sm:p-3.5 border-t border-slate-100 bg-slate-50/90">
+          {/* Panel Footer: Aksi Logout */}
+          <div className="p-3 border-t border-slate-100 bg-slate-50/90">
             {isConfirmingLogout ? (
               <div className="space-y-2 animate-in fade-in duration-150">
                 <div className="flex items-center gap-1.5 text-amber-800 text-[10px] font-medium bg-amber-50 p-1.5 rounded-lg border border-amber-200">
