@@ -27,7 +27,6 @@ interface MobileMenuBottomSheetProps {
   activeModule: ActiveNavModule;
   onSelectModule: (module: ActiveNavModule) => void;
   pendingApprovalsCount?: number;
-  onOpenEmployeeIDCard?: () => void;
 }
 
 interface NavMenuItem {
@@ -165,7 +164,6 @@ export const MobileMenuBottomSheet: React.FC<MobileMenuBottomSheetProps> = ({
   activeModule,
   onSelectModule,
   pendingApprovalsCount = 0,
-  onOpenEmployeeIDCard,
 }) => {
   const { currentUser, logout } = useAuth();
   const userRole = currentUser?.role || 'SUPER_ADMIN';
@@ -337,23 +335,6 @@ export const MobileMenuBottomSheet: React.FC<MobileMenuBottomSheetProps> = ({
             </p>
 
             <div className="grid grid-cols-1 gap-1.5">
-              {onOpenEmployeeIDCard && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenEmployeeIDCard();
-                  }}
-                  className="p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-semibold flex items-center justify-between transition-all cursor-pointer active:scale-95"
-                >
-                  <span className="flex items-center gap-2 truncate">
-                    <CreditCard className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span className="truncate">Kartu ID Digital</span>
-                  </span>
-                  <ChevronRight className="w-3 h-3 text-slate-500" />
-                </button>
-              )}
-
               <button
                 type="button"
                 onClick={() => {

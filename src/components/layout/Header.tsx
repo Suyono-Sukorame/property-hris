@@ -14,7 +14,6 @@ interface HeaderProps {
   sites: PropertySite[];
   onOpenLiveCheckIn: () => void;
   onOpenAddEmployee?: () => void;
-  onOpenEmployeeIDCard?: () => void;
 }
 
 const MODULE_TITLES: Record<ActiveNavModule, string> = {
@@ -34,7 +33,6 @@ export const Header: React.FC<HeaderProps> = ({
   sites,
   onOpenLiveCheckIn,
   onOpenAddEmployee,
-  onOpenEmployeeIDCard,
 }) => {
   const { currentUser, logout } = useAuth();
   const userRole = currentUser?.role || 'SUPER_ADMIN';
@@ -131,7 +129,6 @@ export const Header: React.FC<HeaderProps> = ({
             user={currentUser}
             activeModule={activeModule}
             onLogout={logout}
-            onOpenIDCard={onOpenEmployeeIDCard}
           />
         </div>
       </div>

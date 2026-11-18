@@ -171,15 +171,6 @@ function HRISApp() {
         activeModule={activeModule}
         onSelectModule={setActiveModule}
         pendingApprovalsCount={pendingApprovalsCount}
-        onOpenEmployeeIDCard={() => {
-          const matchedEmp = currentUser?.employeeId
-            ? employees.find((e) => e.id === currentUser.employeeId)
-            : employees[0];
-          if (matchedEmp) {
-            setActiveModule('employees');
-            setSelectedEmployeeForCard(matchedEmp);
-          }
-        }}
       />
 
       {/* Main Content Area */}
@@ -191,15 +182,6 @@ function HRISApp() {
           sites={sites}
           onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
           onOpenAddEmployee={() => setIsAddEmployeeOpen(true)}
-          onOpenEmployeeIDCard={() => {
-            const matchedEmp = currentUser?.employeeId
-              ? employees.find((e) => e.id === currentUser.employeeId)
-              : employees[0];
-            if (matchedEmp) {
-              setActiveModule('employees');
-              setSelectedEmployeeForCard(matchedEmp);
-            }
-          }}
         />
 
         {/* Scrollable Main Area with extra bottom padding for Mobile BottomNav */}

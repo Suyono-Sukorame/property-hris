@@ -3,15 +3,13 @@
 import React, { useState } from 'react';
 import { AuthUser } from '@/types/auth';
 import { UserProfileIdentity } from './UserProfileIdentity';
-import { DeveloperBranding } from '@/components/ui/DeveloperBranding';
-import { X, LogOut, QrCode, ShieldCheck, AlertTriangle, UserCog } from 'lucide-react';
+import { X, LogOut, AlertTriangle, UserCog } from 'lucide-react';
 
 interface UserProfileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   user: AuthUser;
   onLogout: () => void;
-  onOpenIDCard?: () => void;
   onOpenEditProfile: () => void;
 }
 
@@ -20,7 +18,6 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
   onClose,
   user,
   onLogout,
-  onOpenIDCard,
   onOpenEditProfile,
 }) => {
   const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
@@ -71,7 +68,7 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
             {/* Kartu Identitas A-Z */}
             <UserProfileIdentity user={user} />
 
-            {/* Aksi Pintasan: Edit Profil & Kartu ID */}
+            {/* Aksi Pintasan: Edit Profil */}
             <div className="space-y-1.5 pt-2 border-t border-slate-100">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-0.5">
                 Pengaturan &amp; Akses Pengguna
@@ -94,35 +91,6 @@ export const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
                   Ubah &rarr;
                 </span>
               </button>
-
-              {/* Tombol Kartu ID Digital */}
-              {onOpenIDCard && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenIDCard();
-                  }}
-                  className="w-full h-9 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 font-semibold text-xs transition-colors flex items-center justify-between group cursor-pointer"
-                >
-                  <span className="flex items-center gap-1.5 truncate">
-                    <QrCode className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span className="truncate">Kartu ID &amp; Barcode</span>
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-600 group-hover:underline shrink-0">
-                    Buka &rarr;
-                  </span>
-                </button>
-              )}
-            </div>
-
-            {/* Info Keamanan & Lisensi Pengembang */}
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-1 text-[10px]">
-              <div className="flex items-center gap-1.5 text-slate-600 truncate">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="truncate">Sesi Aman</span>
-              </div>
-              <DeveloperBranding variant="light" size="xs" />
             </div>
           </div>
 

@@ -12,7 +12,6 @@ interface UserProfileHubProps {
   user: AuthUser | null;
   activeModule?: ActiveNavModule;
   onLogout: () => void;
-  onOpenIDCard?: () => void;
   className?: string;
 }
 
@@ -20,7 +19,6 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({
   user,
   activeModule,
   onLogout,
-  onOpenIDCard,
   className = '',
 }) => {
   const { updateCurrentUser } = useAuth();
@@ -108,7 +106,6 @@ export const UserProfileHub: React.FC<UserProfileHubProps> = ({
         onClose={() => setIsOpen(false)}
         user={user}
         onLogout={onLogout}
-        onOpenIDCard={onOpenIDCard}
         onOpenEditProfile={() => setIsEditProfileOpen(true)}
       />
 
