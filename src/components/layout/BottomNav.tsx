@@ -25,6 +25,7 @@ interface BottomNavProps {
   onSelectModule: (module: ActiveNavModule) => void;
   onOpenLiveCheckIn: () => void;
   onToggleMobileDrawer: () => void;
+  isOpenMobileMenu?: boolean;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
@@ -32,6 +33,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onSelectModule,
   onOpenLiveCheckIn,
   onToggleMobileDrawer,
+  isOpenMobileMenu = false,
 }) => {
   const { currentUser } = useAuth();
   const { attendanceRecords, sites, handleCheckInSuccess, handleCheckOut, pendingApprovalsCount } = useHRIS();
@@ -106,10 +108,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const CenterIcon = centerAction.Icon;
 
   // 1. SUPER_ADMIN Navigation (Direktur / Pemilik)
-  // [ 📊 Beranda ] [ 👥 Data Tim ] [ 💵 Gaji & Kasbon ] [ ✍️ Persetujuan ]
+  // [ 📊 Beranda ] [ 👥 Data Tim ] [ 💵 Gaji & Kasbon ] [ ✍️ Persetujuan ] [ ☰ Menu ]
   if (role === 'SUPER_ADMIN') {
     return (
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-2 px-3 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-2 px-3 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
         {/* Tab 1: Beranda */}
         <a
           href="/dashboard"
@@ -181,7 +183,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <button
           type="button"
           onClick={onToggleMobileDrawer}
-          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
+            isOpenMobileMenu
+              ? 'text-emerald-400 font-bold bg-white/10'
+              : 'text-slate-400 hover:text-white'
+          }`}
         >
           <Menu className="w-4.5 h-4.5 mb-1" />
           <span>Menu</span>
@@ -194,7 +200,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   // [ 📊 Beranda ] [ 🕒 Presensi Tim ] [ 💵 Gaji & Kasbon ] [ 📋 Verifikasi ] [ ☰ Menu ]
   if (role === 'SITE_MANAGER') {
     return (
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
         <a
           href="/dashboard"
           onClick={(e) => { e.preventDefault(); onSelectModule('dashboard'); }}
@@ -254,7 +260,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <button
           type="button"
           onClick={onToggleMobileDrawer}
-          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
+            isOpenMobileMenu
+              ? 'text-emerald-400 font-bold bg-white/10'
+              : 'text-slate-400 hover:text-white'
+          }`}
         >
           <Menu className="w-4.5 h-4.5 mb-1" />
           <span>Menu</span>
@@ -266,7 +276,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   // 3. EMPLOYEE Navigation (Self-Service: Andi / Rudi)
   // [Riwayat] [Slip Gaji] (🟢 Masuk / Pulang) [Pengajuan] [Menu]
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
       {/* Tab 1: Riwayat (Halaman Riwayat Presensi & Kehadiran) */}
       <a
         href="/attendance"
@@ -325,7 +335,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       <button
         type="button"
         onClick={onToggleMobileDrawer}
-        className="flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+        className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer ${
+          isOpenMobileMenu
+            ? 'text-emerald-400 font-bold bg-white/10'
+            : 'text-slate-400 hover:text-white'
+        }`}
       >
         <Menu className="w-4 h-4 mb-0.5" />
         <span>Menu</span>

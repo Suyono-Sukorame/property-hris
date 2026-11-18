@@ -28,16 +28,6 @@ const MODULE_TITLES: Record<ActiveNavModule, string> = {
   settings: 'Pengaturan Proyek & Lokasi',
 };
 
-const MODULE_TITLES_SHORT: Record<ActiveNavModule, string> = {
-  dashboard: 'Dashboard',
-  employees: 'Karyawan',
-  attendance: 'Presensi',
-  payroll: 'Gaji',
-  approvals: 'Persetujuan',
-  reports: 'Laporan K3',
-  settings: 'Pengaturan',
-};
-
 export const Header: React.FC<HeaderProps> = ({
   activeModule,
   selectedSiteFilter,
@@ -89,21 +79,15 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="hidden sm:inline text-xs font-semibold text-slate-400 whitespace-nowrap">Property HRIS</span>
-          <ChevronRight className="hidden sm:inline w-3.5 h-3.5 text-slate-300 shrink-0" />
-          <h1 className="text-xs sm:text-sm font-bold text-slate-900 truncate tracking-tight">
-            <span className="sm:hidden">
-              {!isSuperAdmin && userRole !== 'SITE_MANAGER'
-                ? activeModule === 'attendance'
-                  ? 'Riwayat'
-                  : activeModule === 'payroll'
-                  ? 'Slip Gaji'
-                  : activeModule === 'approvals'
-                  ? 'Pengajuan'
-                  : MODULE_TITLES_SHORT[activeModule]
-                : MODULE_TITLES_SHORT[activeModule]}
-            </span>
-            <span className="hidden sm:inline">
+          {/* Nama Aplikasi di samping logo (Selalu tampil di mobile & desktop) */}
+          <span className="text-xs sm:text-sm font-bold text-slate-900 whitespace-nowrap tracking-tight">
+            Property HRIS
+          </span>
+
+          {/* Breadcrumb Modul Aktif di Tablet & Desktop */}
+          <span className="hidden md:inline-flex items-center gap-1.5 min-w-0">
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+            <h1 className="text-xs sm:text-sm font-semibold text-slate-600 truncate tracking-tight">
               {!isSuperAdmin && userRole !== 'SITE_MANAGER'
                 ? activeModule === 'attendance'
                   ? 'Presensi & Riwayat Saya'
@@ -113,8 +97,8 @@ export const Header: React.FC<HeaderProps> = ({
                   ? 'Pengajuan & Permohonan Saya'
                   : MODULE_TITLES[activeModule]
                 : MODULE_TITLES[activeModule]}
-            </span>
-          </h1>
+            </h1>
+          </span>
         </div>
 
         {/* Role Pill */}

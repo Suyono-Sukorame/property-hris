@@ -202,17 +202,17 @@ export const MobileMenuBottomSheet: React.FC<MobileMenuBottomSheetProps> = ({
   const roleBadgeLabel = currentUser?.title || currentUser?.roleLabel || 'Staf Lapangan';
 
   return (
-    <div className="md:hidden fixed inset-0 z-50 flex justify-end items-end">
-      {/* Backdrop with smooth fade */}
+    <div className="md:hidden">
+      {/* Backdrop with smooth fade — sits behind BottomNav (z-40) */}
       <div
-        className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-150"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Bottom Sheet Modal Container — 50% width mepet samping kanan */}
+      {/* Floating Menu Popover Container — 50% width mepet samping kanan, duduk tepat DI ATAS mobile bottom navigation bar */}
       <div
-        className="relative z-10 w-1/2 min-w-67.5 max-w-[85vw] max-h-[88dvh] bg-slate-900 border-t border-l border-slate-700/80 rounded-tl-3xl shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 select-none overflow-hidden"
+        className="fixed bottom-13.5 sm:bottom-15 right-0 z-50 w-1/2 min-w-67.5 max-w-[85vw] max-h-[calc(100dvh-4.25rem)] bg-slate-900 border-t border-l border-slate-700/80 rounded-tl-2xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-2 fade-in duration-150 select-none overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -381,8 +381,8 @@ export const MobileMenuBottomSheet: React.FC<MobileMenuBottomSheetProps> = ({
           </div>
         </div>
 
-        {/* Bottom Footer Note with Safe Area */}
-        <div className="px-3 py-2 border-t border-slate-800/90 bg-slate-950/60 text-center shrink-0 pb-safe">
+        {/* Bottom Footer Note */}
+        <div className="px-3 py-1.5 border-t border-slate-800/90 bg-slate-950/60 text-center shrink-0">
           <p className="text-[9px] text-slate-500 font-medium truncate">
             Property HRIS Mobile v1
           </p>

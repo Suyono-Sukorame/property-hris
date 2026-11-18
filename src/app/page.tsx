@@ -326,6 +326,7 @@ function HRISApp() {
         onSelectModule={setActiveModule}
         onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
         onToggleMobileDrawer={() => setIsMobileNavOpen((prev) => !prev)}
+        isOpenMobileMenu={isMobileNavOpen}
       />
 
       {/* Global Modals */}
