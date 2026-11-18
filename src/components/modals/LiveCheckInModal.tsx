@@ -109,6 +109,8 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
     geofenceRadiusMeters: 500,
   };
 
+  // Check if employee is owner/manager (exempt from attendance)
+  const isOwnerOrManager = currentEmp.division === 'Manajemen';
   const isOffice =
     currentSite?.category === 'Corporate Head Office' ||
     currentSite?.id === 'SITE-HQ' ||
@@ -573,6 +575,26 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
                           </span>
                           <span className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-[#065f46] font-bold">
                             Pulang: <strong>{todayRecord?.checkOutTime}</strong>
+                          </span>
+                        </div>
+                      </div>
+
+                    ) : isOwnerOrManager ? (
+                      /* STATUS: PEMILIK/DIREKTUR - TIDAK PERLU ABSEN */
+                      <div className="p-5 rounded-xl border border-emerald-200 bg-emerald-50/60 text-center space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-emerald-100 border-2 border-emerald-300 text-[#0f766e] flex items-center justify-center mx-auto">
+                          <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-900">Anda Tidak Perlu Absen</h4>
+                        <p className="text-xs text-slate-600 max-w-xs mx-auto">
+                          Sebagai pemilik/direktur perusahaan, Anda tidak diwajibkan melakukan presensi harian.
+                        </p>
+                        <div className="flex items-center justify-center gap-2 pt-2">
+                          <span className="px-3 py-1 bg-white border border-emerald-200 rounded-lg text-[#0f766e] font-bold text-xs">
+                            Pemilik
+                          </span>
+                          <span className="text-[10px] text-emerald-700 font-medium">
+                            Dividen/Profit Sharing
                           </span>
                         </div>
                       </div>

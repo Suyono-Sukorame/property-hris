@@ -695,8 +695,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             />
                             <div className="min-w-0">
                               <div className="font-bold text-slate-900 truncate">{record.employeeName}</div>
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="font-mono text-[10px] text-slate-400">{record.jobCode}</span>
+                                {record.division === 'Manajemen' && (
+                                  <span className="px-1.5 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-[9px] font-bold text-emerald-800 flex items-center gap-0.5">
+                                    Pemilik
+                                  </span>
+                                )}
                                 {!record.photoUrl && (
                                   <span className="px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-[9px] font-bold text-amber-800 flex items-center gap-0.5">
                                     ⚠️ Tanpa Foto
@@ -839,16 +844,17 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         <div className="font-bold text-slate-900 text-sm truncate">{record.employeeName}</div>
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           <span className="font-mono text-[10px] text-slate-400">{record.jobCode}</span>
-                          <span className="text-slate-300">·</span>
-                          <span className="text-[10px] text-slate-500 truncate">{record.siteName}</span>
-                        </div>
-                        {!record.photoUrl && (
-                          <div className="mt-1">
+                          {record.division === 'Manajemen' && (
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-[9px] font-bold text-emerald-800 flex items-center gap-0.5">
+                              Pemilik
+                            </span>
+                          )}
+                          {!record.photoUrl && (
                             <span className="px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-[9px] font-bold text-amber-800 inline-flex items-center gap-0.5">
                               ⚠️ Tanpa Foto Selfie
                             </span>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                       <div className="shrink-0 flex flex-col items-end gap-1">
                         <StatusBadge status={record.status} size="sm" />
