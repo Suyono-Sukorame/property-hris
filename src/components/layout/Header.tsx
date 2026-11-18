@@ -14,7 +14,6 @@ interface HeaderProps {
   sites: PropertySite[];
   onOpenLiveCheckIn: () => void;
   onOpenAddEmployee?: () => void;
-  onToggleMobileNav?: () => void;
   onOpenEmployeeIDCard?: () => void;
 }
 
@@ -35,7 +34,6 @@ export const Header: React.FC<HeaderProps> = ({
   sites,
   onOpenLiveCheckIn,
   onOpenAddEmployee,
-  onToggleMobileNav,
   onOpenEmployeeIDCard,
 }) => {
   const { currentUser, logout } = useAuth();
@@ -48,35 +46,17 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="h-14 sm:h-16 bg-white border-b border-slate-200 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 sticky top-0 z-30 shrink-0">
       {/* Zone 1: Mobile App Logo & Title */}
       <div className="flex items-center gap-2 min-w-0">
-        {onToggleMobileNav ? (
-          <button
-            type="button"
-            onClick={onToggleMobileNav}
-            className="md:hidden w-8 h-8 rounded-xl overflow-hidden border border-slate-200/90 shadow-xs flex items-center justify-center bg-white shrink-0 active:scale-95 transition-transform cursor-pointer"
-            aria-label="Buka Menu Aplikasi"
-            title="Menu Property HRIS"
-          >
-            <Image
-              src="/property-hris.png"
-              alt="Logo Property HRIS"
-              width={32}
-              height={32}
-              priority
-              className="w-full h-full object-cover"
-            />
-          </button>
-        ) : (
-          <div className="md:hidden w-8 h-8 rounded-xl overflow-hidden border border-slate-200/90 shadow-xs flex items-center justify-center bg-white shrink-0">
-            <Image
-              src="/property-hris.png"
-              alt="Logo Property HRIS"
-              width={32}
-              height={32}
-              priority
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
+        {/* Logo Aplikasi di Mobile (Branding Logo — tidak membuka menu) */}
+        <div className="md:hidden w-8 h-8 rounded-xl overflow-hidden border border-slate-200/90 shadow-xs flex items-center justify-center bg-white shrink-0">
+          <Image
+            src="/property-hris.png"
+            alt="Logo Property HRIS"
+            width={32}
+            height={32}
+            priority
+            className="w-full h-full object-cover"
+          />
+        </div>
 
         <div className="flex items-center gap-1.5 min-w-0">
           {/* Nama Aplikasi di samping logo (Selalu tampil di mobile & desktop) */}

@@ -191,7 +191,6 @@ function HRISApp() {
           sites={sites}
           onOpenLiveCheckIn={() => setIsLiveCheckInOpen(true)}
           onOpenAddEmployee={() => setIsAddEmployeeOpen(true)}
-          onToggleMobileNav={() => setIsMobileNavOpen((prev) => !prev)}
           onOpenEmployeeIDCard={() => {
             const matchedEmp = currentUser?.employeeId
               ? employees.find((e) => e.id === currentUser.employeeId)
