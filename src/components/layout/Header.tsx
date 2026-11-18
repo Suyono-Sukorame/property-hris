@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { ActiveNavModule, PropertySite } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
-import { ChevronRight, MapPin, Smartphone, Shield, HardHat, UserCheck, Menu } from 'lucide-react';
+import { ChevronRight, MapPin, Smartphone, Shield, HardHat, UserCheck } from 'lucide-react';
 import { UserProfileHub } from '@/components/profile';
 
 interface HeaderProps {
@@ -55,17 +56,36 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="h-14 sm:h-16 bg-white border-b border-slate-200 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 sticky top-0 z-30 shrink-0">
-      {/* Zone 1: Mobile Hamburger & Title */}
+      {/* Zone 1: Mobile App Logo & Title */}
       <div className="flex items-center gap-2 min-w-0">
-        {onToggleMobileNav && (
+        {onToggleMobileNav ? (
           <button
             type="button"
             onClick={onToggleMobileNav}
-            className="md:hidden p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
-            aria-label="Buka Menu Navigasi"
+            className="md:hidden w-8 h-8 rounded-xl overflow-hidden border border-slate-200/90 shadow-xs flex items-center justify-center bg-white shrink-0 active:scale-95 transition-transform cursor-pointer"
+            aria-label="Buka Menu Aplikasi"
+            title="Menu Property HRIS"
           >
-            <Menu className="w-5 h-5" />
+            <Image
+              src="/property-hris.png"
+              alt="Logo Property HRIS"
+              width={32}
+              height={32}
+              priority
+              className="w-full h-full object-cover"
+            />
           </button>
+        ) : (
+          <div className="md:hidden w-8 h-8 rounded-xl overflow-hidden border border-slate-200/90 shadow-xs flex items-center justify-center bg-white shrink-0">
+            <Image
+              src="/property-hris.png"
+              alt="Logo Property HRIS"
+              width={32}
+              height={32}
+              priority
+              className="w-full h-full object-cover"
+            />
+          </div>
         )}
 
         <div className="flex items-center gap-1.5 min-w-0">
