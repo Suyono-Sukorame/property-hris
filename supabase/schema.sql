@@ -14,7 +14,7 @@ DROP TABLE IF EXISTS property_sites CASCADE;
 CREATE TABLE property_sites (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  code TEXT NOT NULL,
+  code TEXT NOT NULL UNIQUE,
   category TEXT NOT NULL,
   location TEXT NOT NULL,
   latitude NUMERIC(10, 6) NOT NULL,

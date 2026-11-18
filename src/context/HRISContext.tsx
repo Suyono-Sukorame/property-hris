@@ -18,6 +18,7 @@ import {
   INITIAL_APPROVALS,
 } from '@/data/mockData';
 import { supabase } from '@/lib/supabase';
+import { generateProjectCode, fetchNextProjectCode } from '@/utils/projectCodeGenerator';
 import { createEmployeeAccount } from '@/lib/accounts';
 import { DynamicAlertData } from '@/components/ui';
 
@@ -891,25 +892,35 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   };
 
   const handleAddProject = async (projectData: Partial<PropertySite>) => {
-    const newProject: PropertySite = {
-      id: `SITE-${Date.now()}`,
-      name: projectData.name || '',
-      code: projectData.code || `PRJ-${Date.now().toString(36).slice(-4).toUpperCase()}`,
-      category: projectData.category || 'Perumahan',
-      location: projectData.location || '',
-      latitude: projectData.latitude || -3.32,
-      longitude: projectData.longitude || 114.59,
-      geofenceRadiusMeters: projectData.geofenceRadiusMeters || 200,
-      activeWorkforce: projectData.activeWorkforce || 0,
-      siteManager: projectData.siteManager || '',
-      projectProgressPercentage: projectData.projectProgressPercentage || 0,
-      status: projectData.status || 'Pemasaran Aktif',
-    };
+    const category = projectData.category || 'Perumahan';
+    const fallbackCode = projectData.code || generateProjectCode(category, sites);
+    const maxCodeAttempts = 3;
 
-    setSites((prev) => [...prev, newProject]);
+    for (let attempt = 0; attempt < maxCodeAttempts; attempt++) {
+      let code = fallbackCode;
 
-    try {
-      await supabase.from('property_sites').insert({
+      try {
+        code = await fetchNextProjectCode(category);
+      } catch (error) {
+        console.error('Failed to fetch next project code:', error);
+      }
+
+      const newProject: PropertySite = {
+        id: `SITE-${Date.now()}`,
+        name: projectData.name || '',
+        code,
+        category,
+        location: projectData.location || '',
+        latitude: projectData.latitude || -3.32,
+        longitude: projectData.longitude || 114.59,
+        geofenceRadiusMeters: projectData.geofenceRadiusMeters || 200,
+        activeWorkforce: projectData.activeWorkforce || 0,
+        siteManager: projectData.siteManager || '',
+        projectProgressPercentage: projectData.projectProgressPercentage || 0,
+        status: projectData.status || 'Pemasaran Aktif',
+      };
+
+      const { error } = await supabase.from('property_sites').insert({
         id: newProject.id,
         name: newProject.name,
         code: newProject.code,
@@ -926,14 +937,20 @@ export function HRISProvider({ children }: { children: ReactNode }) {
         updated_at: new Date().toISOString(),
       });
 
-      showDynamicAlert({
-        type: 'SUCCESS',
-        title: 'Proyek Berhasil Ditambahkan',
-        subtitle: `${newProject.name} telah terdaftar di sistem`,
-      });
-    } catch (e) {
-      console.error('Failed to add project to Supabase:', e);
-      // Don't show error alert since we don't have error type
+      if (!error) {
+        setSites((prev) => [...prev, newProject]);
+        showDynamicAlert({
+          type: 'SUCCESS',
+          title: 'Proyek Berhasil Ditambahkan',
+          subtitle: `${newProject.name} (${newProject.code}) telah terdaftar di sistem`,
+        });
+        return;
+      }
+
+      if (error.code !== '23505' || attempt === maxCodeAttempts - 1) {
+        console.error('Failed to add project to Supabase:', error);
+        return;
+      }
     }
   };
 

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PropertySite } from '@/types/hris';
-import { X, Save, MapPin, Building2, Users, TrendingUp } from 'lucide-react';
+import { X, Save, MapPin, Building2, Users, Sparkles } from 'lucide-react';
+import { generateProjectCode, getCategoryCode } from '@/utils/projectCodeGenerator';
 
 interface ProjectManagementModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface ProjectManagementModalProps {
   onSave: (project: Partial<PropertySite>) => void;
   project?: PropertySite | null;
   employees: Array<{ id: string; name: string }>;
+  existingSites: PropertySite[];
 }
 
 const PROJECT_CATEGORIES = [
@@ -36,42 +38,25 @@ export const ProjectManagementModal: React.FC<ProjectManagementModalProps> = ({
   onSave,
   project,
   employees,
+  existingSites,
 }) => {
-  const [formData, setFormData] = useState<Partial<PropertySite>>({
-    name: '',
-    code: '',
-    category: 'Perumahan',
-    location: '',
-    latitude: -3.32,
-    longitude: 114.59,
-    geofenceRadiusMeters: 200,
-    activeWorkforce: 0,
-    siteManager: '',
-    projectProgressPercentage: 0,
-    status: 'Pemasaran Aktif',
-  });
-
-  useEffect(() => {
-    if (project) {
-      setFormData(project);
-    } else {
-      // Generate auto code for new project
-      const timestamp = Date.now().toString(36).slice(-4).toUpperCase();
-      setFormData({
-        name: '',
-        code: `PRJ-${timestamp}`,
-        category: 'Perumahan',
-        location: '',
-        latitude: -3.32,
-        longitude: 114.59,
-        geofenceRadiusMeters: 200,
-        activeWorkforce: 0,
-        siteManager: '',
-        projectProgressPercentage: 0,
-        status: 'Pemasaran Aktif',
-      });
-    }
-  }, [project, isOpen]);
+  const [formData, setFormData] = useState<Partial<PropertySite>>(() =>
+    project
+      ? { ...project }
+      : {
+          name: '',
+          code: generateProjectCode('Perumahan', existingSites),
+          category: 'Perumahan',
+          location: '',
+          latitude: -3.32,
+          longitude: 114.59,
+          geofenceRadiusMeters: 200,
+          activeWorkforce: 0,
+          siteManager: '',
+          projectProgressPercentage: 0,
+          status: 'Pemasaran Aktif',
+        }
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +69,12 @@ export const ProjectManagementModal: React.FC<ProjectManagementModalProps> = ({
     value: string | number
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // Auto-regenerate code when category changes (only for new project)
+    if (field === 'category' && !project) {
+      const newCode = generateProjectCode(value as string, existingSites);
+      setFormData((prev) => ({ ...prev, code: newCode }));
+    }
   };
 
   if (!isOpen) return null;
@@ -141,16 +132,32 @@ export const ProjectManagementModal: React.FC<ProjectManagementModalProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-                  Kode Proyek
+                  Kode Proyek {!project && <span className="text-emerald-600">● Auto-Generated</span>}
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.code}
-                  onChange={(e) => handleChange('code', e.target.value)}
-                  placeholder="PRJ-XXXX"
-                  className="w-full px-3.5 py-2.5 text-sm font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] bg-slate-50"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={formData.code}
+                    readOnly={!project}
+                    onChange={(e) => handleChange('code', e.target.value)}
+                    placeholder="GBR-XXX-01"
+                    className={`w-full px-3.5 py-2.5 text-sm font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20 focus:border-[#0f766e] ${
+                      !project ? 'bg-emerald-50/50 cursor-not-allowed' : 'bg-white'
+                    }`}
+                  />
+                  {!project && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Sparkles className="w-4 h-4 text-emerald-500" />
+                    </div>
+                  )}
+                </div>
+                {!project && (
+                  <p className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Format: GBR-{getCategoryCode(formData.category || 'Perumahan')}-XX (otomatis berdasarkan kategori)
+                  </p>
+                )}
               </div>
             </div>
 
@@ -341,7 +348,7 @@ export const ProjectManagementModal: React.FC<ProjectManagementModalProps> = ({
             Batal
           </button>
           <button
-            type="submit"
+            type="button"
             onClick={handleSubmit}
             className="px-5 py-2.5 text-sm font-bold text-white bg-[#0f766e] hover:bg-[#115e59] rounded-xl transition-all shadow-xs flex items-center gap-2 active:scale-95"
           >

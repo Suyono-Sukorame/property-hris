@@ -414,13 +414,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </form>
 
       {/* Project Management Modal */}
-      <ProjectManagementModal
-        isOpen={isProjectModalOpen}
-        onClose={() => setIsProjectModalOpen(false)}
-        onSave={handleSaveProject}
-        project={editingProject}
-        employees={employees}
-      />
+      {isProjectModalOpen && (
+        <ProjectManagementModal
+          key={editingProject?.id ?? 'new'}
+          isOpen={isProjectModalOpen}
+          onClose={() => setIsProjectModalOpen(false)}
+          onSave={handleSaveProject}
+          project={editingProject}
+          employees={employees}
+          existingSites={sites}
+        />
+      )}
     </div>
   );
 };
