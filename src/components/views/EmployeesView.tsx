@@ -116,6 +116,13 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   useEffect(() => {
     let isMounted = true;
 
+    // Daftar job code korporat lama yang tidak relevan untuk developer pemula
+    const LEGACY_CORP_CODES = new Set([
+      'DIR-PRJ-01', 'ARC-DES-02', 'HSE-K3-01', 'EST-FIN-03',
+      'ENG-CIV-04', 'DRF-ENG-05', 'MEC-INS-02', 'CRN-OPS-01',
+      'LEG-LND-01', 'FIN-ACC-01', 'HR-PPL-01', 'SLS-PRP-01',
+    ]);
+
     const loadJobdescs = async () => {
       const { data, error } = await supabase.from('job_descriptions').select('*');
       if (!isMounted) return;
@@ -126,15 +133,28 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
       }
 
       if (data && data.length > 0) {
-        setJobdescs(data.map(mapJobDescriptionRow));
-        return;
+        // Otomatis bersihkan baris korporat usang dari Supabase di background
+        const legacyRows = data.filter((r) => LEGACY_CORP_CODES.has(r.job_code));
+        if (legacyRows.length > 0) {
+          supabase
+            .from('job_descriptions')
+            .delete()
+            .in('job_code', Array.from(LEGACY_CORP_CODES))
+            .then(() => {});
+        }
+
+        const validData = data.filter((r) => !LEGACY_CORP_CODES.has(r.job_code));
+        if (validData.length > 0) {
+          setJobdescs(validData.map(mapJobDescriptionRow));
+          return;
+        }
       }
 
-      // Tabel masih kosong: isi sekali dari katalog statis agar data awal tersedia
+      // Tabel masih kosong atau baru dibersihkan: isi 4 posisi inti developer rintisan
       const seedRows = Object.values(JOB_DESCRIPTIONS).map(mapJobDescriptionToRow);
       const { error: seedError } = await supabase
         .from('job_descriptions')
-        .upsert(seedRows, { onConflict: 'job_code', ignoreDuplicates: true });
+        .upsert(seedRows, { onConflict: 'job_code' });
       if (!isMounted) return;
 
       if (seedError) {
@@ -144,7 +164,8 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
 
       const { data: seeded } = await supabase.from('job_descriptions').select('*');
       if (isMounted && seeded) {
-        setJobdescs(seeded.map(mapJobDescriptionRow));
+        const cleanSeeded = seeded.filter((r) => !LEGACY_CORP_CODES.has(r.job_code));
+        setJobdescs(cleanSeeded.map(mapJobDescriptionRow));
       }
     };
 
@@ -666,7 +687,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 onChange={(e) => setSelectedJobCode(e.target.value)}
                 className="w-full md:w-64 h-9 px-3 bg-slate-950 border border-slate-700 rounded-lg text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-[#0f766e] cursor-pointer"
               >
-                <option value="ALL">Tampilkan Semua (8 Posisi)</option>
+                <option value="ALL">Tampilkan Semua ({allJobdescs.length} Posisi Inti)</option>
                 {allJobdescs.map((j) => (
                   <option key={j.jobCode} value={j.jobCode}>
                     {j.jobCode} - {j.title}

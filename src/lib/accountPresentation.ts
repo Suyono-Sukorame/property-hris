@@ -47,6 +47,27 @@ export function getAccountPresentation(user: AuthUser): AccountPresentation {
     };
   }
 
+  const isTukang = user.roleLabel?.includes('Tukang') || user.title?.includes('Tukang');
+  const isKenek = user.roleLabel?.includes('Kenek') || user.roleLabel?.includes('Pembantu') || user.title?.includes('Kenek');
+
+  if (isKenek) {
+    return {
+      Icon: HardHat,
+      roleBadge: 'Pembantu Tukang (Kenek)',
+      roleBadgeClass: 'bg-slate-800 text-slate-300 border-slate-700',
+      dutyDescription: 'Presensi Lapangan, Slip Upah & Log Proyek',
+    };
+  }
+
+  if (isTukang) {
+    return {
+      Icon: HardHat,
+      roleBadge: 'Tukang Bangunan',
+      roleBadgeClass: 'bg-orange-950/80 text-orange-300 border-orange-700/60',
+      dutyDescription: 'Presensi Fisik Proyek, Slip Upah & Log Kerja',
+    };
+  }
+
   return {
     Icon: HardHat,
     roleBadge,
