@@ -23,14 +23,17 @@ interface UserProfileRow {
 }
 
 export function mapProfileToAuthUser(row: UserProfileRow): AuthUser {
+  const normalizedRoleLabel = row.role_label?.trim().toLowerCase() === 'pengawas' ? 'Pengawas Lapangan' : row.role_label;
+  const normalizedTitle = row.title?.trim().toLowerCase() === 'pengawas' ? 'Pengawas Lapangan' : row.title;
+
   return {
     id: row.id,
     name: row.name,
     email: row.email,
     phone: row.phone ?? undefined,
     role: row.role,
-    roleLabel: row.role_label,
-    title: row.title,
+    roleLabel: normalizedRoleLabel || 'Staf',
+    title: normalizedTitle || normalizedRoleLabel || 'Staf',
     division: row.division,
     siteId: row.site_id ?? undefined,
     siteName: row.site_name ?? undefined,

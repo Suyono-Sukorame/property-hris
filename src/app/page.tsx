@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { HRISProvider, useHRIS } from '@/context/HRISContext';
 import { LoginPage } from '@/components/auth/LoginPage';
-import { Sidebar, Header, BottomNav } from '@/components/layout';
+import { Sidebar, Header, BottomNav, MobileMenuBottomSheet } from '@/components/layout';
 import {
   DashboardView,
   EmployeesView,
@@ -157,13 +157,29 @@ function HRISApp() {
 
   return (
     <div className="h-dvh max-h-dvh md:h-screen bg-[#f8fafc] flex antialiased overflow-hidden">
-      {/* Sidebar Navigation (Desktop + Mobile Drawer) */}
+      {/* Sidebar Navigation (Desktop & Tablet) */}
       <Sidebar
         activeModule={activeModule}
         onSelectModule={setActiveModule}
         pendingApprovalsCount={pendingApprovalsCount}
-        isOpenMobile={isMobileNavOpen}
-        onCloseMobile={() => setIsMobileNavOpen(false)}
+      />
+
+      {/* Native Mobile Bottom Sheet Menu (Replacing Mobile Left-Sidebar) */}
+      <MobileMenuBottomSheet
+        isOpen={isMobileNavOpen}
+        onClose={() => setIsMobileNavOpen(false)}
+        activeModule={activeModule}
+        onSelectModule={setActiveModule}
+        pendingApprovalsCount={pendingApprovalsCount}
+        onOpenEmployeeIDCard={() => {
+          const matchedEmp = currentUser?.employeeId
+            ? employees.find((e) => e.id === currentUser.employeeId)
+            : employees[0];
+          if (matchedEmp) {
+            setActiveModule('employees');
+            setSelectedEmployeeForCard(matchedEmp);
+          }
+        }}
       />
 
       {/* Main Content Area */}

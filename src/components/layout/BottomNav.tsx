@@ -160,7 +160,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           href="/approvals"
           onClick={(e) => { e.preventDefault(); onSelectModule('approvals'); }}
           aria-current={activeModule === 'approvals' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer relative ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer relative ${
             activeModule === 'approvals'
               ? 'text-emerald-400 font-bold bg-white/5'
               : 'text-slate-400 hover:text-white'
@@ -176,20 +176,30 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           </div>
           <span>Persetujuan</span>
         </a>
+
+        {/* Tab 5: Menu Native Bottom Sheet */}
+        <button
+          type="button"
+          onClick={onToggleMobileDrawer}
+          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+        >
+          <Menu className="w-4.5 h-4.5 mb-1" />
+          <span>Menu</span>
+        </button>
       </nav>
     );
   }
 
   // 2. SITE_MANAGER Navigation (Admin & Keuangan / Dewi Anggraini)
-  // [ 📊 Beranda ] [ 🕒 Presensi Tim ] [ 💵 Gaji & Kasbon ] [ 📋 Verifikasi ]
+  // [ 📊 Beranda ] [ 🕒 Presensi Tim ] [ 💵 Gaji & Kasbon ] [ 📋 Verifikasi ] [ ☰ Menu ]
   if (role === 'SITE_MANAGER') {
     return (
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-2 px-3 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-400 py-1.5 px-2 flex items-center justify-around shadow-2xl safe-area-bottom select-none">
         <a
           href="/dashboard"
           onClick={(e) => { e.preventDefault(); onSelectModule('dashboard'); }}
           aria-current={activeModule === 'dashboard' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'dashboard' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -201,31 +211,31 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           href="/attendance"
           onClick={(e) => { e.preventDefault(); onSelectModule('attendance'); }}
           aria-current={activeModule === 'attendance' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'attendance' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
           <Clock className="w-4.5 h-4.5 mb-1" />
-          <span>Presensi Tim</span>
+          <span>Presensi</span>
         </a>
 
         <a
           href="/payroll"
           onClick={(e) => { e.preventDefault(); onSelectModule('payroll'); }}
           aria-current={activeModule === 'payroll' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer ${
             activeModule === 'payroll' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
           <Banknote className="w-4.5 h-4.5 mb-1" />
-          <span>Gaji & Kasbon</span>
+          <span>Gaji</span>
         </a>
 
         <a
           href="/approvals"
           onClick={(e) => { e.preventDefault(); onSelectModule('approvals'); }}
           aria-current={activeModule === 'approvals' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer relative ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-colors cursor-pointer relative ${
             activeModule === 'approvals' ? 'text-emerald-400 font-bold bg-white/5' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -239,6 +249,16 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           </div>
           <span>Verifikasi</span>
         </a>
+
+        {/* Tab 5: Menu Native Bottom Sheet */}
+        <button
+          type="button"
+          onClick={onToggleMobileDrawer}
+          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+        >
+          <Menu className="w-4.5 h-4.5 mb-1" />
+          <span>Menu</span>
+        </button>
       </nav>
     );
   }

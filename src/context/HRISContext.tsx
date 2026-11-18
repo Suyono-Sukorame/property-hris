@@ -83,8 +83,9 @@ const HRISContext = createContext<HRISContextType | undefined>(undefined);
 const VALID_MODULES: ActiveNavModule[] = ['dashboard', 'employees', 'attendance', 'payroll', 'approvals', 'reports', 'settings'];
 
 const getModuleFromPath = (path: string): ActiveNavModule => {
-  const segment = path.replace(/^\//, '') as ActiveNavModule;
-  return VALID_MODULES.includes(segment) ? segment : 'dashboard';
+  if (!path) return 'dashboard';
+  const clean = path.replace(/^\//, '').split('?')[0].split('#')[0] as ActiveNavModule;
+  return VALID_MODULES.includes(clean) ? clean : 'dashboard';
 };
 
 // Auto-archive sanitizer: record dari hari-hari sebelumnya yang belum checkout otomatis ditutup
@@ -107,20 +108,38 @@ function autoArchiveAttendanceRecords(records: AttendanceRecord[]): AttendanceRe
 export function HRISProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  // Initialize activeModule from the current URL path
-  const [activeModule, _setActiveModule] = useState<ActiveNavModule>(() => getModuleFromPath(pathname));
+  // Initialize activeModule from the current URL path or window.location
+  const [activeModule, _setActiveModule] = useState<ActiveNavModule>(() => {
+    if (typeof window !== 'undefined') {
+      return getModuleFromPath(window.location.pathname);
+    }
+    return getModuleFromPath(pathname);
+  });
 
-  // Sync activeModule when browser back/forward changes the pathname
+  // Sync activeModule when browser back/forward or mobile swipe gesture changes history
+  useEffect(() => {
+    const handlePopState = () => {
+      const module = getModuleFromPath(window.location.pathname);
+      _setActiveModule(module);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Sync activeModule when router pathname changes
   useEffect(() => {
     const module = getModuleFromPath(pathname);
     _setActiveModule(module);
   }, [pathname]);
 
-  // Public setter: updates state AND pushes to browser history stack
+  // Public setter: updates state AND pushes to browser history stack dynamically
   const setActiveModule = useCallback((module: ActiveNavModule) => {
     _setActiveModule(module);
     if (typeof window !== 'undefined') {
-      window.history.pushState(null, '', '/' + module);
+      const targetPath = '/' + module;
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ module }, '', targetPath);
+      }
     }
   }, []);
   const [selectedSiteFilter, setSelectedSiteFilter] = useState<string>('ALL');

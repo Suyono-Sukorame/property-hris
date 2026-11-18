@@ -14,7 +14,11 @@ export function getAccountPresentation(user: AuthUser): AccountPresentation {
   const isSite = user.role === 'SITE_MANAGER';
   const isMarketing = user.division?.includes('Pemasaran');
 
-  const roleBadge = user.title || user.roleLabel || 'Staf';
+  let rawBadge = user.title || user.roleLabel || 'Staf';
+  if (rawBadge.trim().toLowerCase() === 'pengawas') {
+    rawBadge = 'Pengawas Lapangan';
+  }
+  const roleBadge = rawBadge;
 
   if (isSuper) {
     return {

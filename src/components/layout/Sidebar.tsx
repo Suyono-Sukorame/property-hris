@@ -224,26 +224,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 
   return (
-    <>
-      {/* Desktop Sidebar (Always Visible on md and up) */}
-      <div className="hidden md:flex shrink-0 sticky top-0 h-screen z-40">
-        {sidebarContent}
-      </div>
-
-      {/* Mobile Drawer (Only Visible on mobile when toggled) */}
-      {isOpenMobile && (
-        <div className="fixed inset-0 z-50 md:hidden flex h-dvh max-h-dvh overflow-hidden">
-          {/* Backdrop */}
-          <div
-            onClick={onCloseMobile}
-            className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-          />
-          {/* Drawer Body */}
-          <div className="relative z-10 flex h-full max-h-dvh animate-in slide-in-from-left duration-200 shadow-2xl">
-            {sidebarContent}
-          </div>
-        </div>
-      )}
-    </>
+    <div className="hidden md:flex shrink-0 sticky top-0 h-screen z-40">
+      {sidebarContent}
+    </div>
   );
 };
