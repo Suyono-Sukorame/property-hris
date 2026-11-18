@@ -227,7 +227,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   });
 
   const exportCSV = () => {
-    const headers = ['NIK', 'Nama', 'Jabatan', 'Divisi', 'Site', 'Status', 'Gaji Pokok', 'Tunjangan'];
+    const headers = ['NIK', 'Nama', 'Jabatan', 'Divisi', 'Site', 'Status', 'Penghasilan', 'Tunjangan'];
     const rows = filteredEmployees.map((e) => [
       e.nik,
       `"${e.name}"`,
@@ -235,7 +235,10 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
       `"${e.division}"`,
       `"${e.siteName}"`,
       e.status,
-      e.baseSalary,
+      e.title.toLowerCase().includes('pemilik') || 
+      e.title.toLowerCase().includes('direktur') ||
+      e.jobCode.startsWith('DIR-') ||
+      e.division === 'Manajemen' ? 'Dividen/Profit Sharing' : e.baseSalary,
       e.siteAllowance,
     ]);
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -417,7 +420,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                       <th className="px-4">Divisi</th>
                       <th className="px-4">Lokasi Penempatan</th>
                       <th className="px-4">Status & K3</th>
-                      <th className="px-4 text-right">Gaji Pokok</th>
+                      <th className="px-4 text-right">Penghasilan</th>
                       <th className="px-4 text-center">Aksi</th>
                     </tr>
                   </thead>
@@ -473,8 +476,21 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                             </div>
                           </td>
 
-                          <td className="px-4 text-right font-mono font-medium text-slate-900">
-                            {FORMAT_IDR(emp.baseSalary)}
+                          <td className="px-4 text-right">
+                            {emp.title.toLowerCase().includes('pemilik') || 
+                             emp.title.toLowerCase().includes('direktur') ||
+                             emp.jobCode.startsWith('DIR-') ||
+                             emp.division === 'Manajemen' ? (
+                              <div className="flex flex-col items-end">
+                                <span className="text-slate-500 text-[10px] uppercase tracking-wider">Dividen/Profit Sharing</span>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold text-[10px] mt-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                                  Pemilik
+                                </span>
+                              </div>
+                            ) : (
+                              FORMAT_IDR(emp.baseSalary)
+                            )}
                           </td>
 
                           <td className="px-4 text-center">
