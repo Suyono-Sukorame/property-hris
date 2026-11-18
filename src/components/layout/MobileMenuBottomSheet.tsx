@@ -19,6 +19,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { PWAInstallButton } from '@/components/pwa';
+import { DeveloperBranding } from '@/components/ui';
 
 interface MobileMenuBottomSheetProps {
   isOpen: boolean;
@@ -212,7 +213,7 @@ export const MobileMenuBottomSheet: React.FC<MobileMenuBottomSheetProps> = ({
 
       {/* Floating Menu Popover Container — 50% width mepet samping kanan, duduk tepat DI ATAS mobile bottom navigation bar */}
       <div
-        className="fixed bottom-13.5 sm:bottom-15 right-0 z-50 w-1/2 min-w-67.5 max-w-[85vw] max-h-[calc(100dvh-4.25rem)] bg-slate-900 border-t border-l border-slate-700/80 rounded-tl-2xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-2 fade-in duration-150 select-none overflow-hidden"
+        className="fixed bottom-17 sm:bottom-19 right-0 z-50 w-1/2 min-w-67.5 max-w-[85vw] max-h-[calc(100dvh-5.25rem)] bg-slate-900 border-t border-l border-slate-700/80 rounded-tl-2xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-2 fade-in duration-150 select-none overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -381,11 +382,12 @@ export const MobileMenuBottomSheet: React.FC<MobileMenuBottomSheetProps> = ({
           </div>
         </div>
 
-        {/* Bottom Footer Note */}
-        <div className="px-3 py-1.5 border-t border-slate-800/90 bg-slate-950/60 text-center shrink-0">
+        {/* Bottom Footer Note with Developer Branding */}
+        <div className="px-3 py-2 border-t border-slate-800/90 bg-slate-950/80 flex flex-col items-center justify-center gap-1 shrink-0">
           <p className="text-[9px] text-slate-500 font-medium truncate">
             Property HRIS Mobile v1
           </p>
+          <DeveloperBranding variant="dark" size="xs" />
         </div>
       </div>
     </div>

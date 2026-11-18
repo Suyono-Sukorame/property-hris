@@ -215,8 +215,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           customLabel="Pasang di Layar HP"
           className="w-full text-slate-300 hover:text-white"
         />
-        <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-0.5">
-          <span>Property HRIS · v1.0</span>
+        <div className="flex flex-col items-center justify-center gap-1 pt-1 text-center">
+          <p className="text-[10px] text-slate-500 font-medium">
+            Property HRIS · v1.0
+          </p>
           <DeveloperBranding variant="dark" size="xs" />
         </div>
       </div>
