@@ -76,6 +76,9 @@ function HRISApp() {
     handleAddNewApproval,
     handleBatchProcessPayroll,
     handleUpdateSiteRadius,
+    handleAddProject,
+    handleUpdateProject,
+    handleDeleteProject,
   } = useHRIS();
 
   // Enforce role-based module restrictions
@@ -289,7 +292,11 @@ function HRISApp() {
           {activeModule === 'settings' && (
             <SettingsView
               sites={sites}
+              employees={filteredEmployees}
               onUpdateSiteRadius={handleUpdateSiteRadius}
+              onAddProject={handleAddProject}
+              onUpdateProject={handleUpdateProject}
+              onDeleteProject={handleDeleteProject}
             />
           )}
 

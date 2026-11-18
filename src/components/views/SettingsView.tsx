@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { PropertySite } from '@/types/hris';
 import { PageHeader } from '@/components/ui';
+import { ProjectManagementModal } from '@/components/settings';
 import {
   Building,
   MapPin,
@@ -12,16 +13,28 @@ import {
   CheckCircle,
   Sliders,
   DollarSign,
+  Plus,
+  Edit2,
+  Trash2,
+  Archive,
 } from 'lucide-react';
 
 interface SettingsViewProps {
   sites: PropertySite[];
+  employees: Array<{ id: string; name: string }>;
   onUpdateSiteRadius: (siteId: string, radius: number) => void;
+  onAddProject: (project: Partial<PropertySite>) => void;
+  onUpdateProject: (projectId: string, project: Partial<PropertySite>) => void;
+  onDeleteProject: (projectId: string) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   sites,
+  employees,
   onUpdateSiteRadius,
+  onAddProject,
+  onUpdateProject,
+  onDeleteProject,
 }) => {
   const [siteRadii, setSiteRadii] = useState<{ [id: string]: number }>(() => {
     const init: { [id: string]: number } = {};
@@ -32,6 +45,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   });
 
   const [savedNotice, setSavedNotice] = useState(false);
+
+  // Project Management Modal State
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<PropertySite | null>(null);
 
   // Policy state
   const [toleranceMinutes, setToleranceMinutes] = useState(15);
@@ -47,6 +64,49 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     e.preventDefault();
     setSavedNotice(true);
     setTimeout(() => setSavedNotice(false), 3000);
+  };
+
+  const handleAddProject = () => {
+    setEditingProject(null);
+    setIsProjectModalOpen(true);
+  };
+
+  const handleEditProject = (project: PropertySite) => {
+    setEditingProject(project);
+    setIsProjectModalOpen(true);
+  };
+
+  const handleSaveProject = (projectData: Partial<PropertySite>) => {
+    if (editingProject) {
+      onUpdateProject(editingProject.id, projectData);
+    } else {
+      onAddProject(projectData);
+    }
+    setSavedNotice(true);
+    setTimeout(() => setSavedNotice(false), 3000);
+  };
+
+  const handleDeleteProject = (projectId: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus proyek ini?')) {
+      onDeleteProject(projectId);
+      setSavedNotice(true);
+      setTimeout(() => setSavedNotice(false), 3000);
+    }
+  };
+
+  const getStatusColor = (status: PropertySite['status']) => {
+    switch (status) {
+      case 'Konstruksi Aktif':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'Pemasaran Aktif':
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'Finishing & Handover':
+        return 'bg-amber-100 text-amber-800 border-amber-200';
+      case 'Operasional Kantor':
+        return 'bg-slate-100 text-slate-800 border-slate-200';
+      default:
+        return 'bg-slate-100 text-slate-800 border-slate-200';
+    }
   };
 
   return (
@@ -72,6 +132,105 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </span>
         </div>
       )}
+
+      {/* Project Management Section - NEW */}
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+          <div>
+            <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+              <Building className="w-4 h-4 text-[#0f766e]" />
+              Kelola Proyek Properti
+            </h3>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Tambah, edit, atau hapus data proyek properti yang terdaftar di sistem.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddProject}
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tambah Proyek Baru</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          {sites.map((site) => (
+            <div
+              key={site.id}
+              className="p-4 rounded-xl border border-slate-200/80 bg-slate-50/60 space-y-3 text-xs hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white text-slate-700 border border-slate-200 font-bold">
+                      {site.code}
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${getStatusColor(site.status)}`}>
+                      {site.status}
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-sm truncate">{site.name}</h4>
+                  <p className="text-[11px] text-slate-500 truncate">{site.category}</p>
+                  <p className="text-[11px] text-slate-400 truncate flex items-center gap-1 mt-1">
+                    <MapPin className="w-3 h-3" />
+                    {site.location}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="font-mono text-lg font-extrabold text-[#065f46]">
+                    {site.projectProgressPercentage}%
+                  </div>
+                  <span className="block text-[10px] text-slate-400 font-medium">
+                    Progress
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200/80 grid grid-cols-2 gap-2 text-[11px]">
+                <div>
+                  <span className="text-slate-500">Site Manager:</span>
+                  <p className="font-bold text-slate-900 truncate">{site.siteManager}</p>
+                </div>
+                <div>
+                  <span className="text-slate-500">Workforce:</span>
+                  <p className="font-bold text-slate-900">{site.activeWorkforce} Tim</p>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200/80 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleEditProject(site)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer"
+                >
+                  <Edit2 className="w-3 h-3" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteProject(site.id)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Hapus</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {sites.length === 0 && (
+          <div className="p-8 text-center">
+            <Building className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <p className="text-sm font-bold text-slate-600">Belum ada proyek terdaftar</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Klik tombol "Tambah Proyek Baru" untuk mendaftarkan proyek pertama Anda.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Geofence Perimeter Management */}
       <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
@@ -253,6 +412,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </div>
       </form>
+
+      {/* Project Management Modal */}
+      <ProjectManagementModal
+        isOpen={isProjectModalOpen}
+        onClose={() => setIsProjectModalOpen(false)}
+        onSave={handleSaveProject}
+        project={editingProject}
+        employees={employees}
+      />
     </div>
   );
 };

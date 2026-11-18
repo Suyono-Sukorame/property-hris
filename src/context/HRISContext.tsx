@@ -74,6 +74,9 @@ interface HRISContextType {
   handleAddNewApproval: (newItem: ApprovalItem) => void;
   handleBatchProcessPayroll: () => void;
   handleUpdateSiteRadius: (siteId: string, radius: number) => void;
+  handleAddProject: (project: Partial<PropertySite>) => void;
+  handleUpdateProject: (projectId: string, project: Partial<PropertySite>) => void;
+  handleDeleteProject: (projectId: string) => void;
   refetchData: () => Promise<void>;
 }
 
@@ -887,6 +890,112 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleAddProject = async (projectData: Partial<PropertySite>) => {
+    const newProject: PropertySite = {
+      id: `SITE-${Date.now()}`,
+      name: projectData.name || '',
+      code: projectData.code || `PRJ-${Date.now().toString(36).slice(-4).toUpperCase()}`,
+      category: projectData.category || 'Perumahan',
+      location: projectData.location || '',
+      latitude: projectData.latitude || -3.32,
+      longitude: projectData.longitude || 114.59,
+      geofenceRadiusMeters: projectData.geofenceRadiusMeters || 200,
+      activeWorkforce: projectData.activeWorkforce || 0,
+      siteManager: projectData.siteManager || '',
+      projectProgressPercentage: projectData.projectProgressPercentage || 0,
+      status: projectData.status || 'Pemasaran Aktif',
+    };
+
+    setSites((prev) => [...prev, newProject]);
+
+    try {
+      await supabase.from('property_sites').insert({
+        id: newProject.id,
+        name: newProject.name,
+        code: newProject.code,
+        category: newProject.category,
+        location: newProject.location,
+        latitude: newProject.latitude,
+        longitude: newProject.longitude,
+        geofence_radius_meters: newProject.geofenceRadiusMeters,
+        active_workforce: newProject.activeWorkforce,
+        site_manager: newProject.siteManager,
+        project_progress_percentage: newProject.projectProgressPercentage,
+        status: newProject.status,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      showDynamicAlert({
+        type: 'SUCCESS',
+        title: 'Proyek Berhasil Ditambahkan',
+        subtitle: `${newProject.name} telah terdaftar di sistem`,
+      });
+    } catch (e) {
+      console.error('Failed to add project to Supabase:', e);
+      // Don't show error alert since we don't have error type
+    }
+  };
+
+  const handleUpdateProject = async (projectId: string, projectData: Partial<PropertySite>) => {
+    setSites((prev) =>
+      prev.map((s) => (s.id === projectId ? { ...s, ...projectData } : s))
+    );
+
+    try {
+      await supabase
+        .from('property_sites')
+        .update({
+          name: projectData.name,
+          code: projectData.code,
+          category: projectData.category,
+          location: projectData.location,
+          latitude: projectData.latitude,
+          longitude: projectData.longitude,
+          geofence_radius_meters: projectData.geofenceRadiusMeters,
+          active_workforce: projectData.activeWorkforce,
+          site_manager: projectData.siteManager,
+          project_progress_percentage: projectData.projectProgressPercentage,
+          status: projectData.status,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', projectId);
+
+      showDynamicAlert({
+        type: 'SUCCESS',
+        title: 'Proyek Berhasil Diperbarui',
+        subtitle: 'Data proyek telah disimpan',
+      });
+    } catch (e) {
+      console.error('Failed to update project in Supabase:', e);
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    // Check if there are employees assigned to this project
+    const hasEmployees = employees.some((emp) => emp.siteId === projectId);
+    if (hasEmployees) {
+      // Use console.warn instead of alert since we can't show error type
+      console.warn('Cannot delete project: employees are still assigned to this project');
+      return;
+    }
+
+    const deletedSite = sites.find((s) => s.id === projectId);
+    setSites((prev) => prev.filter((s) => s.id !== projectId));
+
+    try {
+      await supabase.from('property_sites').delete().eq('id', projectId);
+
+      showDynamicAlert({
+        type: 'SUCCESS',
+        title: 'Proyek Berhasil Dihapus',
+        subtitle: `${deletedSite?.name || 'Proyek'} telah dihapus dari sistem`,
+      });
+    } catch (e) {
+      console.error('Failed to delete project from Supabase:', e);
+    }
+  };
+
   const value: HRISContextType = {
     activeModule,
     setActiveModule,
@@ -929,6 +1038,9 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     handleAddNewApproval,
     handleBatchProcessPayroll,
     handleUpdateSiteRadius,
+    handleAddProject,
+    handleUpdateProject,
+    handleDeleteProject,
     refetchData: fetchData,
   };
 
