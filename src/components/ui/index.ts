@@ -16,6 +16,6 @@ export { DynamicAlertToast, type DynamicAlertData } from './DynamicAlertToast';
 export { SegmentedTabs, type TabOption } from './SegmentedTabs';
 export { AttendanceItemCard } from './AttendanceItemCard';
 export { DeveloperBranding } from './DeveloperBranding';
-export { GeofenceBadge, GeofenceStatusCard, SelfieCameraView, SelfieThumbnail, AttendanceActionButton } from '../attendance';
+export { GeofenceBadge, GeofenceStatusCard, SelfieCameraView, SelfieThumbnail, AttendancePhotoPair, AttendanceActionButton } from '../attendance';
 export { PWAInstallBanner, PWAInstallButton, IOSInstallModal } from '../pwa';
 export { UserProfileHub, UserProfileDrawer, UserProfileIdentity, EditProfileModal } from '../profile';

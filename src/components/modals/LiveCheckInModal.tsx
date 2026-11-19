@@ -212,6 +212,7 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
       workMode: isOffice ? workMode : 'Site Proyek',
       deviceInfo: deviceInfoStr,
       photoUrl: selfiePhoto || undefined,
+      checkInPhotoUrl: selfiePhoto || undefined,
       notes: defaultNotes,
     };
 
@@ -233,7 +234,13 @@ export const LiveCheckInModal: React.FC<LiveCheckInModalProps> = ({
     setTimeout(() => {
       if (onCheckOut) onCheckOut(todayRecord.id, selfiePhoto || undefined);
       setIsProcessing(false);
-      setSubmittedRecord({ ...todayRecord, checkOutTime: currentTime, photoUrl: selfiePhoto || todayRecord.photoUrl });
+      setSubmittedRecord({
+        ...todayRecord,
+        checkOutTime: currentTime,
+        photoUrl: todayRecord.photoUrl || selfiePhoto || undefined,
+        checkInPhotoUrl: todayRecord.checkInPhotoUrl || todayRecord.photoUrl,
+        checkOutPhotoUrl: selfiePhoto || undefined,
+      });
     }, 450);
   };
 

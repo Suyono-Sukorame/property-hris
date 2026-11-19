@@ -1,7 +1,7 @@
 import React from 'react';
 import { AttendanceRecord, Employee } from '@/types/hris';
 import { StatusBadge } from './StatusBadge';
-import { GeofenceBadge, SelfieThumbnail } from '@/components/attendance';
+import { GeofenceBadge, SelfieThumbnail, AttendancePhotoPair } from '@/components/attendance';
 import {
   Clock,
   MapPin,
@@ -109,19 +109,30 @@ export const AttendanceItemCard: React.FC<AttendanceItemCardProps> = ({
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="relative shrink-0">
-          <SelfieThumbnail
-            photoUrl={record.photoUrl}
-            employeeName={record.employeeName}
-            initials={employee.initials}
-            avatarColor={employee.avatarColor}
-            size="md"
-            caption={`${record.employeeName} · ${record.shift} (${record.checkInTime})`}
-          />
+          {record ? (
+            <AttendancePhotoPair
+              checkInPhotoUrl={record.checkInPhotoUrl || record.photoUrl}
+              checkOutPhotoUrl={record.checkOutPhotoUrl}
+              checkInTime={record.checkInTime}
+              checkOutTime={record.checkOutTime}
+              employeeName={record.employeeName}
+              initials={employee.initials}
+              avatarColor={employee.avatarColor}
+              size="md"
+            />
+          ) : (
+            <SelfieThumbnail
+              employeeName={employee.name}
+              initials={employee.initials}
+              avatarColor={employee.avatarColor}
+              size="md"
+            />
+          )}
           <span
             className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white ring-1 z-10 ${
-              record.status === 'Hadir'
+              record?.status === 'Hadir'
                 ? 'bg-emerald-500 ring-emerald-200'
-                : record.status === 'Terlambat'
+                : record?.status === 'Terlambat'
                 ? 'bg-amber-500 ring-amber-200'
                 : 'bg-slate-400 ring-slate-200'
             }`}

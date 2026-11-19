@@ -22,6 +22,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { generateProjectCode, fetchNextProjectCode } from '@/utils/projectCodeGenerator';
 import { createEmployeeAccount } from '@/lib/accounts';
+import { uploadAttendanceSelfie } from '@/lib/storage';
 import { DynamicAlertData } from '@/components/ui';
 
 interface HRISContextType {
@@ -281,7 +282,9 @@ export function HRISProvider({ children }: { children: ReactNode }) {
           biometricVerified: a.biometric_verified,
           ppeCompliance: a.ppe_compliance,
           deviceInfo: a.device_info,
-          photoUrl: a.photo_url || undefined,
+          photoUrl: a.check_in_photo_url || a.photo_url || undefined,
+          checkInPhotoUrl: a.check_in_photo_url || a.photo_url || undefined,
+          checkOutPhotoUrl: a.check_out_photo_url || undefined,
           notes: a.notes,
         }));
         setAttendanceRecords(autoArchiveAttendanceRecords(mapped));
@@ -425,7 +428,27 @@ export function HRISProvider({ children }: { children: ReactNode }) {
 
   // Check-In Success Callback
   const handleCheckInSuccess = async (newRecord: AttendanceRecord) => {
-    setAttendanceRecords((prev) => [newRecord, ...prev]);
+    // 1. Upload foto selfie masuk ke Object Storage Supabase (fallback ke data URL bila bucket belum di-run)
+    let storedPhotoUrl = newRecord.photoUrl || newRecord.checkInPhotoUrl;
+    if (storedPhotoUrl) {
+      try {
+        storedPhotoUrl = await uploadAttendanceSelfie(storedPhotoUrl, {
+          employeeId: newRecord.employeeId,
+          type: 'in',
+          date: newRecord.date,
+        });
+      } catch (err) {
+        console.warn('Storage upload error during check-in:', err);
+      }
+    }
+
+    const processedRecord: AttendanceRecord = {
+      ...newRecord,
+      photoUrl: storedPhotoUrl,
+      checkInPhotoUrl: storedPhotoUrl,
+    };
+
+    setAttendanceRecords((prev) => [processedRecord, ...prev]);
 
     // Trigger Modern Dynamic Alert Toast
     if (newRecord.status === 'Cuti' || newRecord.status === 'Izin Lapangan') {
@@ -451,44 +474,48 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     // Persist to Supabase
     try {
       const payload: any = {
-        id: newRecord.id,
-        employee_id: newRecord.employeeId,
-        employee_name: newRecord.employeeName,
-        job_code: newRecord.jobCode,
-        division: newRecord.division,
-        site_id: newRecord.siteId,
-        site_name: newRecord.siteName,
-        date: newRecord.date,
-        check_in_time: newRecord.checkInTime,
-        check_out_time: newRecord.checkOutTime || null,
-        shift: newRecord.shift,
-        status: newRecord.status,
-        late_minutes: newRecord.lateMinutes,
-        geofence_distance_meters: newRecord.geofenceDistanceMeters,
-        geofence_verified: newRecord.geofenceVerified,
-        biometric_verified: newRecord.biometricVerified,
-        ppe_compliance: newRecord.ppeCompliance,
-        device_info: newRecord.deviceInfo,
-        photo_url: newRecord.photoUrl || null,
-        notes: newRecord.notes || null,
+        id: processedRecord.id,
+        employee_id: processedRecord.employeeId,
+        employee_name: processedRecord.employeeName,
+        job_code: processedRecord.jobCode,
+        division: processedRecord.division,
+        site_id: processedRecord.siteId,
+        site_name: processedRecord.siteName,
+        date: processedRecord.date,
+        check_in_time: processedRecord.checkInTime,
+        check_out_time: processedRecord.checkOutTime || null,
+        shift: processedRecord.shift,
+        status: processedRecord.status,
+        late_minutes: processedRecord.lateMinutes,
+        geofence_distance_meters: processedRecord.geofenceDistanceMeters,
+        geofence_verified: processedRecord.geofenceVerified,
+        biometric_verified: processedRecord.biometricVerified,
+        ppe_compliance: processedRecord.ppeCompliance,
+        device_info: processedRecord.deviceInfo,
+        photo_url: processedRecord.photoUrl || null,
+        check_in_photo_url: processedRecord.checkInPhotoUrl || null,
+        check_out_photo_url: processedRecord.checkOutPhotoUrl || null,
+        notes: processedRecord.notes || null,
       };
 
       const { error: insertErr } = await supabase.from('attendance_records').insert(payload);
       if (insertErr) {
-        // Fallback jika kolom photo_url belum ada di Supabase
+        // Fallback jika kolom check_in_photo_url atau photo_url belum ada di Supabase
+        if (insertErr.message?.includes('check_in_photo_url')) {
+          delete payload.check_in_photo_url;
+          delete payload.check_out_photo_url;
+        }
         if (insertErr.message?.includes('photo_url')) {
           delete payload.photo_url;
-          await supabase.from('attendance_records').insert(payload);
-        } else {
-          console.error('Failed to sync attendance to Supabase:', insertErr);
         }
+        await supabase.from('attendance_records').insert(payload);
       }
     } catch (e) {
       console.error('Failed to sync attendance to Supabase:', e);
     }
   };
 
-  // Check-Out Callback — update checkOutTime, calculate lembur
+  // Check-Out Callback — update checkOutTime, calculate lembur & simpan foto pulang terpisah
   const handleCheckOut = async (recordId: string, photoUrl?: string) => {
     const now = new Date();
     const hh = String(now.getHours()).padStart(2, '0');
@@ -511,10 +538,29 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     const upahLemburPerJam = 25000;
     const upahLembur = Math.round(lemburHours * upahLemburPerJam);
 
+    // Upload foto selfie pulang ke Object Storage
+    let storedOutPhotoUrl = photoUrl;
+    if (photoUrl) {
+      try {
+        storedOutPhotoUrl = await uploadAttendanceSelfie(photoUrl, {
+          employeeId: rec?.employeeId || 'emp',
+          type: 'out',
+          date: rec?.date || new Date().toISOString().slice(0, 10),
+        });
+      } catch (err) {
+        console.warn('Storage upload error during check-out:', err);
+      }
+    }
+
     setAttendanceRecords((prev) =>
       prev.map((r) =>
         r.id === recordId
-          ? { ...r, checkOutTime, ...(photoUrl ? { photoUrl } : {}) }
+          ? {
+              ...r,
+              checkOutTime,
+              checkInPhotoUrl: r.checkInPhotoUrl || r.photoUrl,
+              ...(storedOutPhotoUrl ? { checkOutPhotoUrl: storedOutPhotoUrl } : {}),
+            }
           : r
       )
     );
@@ -555,12 +601,26 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const checkOutUpdates: Record<string, unknown> = { check_out_time: checkOutTime };
-      if (photoUrl) checkOutUpdates.photo_url = photoUrl;
-      await supabase
+      const checkOutUpdates: Record<string, unknown> = {
+        check_out_time: checkOutTime,
+      };
+      if (storedOutPhotoUrl) {
+        checkOutUpdates.check_out_photo_url = storedOutPhotoUrl;
+      }
+
+      const { error: updateErr } = await supabase
         .from('attendance_records')
         .update(checkOutUpdates)
         .eq('id', recordId);
+
+      // Fallback jika kolom check_out_photo_url belum ada di Supabase
+      if (updateErr && updateErr.message?.includes('check_out_photo_url')) {
+        delete checkOutUpdates.check_out_photo_url;
+        await supabase
+          .from('attendance_records')
+          .update(checkOutUpdates)
+          .eq('id', recordId);
+      }
     } catch (e) {
       console.error('Failed to sync check-out to Supabase:', e);
     }

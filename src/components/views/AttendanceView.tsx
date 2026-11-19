@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { AttendanceRecord, PropertySite } from '@/types/hris';
 import { useAuth } from '@/context/AuthContext';
-import { StatusBadge, KPICard, FilterBar, SearchInput, Select, EmptyState, GeofenceBadge, SelfieThumbnail, AttendanceActionButton } from '@/components/ui';
+import { StatusBadge, KPICard, FilterBar, SearchInput, Select, EmptyState, GeofenceBadge, SelfieThumbnail, AttendancePhotoPair, AttendanceActionButton } from '@/components/ui';
 import {
   Clock,
   MapPin,
@@ -286,12 +286,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <SelfieThumbnail
-                    photoUrl={myTodayRecord?.photoUrl}
+                    photoUrl={myTodayRecord?.checkInPhotoUrl || myTodayRecord?.photoUrl}
                     employeeName={currentUser?.name || 'Karyawan'}
                     initials={currentUser?.initials || 'ME'}
                     avatarColor={currentUser?.avatarColor || '#0f766e'}
                     size="md"
-                    caption={`${currentUser?.name || 'Karyawan'} · Presensi Hari Ini`}
+                    caption={`${currentUser?.name || 'Karyawan'} · Presensi Masuk Hari Ini`}
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -694,12 +694,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                       <tr key={record.id} className="h-14 hover:bg-slate-50/80 transition-colors">
                         <td className="px-4">
                           <div className="flex items-center gap-2.5">
-                            <SelfieThumbnail
-                              photoUrl={record.photoUrl}
+                            <AttendancePhotoPair
+                              checkInPhotoUrl={record.checkInPhotoUrl || record.photoUrl}
+                              checkOutPhotoUrl={record.checkOutPhotoUrl}
+                              checkInTime={record.checkInTime}
+                              checkOutTime={record.checkOutTime}
                               employeeName={record.employeeName}
                               initials={getInitials(record.employeeName)}
                               size="sm"
-                              caption={`${record.employeeName} · ${record.shift} (${record.checkInTime})`}
                             />
                             <div className="min-w-0">
                               <div className="font-bold text-slate-900 truncate">{record.employeeName}</div>
@@ -841,12 +843,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                   <div key={record.id} className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
                     {/* Card Header */}
                     <div className="flex items-center gap-3 p-3.5 border-b border-slate-100">
-                      <SelfieThumbnail
-                        photoUrl={record.photoUrl}
+                      <AttendancePhotoPair
+                        checkInPhotoUrl={record.checkInPhotoUrl || record.photoUrl}
+                        checkOutPhotoUrl={record.checkOutPhotoUrl}
+                        checkInTime={record.checkInTime}
+                        checkOutTime={record.checkOutTime}
                         employeeName={record.employeeName}
                         initials={getInitials(record.employeeName)}
                         size="md"
-                        caption={`${record.employeeName} · ${record.shift} (${record.checkInTime})`}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-slate-900 text-sm truncate">{record.employeeName}</div>

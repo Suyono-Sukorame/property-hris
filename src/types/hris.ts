@@ -83,7 +83,9 @@ export interface AttendanceRecord {
   ppeCompliance: boolean;
   workMode?: 'WFO' | 'WFH' | 'Dinas Luar' | 'Site Proyek';
   deviceInfo: string;
-  photoUrl?: string;
+  photoUrl?: string; // Kompatibilitas mundur
+  checkInPhotoUrl?: string; // Foto selfie saat masuk (Check-In)
+  checkOutPhotoUrl?: string; // Foto selfie saat pulang (Check-Out)
   notes?: string;
 }
 
