@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { PropertySite } from '@/types/hris';
-import { PageHeader } from '@/components/ui';
+import React, { useState, useEffect } from 'react';
+import { PropertySite, SystemSettings } from '@/types/hris';
+import { DEFAULT_SYSTEM_SETTINGS } from '@/data/mockData';
+import { PageHeader, SectionCard, Input, Button } from '@/components/ui';
 import { ProjectManagementModal } from '@/components/settings';
 import {
   Building,
@@ -11,17 +12,18 @@ import {
   Shield,
   Save,
   CheckCircle,
-  Sliders,
-  DollarSign,
   Plus,
   Edit2,
   Trash2,
-  Archive,
+  RotateCcw,
+  Sparkles,
 } from 'lucide-react';
 
 interface SettingsViewProps {
   sites: PropertySite[];
   employees: Array<{ id: string; name: string }>;
+  systemSettings?: SystemSettings;
+  onSaveSettings?: (settings: SystemSettings) => Promise<void> | void;
   onUpdateSiteRadius: (siteId: string, radius: number) => void;
   onAddProject: (project: Partial<PropertySite>) => void;
   onUpdateProject: (projectId: string, project: Partial<PropertySite>) => void;
@@ -31,6 +33,8 @@ interface SettingsViewProps {
 export const SettingsView: React.FC<SettingsViewProps> = ({
   sites,
   employees,
+  systemSettings = DEFAULT_SYSTEM_SETTINGS,
+  onSaveSettings,
   onUpdateSiteRadius,
   onAddProject,
   onUpdateProject,
@@ -44,26 +48,68 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     return init;
   });
 
-  const [savedNotice, setSavedNotice] = useState(false);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
   // Project Management Modal State
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<PropertySite | null>(null);
 
-  // Policy state
-  const [toleranceMinutes, setToleranceMinutes] = useState(15);
-  const [bpjsRate, setBpjsRate] = useState(3.0);
-  const [k3BonusRate, setK3BonusRate] = useState(1500000);
+  // Policy & Payroll Parameters State (Synced with systemSettings prop)
+  const [toleranceMinutes, setToleranceMinutes] = useState(systemSettings.toleranceMinutes);
+  const [lateDeductionPerMinute, setLateDeductionPerMinute] = useState(systemSettings.lateDeductionPerMinute);
+  const [bpjsRate, setBpjsRate] = useState(systemSettings.bpjsRate);
+  const [k3BonusRate, setK3BonusRate] = useState(systemSettings.k3BonusRate);
+  const [overtimeRatePerHour, setOvertimeRatePerHour] = useState(systemSettings.overtimeRatePerHour);
+
+  useEffect(() => {
+    if (systemSettings) {
+      setToleranceMinutes(systemSettings.toleranceMinutes);
+      setLateDeductionPerMinute(systemSettings.lateDeductionPerMinute);
+      setBpjsRate(systemSettings.bpjsRate);
+      setK3BonusRate(systemSettings.k3BonusRate);
+      setOvertimeRatePerHour(systemSettings.overtimeRatePerHour);
+    }
+  }, [systemSettings]);
 
   const handleRadiusChange = (id: string, val: number) => {
     setSiteRadii((prev) => ({ ...prev, [id]: val }));
     onUpdateSiteRadius(id, val);
   };
 
-  const handleSaveAll = (e: React.FormEvent) => {
+  const handleSaveParameters = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 3000);
+    const updated: SystemSettings = {
+      toleranceMinutes: Number(toleranceMinutes) || 0,
+      lateDeductionPerMinute: Number(lateDeductionPerMinute) || 0,
+      bpjsRate: Number(bpjsRate) || 0,
+      k3BonusRate: Number(k3BonusRate) || 0,
+      overtimeRatePerHour: Number(overtimeRatePerHour) || 0,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (onSaveSettings) {
+      await onSaveSettings(updated);
+    }
+
+    setSavedNotice('Seluruh parameter shift, toleransi, dan formula payroll berhasil disimpan permanen!');
+    setTimeout(() => setSavedNotice(null), 4000);
+  };
+
+  const handleResetDefaults = () => {
+    if (confirm('Kembalikan semua parameter ke standar default developer properti?')) {
+      setToleranceMinutes(DEFAULT_SYSTEM_SETTINGS.toleranceMinutes);
+      setLateDeductionPerMinute(DEFAULT_SYSTEM_SETTINGS.lateDeductionPerMinute);
+      setBpjsRate(DEFAULT_SYSTEM_SETTINGS.bpjsRate);
+      setK3BonusRate(DEFAULT_SYSTEM_SETTINGS.k3BonusRate);
+      setOvertimeRatePerHour(DEFAULT_SYSTEM_SETTINGS.overtimeRatePerHour);
+
+      if (onSaveSettings) {
+        onSaveSettings(DEFAULT_SYSTEM_SETTINGS);
+      }
+
+      setSavedNotice('Parameter sistem telah dikembalikan ke standar default dan disimpan!');
+      setTimeout(() => setSavedNotice(null), 4000);
+    }
   };
 
   const handleAddProject = () => {
@@ -82,15 +128,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     } else {
       onAddProject(projectData);
     }
-    setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 3000);
+    setSavedNotice('Data proyek berhasil diperbarui.');
+    setTimeout(() => setSavedNotice(null), 3000);
   };
 
   const handleDeleteProject = (projectId: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus proyek ini?')) {
       onDeleteProject(projectId);
-      setSavedNotice(true);
-      setTimeout(() => setSavedNotice(false), 3000);
+      setSavedNotice('Proyek berhasil dihapus.');
+      setTimeout(() => setSavedNotice(null), 3000);
     }
   };
 
@@ -111,10 +157,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* 1. Standard Page Header */}
+      {/* 1. Page Header */}
       <PageHeader
         title="Pengaturan Sistem & Proyek"
-        subtitle="Konfigurasi radius geofence GPS proyek, toleransi jam kerja, dan parameter payroll."
+        subtitle="Konfigurasi radius geofence GPS proyek, shift kerja, toleransi absensi, dan parameter payroll permanen."
         icon={<Building className="w-5 h-5 text-[#0f766e]" />}
         badge={
           <span className="px-2.5 py-0.5 rounded-full bg-teal-50 text-[#0f766e] font-mono text-[10px] font-bold border border-teal-200">
@@ -127,34 +173,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {savedNotice && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2.5 text-xs shadow-xs animate-in fade-in duration-150">
           <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="font-bold">
-            Pengaturan proyek dan radius presensi berhasil disimpan.
-          </span>
+          <span className="font-bold">{savedNotice}</span>
         </div>
       )}
 
-      {/* Project Management Section - NEW */}
-      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-              <Building className="w-4 h-4 text-[#0f766e]" />
-              Kelola Proyek Properti
-            </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Tambah, edit, atau hapus data proyek properti yang terdaftar di sistem.
-            </p>
-          </div>
-          <button
-            type="button"
+      {/* 2. Project Management Section */}
+      <SectionCard
+        title="Kelola Proyek Properti"
+        subtitle="Tambah, edit, atau hapus data proyek properti yang terdaftar di sistem."
+        icon={<Building className="w-4 h-4 text-[#0f766e]" />}
+        action={
+          <Button
+            variant="primary"
+            size="sm"
             onClick={handleAddProject}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0"
+            icon={<Plus className="w-4 h-4" />}
+            className="rounded-xl font-bold"
           >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Proyek Baru</span>
-          </button>
-        </div>
-
+            Tambah Proyek Baru
+          </Button>
+        }
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {sites.map((site) => (
             <div
@@ -200,22 +239,24 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
 
               <div className="pt-2 border-t border-slate-200/80 flex items-center justify-end gap-2">
-                <button
-                  type="button"
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => handleEditProject(site)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer"
+                  icon={<Edit2 className="w-3 h-3 text-blue-600" />}
+                  className="text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200 rounded-lg text-[11px]"
                 >
-                  <Edit2 className="w-3 h-3" />
-                  <span>Edit</span>
-                </button>
-                <button
-                  type="button"
+                  Edit
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={() => handleDeleteProject(site.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors cursor-pointer"
+                  icon={<Trash2 className="w-3 h-3 text-rose-600" />}
+                  className="rounded-lg text-[11px]"
                 >
-                  <Trash2 className="w-3 h-3" />
-                  <span>Hapus</span>
-                </button>
+                  Hapus
+                </Button>
               </div>
             </div>
           ))}
@@ -226,26 +267,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <Building className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <p className="text-sm font-bold text-slate-600">Belum ada proyek terdaftar</p>
             <p className="text-xs text-slate-500 mt-1">
-              Klik tombol "Tambah Proyek Baru" untuk mendaftarkan proyek pertama Anda.
+              Klik tombol &quot;Tambah Proyek Baru&quot; untuk mendaftarkan proyek pertama Anda.
             </p>
           </div>
         )}
-      </div>
+      </SectionCard>
 
-      {/* Geofence Perimeter Management */}
-      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#0f766e]" />
-              Pengaturan Lokasi & Radius Presensi
-            </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Atur batas radius maksimal presensi karyawan dari titik koordinat GPS proyek.
-            </p>
-          </div>
-        </div>
-
+      {/* 3. Geofence Perimeter Management */}
+      <SectionCard
+        title="Pengaturan Lokasi & Radius Presensi"
+        subtitle="Atur batas radius maksimal presensi karyawan dari titik koordinat GPS proyek."
+        icon={<MapPin className="w-4 h-4 text-[#0f766e]" />}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {sites.map((site) => {
             const currentRadius = siteRadii[site.id] ?? site.geofenceRadiusMeters;
@@ -277,7 +310,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <input
                     type="range"
                     min="50"
-                    max="400"
+                    max="500"
                     step="25"
                     value={currentRadius}
                     onChange={(e) => handleRadiusChange(site.id, Number(e.target.value))}
@@ -287,128 +320,183 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                     <span>50m (Ketat)</span>
                     <span>200m (Standar)</span>
-                    <span>400m (Zona Luas)</span>
+                    <span>500m (Zona Luas)</span>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Shifts & Policy Regulations */}
-      <form onSubmit={handleSaveAll} className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 text-xs">
-        {/* Working Shifts */}
-        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-          <div className="pb-3 border-b border-slate-100">
-            <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#0f766e]" />
-              Jadwal Shift Kerja
-            </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Jadwal operasional validasi jam masuk & keterlambatan presensi.
-            </p>
-          </div>
-
-          <div className="space-y-2.5">
-            <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-              <div>
-                <span className="font-bold text-slate-900 block text-xs">Shift Lapangan (Konstruksi)</span>
-                <span className="text-[11px] text-slate-500">Pekerjaan struktur, pembesian, bekisting</span>
-              </div>
-              <span className="self-start sm:self-auto font-mono font-bold text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 shadow-2xs">
-                07:00 - 16:00 WITA
+      {/* 4. Shift, Toleransi, dan Parameter Payroll Form */}
+      <form onSubmit={handleSaveParameters} className="space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 text-xs">
+          {/* Working Shifts & Tolerance */}
+          <SectionCard
+            title="Jadwal Shift Kerja & Toleransi"
+            subtitle="Jadwal operasional validasi jam masuk dan batas toleransi keterlambatan presensi."
+            icon={<Clock className="w-4 h-4 text-[#0f766e]" />}
+            badge={
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold">
+                <Sparkles className="w-3 h-3" />
+                Aktif
               </span>
+            }
+          >
+            <div className="space-y-2.5 mb-4">
+              <div className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                <div>
+                  <span className="font-bold text-slate-900 block text-xs">Shift Lapangan (Konstruksi)</span>
+                  <span className="text-[11px] text-slate-500">Pekerjaan struktur, tukang, kenek, mandor</span>
+                </div>
+                <span className="self-start sm:self-auto font-mono font-bold text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 shadow-2xs">
+                  07:00 - 16:00 WITA
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                <div>
+                  <span className="font-bold text-slate-900 block text-xs">Shift Kantor & Direksi</span>
+                  <span className="text-[11px] text-slate-500">Legal, perizinan, administrasi, keuangan, HR</span>
+                </div>
+                <span className="self-start sm:self-auto font-mono font-bold text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 shadow-2xs">
+                  08:30 - 17:30 WITA
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                <div>
+                  <span className="font-bold text-slate-900 block text-xs">Shift Pengecoran (Malam)</span>
+                  <span className="text-[11px] text-slate-500">Khusus cor beton ready-mix & pompa proyek</span>
+                </div>
+                <span className="self-start sm:self-auto font-mono font-bold text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 shadow-2xs">
+                  19:00 - 04:00 WITA
+                </span>
+              </div>
             </div>
 
-            <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-              <div>
-                <span className="font-bold text-slate-900 block text-xs">Shift Kantor & Direksi</span>
-                <span className="text-[11px] text-slate-500">Legal, perizinan, administrasi, HR</span>
-              </div>
-              <span className="self-start sm:self-auto font-mono font-bold text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 shadow-2xs">
-                08:30 - 17:30 WITA
-              </span>
-            </div>
+            <div className="pt-3 border-t border-slate-100 space-y-3.5">
+              <Input
+                label="Toleransi Keterlambatan"
+                type="number"
+                min={0}
+                max={120}
+                suffix="Menit"
+                value={toleranceMinutes}
+                onChange={(e) => setToleranceMinutes(Number(e.target.value))}
+                hint="Karyawan yang presensi dalam rentang toleransi ini tidak dihitung terlambat."
+              />
 
-            <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-              <div>
-                <span className="font-bold text-slate-900 block text-xs">Shift Pengecoran (Malam)</span>
-                <span className="text-[11px] text-slate-500">Khusus cor beton ready-mix & pompa</span>
-              </div>
-              <span className="self-start sm:self-auto font-mono font-bold text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 shadow-2xs">
-                19:00 - 04:00 WITA
-              </span>
+              <Input
+                label="Tarif Denda Telat (per menit)"
+                type="number"
+                min={0}
+                step={500}
+                prefix="Rp"
+                suffix="/ menit"
+                value={lateDeductionPerMinute}
+                onChange={(e) => setLateDeductionPerMinute(Number(e.target.value))}
+                hint="Dikalikan otomatis dengan total menit keterlambatan pada slip gaji."
+              />
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="pt-2">
-            <label className="font-bold text-slate-700 block mb-1 text-[11px] uppercase tracking-wider">
-              Toleransi Keterlambatan (Menit)
-            </label>
-            <input
-              type="number"
-              value={toleranceMinutes}
-              onChange={(e) => setToleranceMinutes(Number(e.target.value))}
-              className="w-full h-10 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20"
-            />
-          </div>
+          {/* Parameter Payroll & BPJS */}
+          <SectionCard
+            title="Parameter Payroll & Tunjangan"
+            subtitle="Konfigurasi potongan BPJS, tunjangan AK3, dan upah lembur per jam yang tersimpan permanen."
+            icon={<Shield className="w-4 h-4 text-[#0f766e]" />}
+            badge={
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 text-[#0f766e] border border-teal-200 text-[10px] font-semibold">
+                Tersimpan Permanen
+              </span>
+            }
+          >
+            <div className="space-y-3.5">
+              <Input
+                label="Potongan BPJS Ketenagakerjaan"
+                type="number"
+                min={0}
+                max={20}
+                step={0.1}
+                suffix="%"
+                value={bpjsRate}
+                onChange={(e) => setBpjsRate(Number(e.target.value))}
+                hint="Persentase potongan iuran BPJS TK dari gaji pokok karyawan tetap."
+              />
+
+              <Input
+                label="Tunjangan Sertifikat AK3 Konstruksi"
+                type="number"
+                min={0}
+                step={50000}
+                prefix="Rp"
+                value={k3BonusRate}
+                onChange={(e) => setK3BonusRate(Number(e.target.value))}
+                hint="Diberikan khusus untuk personel lapangan yang memiliki sertifikat K3 aktif."
+              />
+
+              <Input
+                label="Tarif Upah Lembur Konstruksi"
+                type="number"
+                min={0}
+                step={5000}
+                prefix="Rp"
+                suffix="/ jam"
+                value={overtimeRatePerHour}
+                onChange={(e) => setOvertimeRatePerHour(Number(e.target.value))}
+                hint="Dasar perhitungan upah lembur lembur cor malam / hari libur proyek."
+              />
+
+              <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-[11px] text-emerald-800 space-y-1">
+                <p className="font-semibold flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  Penyimpanan Permanen Aktif
+                </p>
+                <p className="text-[10px] text-emerald-700 leading-relaxed">
+                  Perubahan akan langsung tersimpan di sistem dan diaplikasikan pada perhitungan absensi dan siklus payroll berikutnya.
+                </p>
+              </div>
+            </div>
+          </SectionCard>
         </div>
 
-        {/* Allowances & K3 Rates */}
-        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4 flex flex-col justify-between">
-          <div>
-            <div className="pb-3 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-                <Shield className="w-4 h-4 text-[#0f766e]" />
-                Parameter Payroll & BPJS
-              </h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Pengaturan parameter perhitungan penggajian karyawan.
-              </p>
-            </div>
-
-            <div className="space-y-3.5 mt-3">
-              <div>
-                <label className="font-bold text-slate-700 block mb-1 text-[11px] uppercase tracking-wider">
-                  Potongan BPJS Ketenagakerjaan (%)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={bpjsRate}
-                  onChange={(e) => setBpjsRate(Number(e.target.value))}
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 block mb-1 text-[11px] uppercase tracking-wider">
-                  Tunjangan Sertifikat AK3 Konstruksi (IDR)
-                </label>
-                <input
-                  type="number"
-                  step="100000"
-                  value={k3BonusRate}
-                  onChange={(e) => setK3BonusRate(Number(e.target.value))}
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0f766e]/20"
-                />
-              </div>
-
-              <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-[11px] text-emerald-800">
-                Pembaruan parameter akan otomatis dihitung pada siklus payroll periode berikutnya.
-              </div>
-            </div>
+        {/* Global Save / Reset Action Bar */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-[11px] text-slate-500">
+            Terakhir diperbarui:{' '}
+            <span className="font-mono font-semibold text-slate-700">
+              {systemSettings.updatedAt
+                ? new Date(systemSettings.updatedAt).toLocaleString('id-ID', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  })
+                : 'Standar Default'}
+            </span>
           </div>
 
-          <div className="pt-3 border-t border-slate-100 flex justify-end">
-            <button
-              type="submit"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-[#0f766e] hover:bg-[#115e59] active:scale-95 rounded-xl transition-all shadow-xs cursor-pointer"
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              onClick={handleResetDefaults}
+              icon={<RotateCcw className="w-3.5 h-3.5 text-slate-500" />}
+              className="rounded-xl text-xs w-full sm:w-auto"
             >
-              <Save className="w-4 h-4" />
-              <span>Simpan Perubahan</span>
-            </button>
+              Reset Default
+            </Button>
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              icon={<Save className="w-4 h-4" />}
+              className="rounded-xl text-xs font-bold w-full sm:w-auto"
+            >
+              Simpan Perubahan Permanen
+            </Button>
           </div>
         </div>
       </form>

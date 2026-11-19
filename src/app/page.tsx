@@ -75,6 +75,8 @@ function HRISApp() {
     handleQuickApprove,
     handleAddNewApproval,
     handleBatchProcessPayroll,
+    systemSettings,
+    updateSystemSettings,
     handleUpdateSiteRadius,
     handleAddProject,
     handleUpdateProject,
@@ -293,6 +295,8 @@ function HRISApp() {
             <SettingsView
               sites={sites}
               employees={filteredEmployees}
+              systemSettings={systemSettings}
+              onSaveSettings={updateSystemSettings}
               onUpdateSiteRadius={handleUpdateSiteRadius}
               onAddProject={handleAddProject}
               onUpdateProject={handleUpdateProject}

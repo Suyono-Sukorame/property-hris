@@ -150,3 +150,12 @@ export type ActiveNavModule =
   | 'approvals'
   | 'reports'
   | 'settings';
+
+export interface SystemSettings {
+  toleranceMinutes: number;          // Toleransi keterlambatan (menit)
+  lateDeductionPerMinute: number;    // Potongan per menit keterlambatan (Rp)
+  bpjsRate: number;                  // Potongan BPJS Ketenagakerjaan (%)
+  k3BonusRate: number;               // Tunjangan Sertifikat AK3 Konstruksi (Rp)
+  overtimeRatePerHour: number;       // Tarif upah lembur per jam (Rp)
+  updatedAt?: string;                // Timestamp terakhir pembaruan
+}

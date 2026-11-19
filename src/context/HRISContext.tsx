@@ -9,6 +9,7 @@ import {
   AttendanceRecord,
   PayrollRecord,
   ApprovalItem,
+  SystemSettings,
 } from '@/types/hris';
 import {
   INITIAL_PROPERTY_SITES,
@@ -16,6 +17,7 @@ import {
   INITIAL_ATTENDANCE_RECORDS,
   INITIAL_PAYROLL_RECORDS,
   INITIAL_APPROVALS,
+  DEFAULT_SYSTEM_SETTINGS,
 } from '@/data/mockData';
 import { supabase } from '@/lib/supabase';
 import { generateProjectCode, fetchNextProjectCode } from '@/utils/projectCodeGenerator';
@@ -40,6 +42,7 @@ interface HRISContextType {
   attendanceRecords: AttendanceRecord[];
   payrollRecords: PayrollRecord[];
   approvals: ApprovalItem[];
+  systemSettings: SystemSettings;
   isLoading: boolean;
 
   // Derived
@@ -74,6 +77,7 @@ interface HRISContextType {
   handleQuickApprove: (id: string) => void;
   handleAddNewApproval: (newItem: ApprovalItem) => void;
   handleBatchProcessPayroll: () => void;
+  updateSystemSettings: (newSettings: Partial<SystemSettings>) => Promise<void>;
   handleUpdateSiteRadius: (siteId: string, radius: number) => void;
   handleAddProject: (project: Partial<PropertySite>) => void;
   handleUpdateProject: (projectId: string, project: Partial<PropertySite>) => void;
@@ -155,6 +159,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(INITIAL_ATTENDANCE_RECORDS);
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>(INITIAL_PAYROLL_RECORDS);
   const [approvals, setApprovals] = useState<ApprovalItem[]>(INITIAL_APPROVALS);
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>(DEFAULT_SYSTEM_SETTINGS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Modal States
@@ -180,6 +185,19 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   // Auto-archive saat mount (client-side only) — aman dari Next.js prerender restriction
   useEffect(() => {
     setAttendanceRecords((prev) => autoArchiveAttendanceRecords(prev));
+
+    // Load persisted system settings from localStorage
+    try {
+      const saved = localStorage.getItem('hris_system_settings');
+      if (saved) {
+        setSystemSettings((prev) => ({
+          ...prev,
+          ...JSON.parse(saved),
+        }));
+      }
+    } catch (e) {
+      console.warn('Failed to load system settings from localStorage:', e);
+    }
   }, []);
 
   // Fetch data from Supabase
@@ -326,6 +344,36 @@ export function HRISProvider({ children }: { children: ReactNode }) {
             steps: ap.steps || [],
           }))
         );
+      }
+
+      // Fetch System Settings from Supabase
+      try {
+        const { data: settingsData, error: settingsErr } = await supabase
+          .from('system_settings')
+          .select('*')
+          .eq('id', 'default')
+          .maybeSingle();
+
+        if (!settingsErr && settingsData) {
+          const loadedSettings: SystemSettings = {
+            toleranceMinutes: Number(settingsData.tolerance_minutes) || 15,
+            lateDeductionPerMinute: Number(settingsData.late_deduction_per_minute) || 5000,
+            bpjsRate: Number(settingsData.bpjs_rate) || 3.0,
+            k3BonusRate: Number(settingsData.k3_bonus_rate) || 1500000,
+            overtimeRatePerHour: Number(settingsData.overtime_rate_per_hour) || 80000,
+            updatedAt: settingsData.updated_at,
+          };
+          setSystemSettings(loadedSettings);
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('hris_system_settings', JSON.stringify(loadedSettings));
+            } catch (e) {
+              console.warn('Failed to cache system settings:', e);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Supabase system_settings table might not be migrated yet, using fallback:', e);
       }
     } catch (err) {
       console.warn('Using local fallback data. Supabase connection:', err);
@@ -837,9 +885,43 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleUpdateSystemSettings = async (newSettings: Partial<SystemSettings>) => {
+    const now = new Date().toISOString();
+    const updated: SystemSettings = {
+      ...systemSettings,
+      ...newSettings,
+      updatedAt: now,
+    };
+
+    setSystemSettings(updated);
+
+    // 1. Simpan ke localStorage untuk instant cache & offline fallback
+    try {
+      localStorage.setItem('hris_system_settings', JSON.stringify(updated));
+    } catch (e) {
+      console.error('Failed to save system settings to localStorage:', e);
+    }
+
+    // 2. Simpan permanen ke Supabase system_settings
+    try {
+      await supabase.from('system_settings').upsert({
+        id: 'default',
+        tolerance_minutes: updated.toleranceMinutes,
+        late_deduction_per_minute: updated.lateDeductionPerMinute,
+        bpjs_rate: updated.bpjsRate,
+        k3_bonus_rate: updated.k3BonusRate,
+        overtime_rate_per_hour: updated.overtimeRatePerHour,
+        updated_at: now,
+        updated_by: 'User Admin',
+      });
+    } catch (e) {
+      console.warn('Supabase system_settings upsert fallback to localStorage:', e);
+    }
+  };
+
   const handleBatchProcessPayroll = async () => {
-    // Calculate late deductions from attendance records before batch processing
-    const LATE_DEDUCTION_PER_MINUTE = 5000; // Rp 5.000 per menit keterlambatan
+    // Calculate late deductions from attendance records before batch processing using dynamic settings
+    const lateDeductionPerMinute = systemSettings.lateDeductionPerMinute || 5000;
 
     setPayrollRecords((prev) =>
       prev.map((r) => {
@@ -848,7 +930,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
           .filter((a) => a.employeeId === r.employeeId && a.lateMinutes > 0)
           .reduce((sum, a) => sum + a.lateMinutes, 0);
 
-        const potonganKeterlambatan = totalLateMinutes * LATE_DEDUCTION_PER_MINUTE;
+        const potonganKeterlambatan = totalLateMinutes * lateDeductionPerMinute;
         const newTotalDeductions = r.potonganBPJSTK + r.potonganBPJSKes + r.potonganPPh21 + potonganKeterlambatan;
         const newGajiBersih = r.totalEarnings - newTotalDeductions;
 
@@ -1023,6 +1105,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     attendanceRecords,
     payrollRecords,
     approvals,
+    systemSettings,
     isLoading,
     pendingApprovalsCount,
     selectedEmployeeForCard,
@@ -1054,6 +1137,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     handleQuickApprove,
     handleAddNewApproval,
     handleBatchProcessPayroll,
+    updateSystemSettings: handleUpdateSystemSettings,
     handleUpdateSiteRadius,
     handleAddProject,
     handleUpdateProject,

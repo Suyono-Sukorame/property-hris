@@ -1,4 +1,4 @@
-import { PropertySite, Employee, AttendanceRecord, PayrollRecord, ApprovalItem } from '@/types/hris';
+import { PropertySite, Employee, AttendanceRecord, PayrollRecord, ApprovalItem, SystemSettings } from '@/types/hris';
 
 // ===========================================================================
 // MODE RINTISAN: Data disederhanakan untuk usaha properti rintisan (4 karyawan)
@@ -683,4 +683,13 @@ export const FORMAT_IDR = (val: number): string => {
     currency: 'IDR',
     maximumFractionDigits: 0,
   }).format(val);
+};
+
+export const DEFAULT_SYSTEM_SETTINGS: SystemSettings = {
+  toleranceMinutes: 15,
+  lateDeductionPerMinute: 5000,
+  bpjsRate: 3.0,
+  k3BonusRate: 1500000,
+  overtimeRatePerHour: 80000,
+  updatedAt: new Date().toISOString(),
 };

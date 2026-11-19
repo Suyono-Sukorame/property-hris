@@ -1,5 +1,7 @@
 export { StatusBadge } from './StatusBadge';
 export { FormField } from './FormField';
+export { Input, type InputProps } from './Input';
+export { SectionCard, type SectionCardProps } from './SectionCard';
 export { AvatarUpload } from './AvatarUpload';
 export { Button } from './Button';
 export { Modal } from './Modal';
