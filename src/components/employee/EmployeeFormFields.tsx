@@ -1,18 +1,23 @@
 'use client';
+
 import React from 'react';
 import { PropertySite } from '@/types/hris';
 import { FormField } from '@/components/ui/FormField';
+import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
 
 export interface EmployeeFormData {
   name: string;
   nik: string;
   title: string;
+  jobCode?: string;
   division: string;
   siteId: string;
   email: string;
   phone: string;
   contractType: 'PKWTT (Tetap)' | 'PKWT (Kontrak Proyek)' | 'Konsultan Ahli';
+  contractEndDate?: string;
   k3Certified: boolean;
+  k3CertificateExpiry?: string;
   bloodType: 'A+' | 'B+' | 'AB+' | 'O+' | 'O-' | '';
   emergencyContact: string;
   baseSalary: number;
@@ -43,7 +48,8 @@ const DIVISIONS = [
   'Teknis Lapangan',
 ];
 
-const SECTION_HEADER = 'text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1.5 border-b border-slate-100 mb-2.5';
+const SECTION_HEADER =
+  'text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-1.5 border-b border-slate-100 mb-2.5';
 
 export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
   data,
@@ -52,6 +58,18 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
   errors = {},
   mode = 'add',
 }) => {
+  const catalogList = Object.values(JOB_DESCRIPTIONS);
+
+  const handleSelectFromCatalog = (selectedCode: string) => {
+    if (!selectedCode) return;
+    const matched = JOB_DESCRIPTIONS[selectedCode];
+    if (matched) {
+      onChange('jobCode', matched.jobCode);
+      onChange('title', matched.title);
+      onChange('division', matched.division);
+    }
+  };
+
   return (
     <div className="space-y-4 text-xs text-slate-800">
       {/* ── Section 1: Identitas ─────────────────────────── */}
@@ -94,14 +112,33 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
 
       {/* ── Section 2: Jabatan & Penugasan ───────────────── */}
       <div>
-        <p className={SECTION_HEADER}>2. Jabatan & Penugasan</p>
+        <p className={SECTION_HEADER}>2. Jabatan & Standar Tugas</p>
         <div className="grid grid-cols-2 gap-2.5">
-          <FormField label="Jabatan / Posisi" required error={errors.title} className="col-span-2">
+          {/* Quick Select from Job Catalog */}
+          <FormField
+            label="Pilih Jabatan dari Katalog Resmi"
+            className="col-span-2"
+          >
+            <select
+              value={data.jobCode || ''}
+              onChange={(e) => handleSelectFromCatalog(e.target.value)}
+              className={`${SELECT_CLASS} font-semibold text-[#0f766e] bg-teal-50/40 border-teal-300`}
+            >
+              <option value="">— Pilih Standar Jabatan (Opsional) —</option>
+              {catalogList.map((job) => (
+                <option key={job.jobCode} value={job.jobCode}>
+                  {job.title} ({job.jobCode}) — Divisi {job.division}
+                </option>
+              ))}
+            </select>
+          </FormField>
+
+          <FormField label="Nama Jabatan / Posisi" required error={errors.title} className="col-span-2">
             <input
               type="text"
               value={data.title}
               onChange={(e) => onChange('title', e.target.value)}
-              placeholder="Contoh: Site QA/QC Inspector"
+              placeholder="Contoh: Pengawas Lapangan / QA QC"
               className={INPUT_CLASS}
             />
           </FormField>
@@ -113,7 +150,9 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
               className={SELECT_CLASS}
             >
               {DIVISIONS.map((d) => (
-                <option key={d} value={d}>{d}</option>
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
             </select>
           </FormField>
@@ -121,7 +160,9 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
           <FormField label="Jenis Kontrak" error={errors.contractType}>
             <select
               value={data.contractType}
-              onChange={(e) => onChange('contractType', e.target.value as EmployeeFormData['contractType'])}
+              onChange={(e) =>
+                onChange('contractType', e.target.value as EmployeeFormData['contractType'])
+              }
               className={SELECT_CLASS}
             >
               <option value="PKWTT (Tetap)">Tetap (PKWTT)</option>
@@ -130,6 +171,21 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             </select>
           </FormField>
 
+          {data.contractType === 'PKWT (Kontrak Proyek)' && (
+            <FormField
+              label="Tanggal Akhir Kontrak PKWT"
+              error={errors.contractEndDate}
+              className="col-span-2"
+            >
+              <input
+                type="date"
+                value={data.contractEndDate || ''}
+                onChange={(e) => onChange('contractEndDate', e.target.value)}
+                className={INPUT_CLASS}
+              />
+            </FormField>
+          )}
+
           <FormField label="Lokasi Proyek" error={errors.siteId} className="col-span-2">
             <select
               value={data.siteId}
@@ -137,9 +193,8 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
               className={SELECT_CLASS}
             >
               {sites.map((site) => {
-                const displayName = site.name.length > 40
-                  ? `${site.name.substring(0, 40)}...`
-                  : site.name;
+                const displayName =
+                  site.name.length > 40 ? `${site.name.substring(0, 40)}...` : site.name;
                 return (
                   <option key={site.id} value={site.id}>
                     {displayName}
@@ -175,7 +230,11 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
             />
           </FormField>
 
-          <FormField label="Kontak Darurat (Keluarga)" error={errors.emergencyContact} className="col-span-2">
+          <FormField
+            label="Kontak Darurat (Keluarga)"
+            error={errors.emergencyContact}
+            className="col-span-2"
+          >
             <input
               type="text"
               value={data.emergencyContact}
@@ -243,7 +302,9 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
           <FormField label="Golongan Darah" error={errors.bloodType}>
             <select
               value={data.bloodType}
-              onChange={(e) => onChange('bloodType', e.target.value as EmployeeFormData['bloodType'])}
+              onChange={(e) =>
+                onChange('bloodType', e.target.value as EmployeeFormData['bloodType'])
+              }
               className={SELECT_CLASS}
             >
               <option value="">— Tidak diketahui —</option>
@@ -268,6 +329,21 @@ export const EmployeeFormFields: React.FC<EmployeeFormFieldsProps> = ({
               </span>
             </label>
           </div>
+
+          {data.k3Certified && (
+            <FormField
+              label="Masa Berlaku Lisensi K3"
+              error={errors.k3CertificateExpiry}
+              className="col-span-2"
+            >
+              <input
+                type="date"
+                value={data.k3CertificateExpiry || ''}
+                onChange={(e) => onChange('k3CertificateExpiry', e.target.value)}
+                className={INPUT_CLASS}
+              />
+            </FormField>
+          )}
         </div>
       </div>
     </div>

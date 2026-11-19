@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Employee, PropertySite } from '@/types/hris';
+import { Employee, PropertySite, EmployeeDocument } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
 import { StatusBadge, PageHeader, FilterBar, SearchInput, Select, EmptyState, SelfieThumbnail } from '@/components/ui';
 import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
@@ -10,7 +10,6 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui';
 import {
-  Search,
   CreditCard,
   Download,
   ShieldCheck,
@@ -18,19 +17,20 @@ import {
   List,
   Briefcase,
   Users,
-  CheckCircle2,
   Lock,
-  GraduationCap,
   Target,
-  Printer,
   ChevronDown,
   Layers,
   Pencil,
   Trash2,
-  AlertTriangle,
   UserPlus,
+  FolderOpen,
+  IdCard,
+  Clock,
+  AlertCircle,
 } from 'lucide-react';
-import { JobDescriptionModal } from '@/components/modals';
+import { JobDescriptionModal, EmployeeIDCardModal } from '@/components/modals';
+import { DeactivateEmployeeModal, DocumentDossierModal } from '@/components/employee';
 
 type JobDescriptionRow = {
   job_code: string;
@@ -79,7 +79,12 @@ interface EmployeesViewProps {
   onOpenPaySlip: (emp: Employee) => void;
   onOpenAddModal: () => void;
   onOpenEditEmployee?: (emp: Employee) => void;
-  onDeleteEmployee?: (empId: string, permanent?: boolean) => void;
+  onDeleteEmployee?: (
+    empId: string,
+    permanent?: boolean,
+    details?: { reason?: string; effectiveDate?: string; notes?: string; blockLogin?: boolean }
+  ) => Promise<void> | void;
+  onUpdateEmployeeDocuments?: (empId: string, docs: EmployeeDocument[]) => Promise<void> | void;
 }
 
 export const EmployeesView: React.FC<EmployeesViewProps> = ({
@@ -91,6 +96,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   onOpenAddModal,
   onOpenEditEmployee,
   onDeleteEmployee,
+  onUpdateEmployeeDocuments,
 }) => {
   const { currentUser } = useAuth();
   const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
@@ -98,10 +104,12 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [divisionFilter, setDivisionFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [k3Filter, setK3Filter] = useState<'ALL' | 'K3_CERTIFIED' | 'NOT_K3'>('ALL');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [selectedJobCode, setSelectedJobCode] = useState<string>('ALL');
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
-  const [deleteMode, setDeleteMode] = useState<'deactivate' | 'permanent'>('deactivate');
+  const [dossierEmployee, setDossierEmployee] = useState<Employee | null>(null);
+  const [idCardEmployee, setIdCardEmployee] = useState<Employee | null>(null);
   const [expandedJobCode, setExpandedJobCode] = useState<string | null>(null);
   const [isJobDescModalOpen, setIsJobDescModalOpen] = useState(false);
   const [editingJobdesc, setEditingJobdesc] = useState<JobDescription | null>(null);
@@ -230,6 +238,14 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
     setIsJobDescModalOpen(true);
   };
 
+  const getDaysUntil = (dateStr?: string) => {
+    if (!dateStr) return null;
+    const target = new Date(dateStr).getTime();
+    if (isNaN(target)) return null;
+    const now = new Date().setHours(0, 0, 0, 0);
+    return Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+  };
+
   const filteredEmployees = employees.filter((emp) => {
     const matchSite =
       selectedSiteFilter === 'ALL' || emp.siteId === selectedSiteFilter;
@@ -237,6 +253,10 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
       divisionFilter === 'ALL' || emp.division === divisionFilter;
     const matchStatus =
       statusFilter === 'ALL' || emp.status === statusFilter;
+    const matchK3 =
+      k3Filter === 'ALL' ||
+      (k3Filter === 'K3_CERTIFIED' && emp.k3Certified) ||
+      (k3Filter === 'NOT_K3' && !emp.k3Certified);
     const matchSearch =
       searchQuery === '' ||
       emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -244,7 +264,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
       emp.jobCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
       emp.title.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchSite && matchDivision && matchStatus && matchSearch;
+    return matchSite && matchDivision && matchStatus && matchK3 && matchSearch;
   });
 
   const exportCSV = () => {
@@ -428,6 +448,18 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
               ]}
               className="w-full sm:w-auto"
             />
+
+            <Select
+              value={k3Filter}
+              onChange={(val) => setK3Filter(val as 'ALL' | 'K3_CERTIFIED' | 'NOT_K3')}
+              ariaLabel="Filter K3"
+              options={[
+                { value: 'ALL', label: 'Semua K3' },
+                { value: 'K3_CERTIFIED', label: 'Bersertifikat K3' },
+                { value: 'NOT_K3', label: 'Tanpa Sertifikasi K3' },
+              ]}
+              className="w-full sm:w-auto"
+            />
           </FilterBar>
 
           {/* Desktop Table View */}
@@ -487,13 +519,50 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                           </td>
 
                           <td className="px-4">
-                            <div className="flex items-center gap-1.5">
-                              <StatusBadge status={emp.status} size="sm" />
-                              {emp.k3Certified && (
-                                <span title="Sertifikasi K3 Valid">
-                                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                                </span>
-                              )}
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-1.5">
+                                <StatusBadge status={emp.status} size="sm" />
+                                {emp.k3Certified && (
+                                  <span title="Sertifikasi K3 Valid">
+                                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                                  </span>
+                                )}
+                              </div>
+                              {/* Expiry alerts */}
+                              {(() => {
+                                const contractDays = getDaysUntil(emp.contractEndDate);
+                                const k3Days = getDaysUntil(emp.k3CertificateExpiry);
+                                return (
+                                  <div className="flex flex-col gap-0.5">
+                                    {contractDays !== null && contractDays <= 30 && (
+                                      <span
+                                        className={`text-[9px] px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1 ${
+                                          contractDays <= 0
+                                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                        }`}
+                                        title={`Kontrak berakhir: ${emp.contractEndDate}`}
+                                      >
+                                        <Clock className="w-2.5 h-2.5" />
+                                        Kontrak {contractDays <= 0 ? 'Habis' : `${contractDays}h`}
+                                      </span>
+                                    )}
+                                    {k3Days !== null && k3Days <= 30 && (
+                                      <span
+                                        className={`text-[9px] px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1 ${
+                                          k3Days <= 0
+                                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                        }`}
+                                        title={`Sertifikat K3 berakhir: ${emp.k3CertificateExpiry}`}
+                                      >
+                                        <AlertCircle className="w-2.5 h-2.5" />
+                                        K3 {k3Days <= 0 ? 'Habis' : `${k3Days}h`}
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           </td>
 
@@ -524,11 +593,32 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                                 Profil
                               </button>
                               <button
+                                type="button"
+                                onClick={() => setIdCardEmployee(emp)}
+                                className="p-1 text-teal-700 hover:text-teal-900 hover:bg-teal-50 rounded border border-teal-200/60 transition-colors cursor-pointer"
+                                title="Buka Kartu ID & Kontak"
+                              >
+                                <IdCard className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDossierEmployee(emp)}
+                                className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded border border-slate-200 transition-colors cursor-pointer relative"
+                                title="Berkas Dokumen Personil"
+                              >
+                                <FolderOpen className="w-3.5 h-3.5 text-[#0f766e]" />
+                                {emp.documents && emp.documents.length > 0 && (
+                                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#0f766e] text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                                    {emp.documents.length}
+                                  </span>
+                                )}
+                              </button>
+                              <button
                                 onClick={() => onOpenPaySlip(emp)}
                                 className="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition-colors cursor-pointer"
                                 title="Lihat Slip Gaji"
                               >
-                                <CreditCard className="w-4 h-4" />
+                                <CreditCard className="w-3.5 h-3.5" />
                               </button>
                               {onOpenEditEmployee && (
                                 <button
@@ -607,6 +697,43 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                         <span className="text-slate-400">Penempatan:</span>
                         <span className="text-slate-700 text-right truncate max-w-45">{emp.siteName}</span>
                       </div>
+
+                      {/* Expiry alerts in cards */}
+                      {(() => {
+                        const contractDays = getDaysUntil(emp.contractEndDate);
+                        const k3Days = getDaysUntil(emp.k3CertificateExpiry);
+                        if ((contractDays !== null && contractDays <= 30) || (k3Days !== null && k3Days <= 30)) {
+                          return (
+                            <div className="flex flex-wrap gap-1 pt-1.5 border-t border-slate-100">
+                              {contractDays !== null && contractDays <= 30 && (
+                                <span
+                                  className={`text-[9px] px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1 ${
+                                    contractDays <= 0
+                                      ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  }`}
+                                >
+                                  <Clock className="w-2.5 h-2.5" />
+                                  Kontrak {contractDays <= 0 ? 'Habis' : `${contractDays}h`}
+                                </span>
+                              )}
+                              {k3Days !== null && k3Days <= 30 && (
+                                <span
+                                  className={`text-[9px] px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1 ${
+                                    k3Days <= 0
+                                      ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                      : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  }`}
+                                >
+                                  <AlertCircle className="w-2.5 h-2.5" />
+                                  K3 {k3Days <= 0 ? 'Habis' : `${k3Days}h`}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
 
@@ -617,6 +744,27 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                       className="flex-1 py-1.5 text-xs font-semibold text-[#0f766e] bg-[#0f766e]/10 hover:bg-[#0f766e]/20 rounded-lg transition-colors cursor-pointer text-center truncate"
                     >
                       Profil
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIdCardEmployee(emp)}
+                      className="p-1.5 text-teal-700 hover:text-teal-900 hover:bg-teal-50 rounded-lg border border-teal-200/60 transition-colors cursor-pointer"
+                      title="Kartu ID & Kontak"
+                    >
+                      <IdCard className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDossierEmployee(emp)}
+                      className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors cursor-pointer relative"
+                      title="Berkas Dokumen"
+                    >
+                      <FolderOpen className="w-4 h-4 text-[#0f766e]" />
+                      {emp.documents && emp.documents.length > 0 && (
+                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#0f766e] text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                          {emp.documents.length}
+                        </span>
+                      )}
                     </button>
                     <button
                       type="button"
@@ -822,90 +970,44 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
       )}
 
       {/* =========================================================================
-          DIALOG KONFIRMASI HAPUS / NONAKTIFKAN KARYAWAN
+          MODAL DEAKTIVASI / TERMINASI KARYAWAN (Enterprise Lifecycle)
           ========================================================================= */}
-      {employeeToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-2xs p-4">
-          <div
-            className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150"
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-                <Trash2 className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">
-                  Hapus / Nonaktifkan Karyawan
-                </h3>
-                <p className="text-xs text-slate-600 mt-1">
-                  Anda akan memproses data karyawan{' '}
-                  <strong className="text-slate-900">{employeeToDelete.name}</strong> ({employeeToDelete.title}).
-                </p>
-              </div>
-            </div>
+      <DeactivateEmployeeModal
+        isOpen={!!employeeToDelete}
+        onClose={() => setEmployeeToDelete(null)}
+        employee={employeeToDelete}
+        onConfirm={async (empId, mode, details) => {
+          await onDeleteEmployee?.(empId, mode === 'permanent', details);
+          setEmployeeToDelete(null);
+        }}
+      />
 
-            <div className="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-              <label className="flex items-start gap-2.5 cursor-pointer">
-                <input
-                  type="radio"
-                  name="deleteMode"
-                  checked={deleteMode === 'deactivate'}
-                  onChange={() => setDeleteMode('deactivate')}
-                  className="mt-0.5 text-[#0f766e] focus:ring-[#0f766e]"
-                />
-                <div>
-                  <p className="font-bold text-slate-800">Nonaktifkan Karyawan (Disarankan)</p>
-                  <p className="text-[11px] text-slate-500">
-                    Karyawan ditandai status nonaktif & tidak bisa presensi, namun riwayat slip gaji & kehadiran masa lalu tetap aman tersimpan.
-                  </p>
-                </div>
-              </label>
+      {/* =========================================================================
+          MODAL DOSSIER DOKUMEN DIGITAL (Smart WebP Enterprise)
+          ========================================================================= */}
+      <DocumentDossierModal
+        isOpen={!!dossierEmployee}
+        onClose={() => setDossierEmployee(null)}
+        employee={dossierEmployee}
+        onUpdateDocuments={async (empId, docs) => {
+          if (onUpdateEmployeeDocuments) {
+            await onUpdateEmployeeDocuments(empId, docs);
+          }
+          if (dossierEmployee && dossierEmployee.id === empId) {
+            setDossierEmployee({ ...dossierEmployee, documents: docs });
+          }
+        }}
+        canEdit={isSuperAdmin}
+      />
 
-              <label className="flex items-start gap-2.5 cursor-pointer pt-2 border-t border-slate-200">
-                <input
-                  type="radio"
-                  name="deleteMode"
-                  checked={deleteMode === 'permanent'}
-                  onChange={() => setDeleteMode('permanent')}
-                  className="mt-0.5 text-rose-600 focus:ring-rose-500"
-                />
-                <div>
-                  <p className="font-bold text-rose-700">Hapus Permanen</p>
-                  <p className="text-[11px] text-slate-500">
-                    Hapus seluruh data karyawan ini dari daftar tim (gunakan jika terjadi salah ketik saat input).
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setEmployeeToDelete(null)}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onDeleteEmployee?.(employeeToDelete.id, deleteMode === 'permanent');
-                  setEmployeeToDelete(null);
-                }}
-                className={`px-4 py-2 rounded-lg text-xs font-bold text-white transition-all shadow-xs cursor-pointer ${
-                  deleteMode === 'permanent'
-                    ? 'bg-rose-600 hover:bg-rose-700 active:scale-95'
-                    : 'bg-amber-600 hover:bg-amber-700 active:scale-95'
-                }`}
-              >
-                {deleteMode === 'permanent' ? 'Ya, Hapus Permanen' : 'Ya, Nonaktifkan'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* =========================================================================
+          MODAL KARTU ID DIGITAL PERSONIL
+          ========================================================================= */}
+      <EmployeeIDCardModal
+        employee={idCardEmployee}
+        onClose={() => setIdCardEmployee(null)}
+        onViewPaySlip={onOpenPaySlip}
+      />
 
       {/* =========================================================================
           MODAL Tambah/Edit Jobdesk

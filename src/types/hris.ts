@@ -36,6 +36,20 @@ export interface PropertySite {
   status: 'Pemasaran Aktif' | 'Konstruksi Aktif' | 'Finishing & Handover' | 'Operasional Kantor';
 }
 
+export type EmployeeDocumentCategory = 'KTP' | 'KONTRAK_KERJA' | 'SERTIFIKAT_K3' | 'IJAZAH' | 'NPWP' | 'LAINNYA';
+
+export interface EmployeeDocument {
+  id: string;
+  category: EmployeeDocumentCategory;
+  title: string;
+  fileUrl: string; // webp data URL or storage URL
+  fileName: string;
+  fileSizeBytes: number;
+  uploadedAt: string;
+  expiryDate?: string;
+  notes?: string;
+}
+
 export interface Employee {
   id: string;
   nik: string;
@@ -61,6 +75,12 @@ export interface Employee {
   initials: string;
   avatarColor: string;
   photoUrl?: string;    // foto profil karyawan (data URL atau URL storage)
+  documents?: EmployeeDocument[];
+  contractEndDate?: string;
+  k3CertificateExpiry?: string;
+  deactivationReason?: string;
+  deactivationDate?: string;
+  deactivationNotes?: string;
 }
 
 export interface AttendanceRecord {

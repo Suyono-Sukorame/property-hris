@@ -71,6 +71,7 @@ function HRISApp() {
     handleAddEmployee,
     handleUpdateEmployee,
     handleDeleteEmployee,
+    handleUpdateEmployeeDocuments,
     handleUpdateApprovalStatus,
     handleQuickApprove,
     handleAddNewApproval,
@@ -231,6 +232,8 @@ function HRISApp() {
                 onOpenEditEmployee={openEditEmployee}
                 onViewPaySlip={handleOpenPaySlipByEmployee}
                 isSuperAdmin={!isEmployee}
+                attendanceRecords={attendanceRecords}
+                onUpdateDocuments={handleUpdateEmployeeDocuments}
               />
             ) : (
               <EmployeesView
@@ -247,6 +250,7 @@ function HRISApp() {
                 onOpenAddModal={() => setIsAddEmployeeOpen(true)}
                 onOpenEditEmployee={openEditEmployee}
                 onDeleteEmployee={handleDeleteEmployee}
+                onUpdateEmployeeDocuments={handleUpdateEmployeeDocuments}
               />
             )
           )}

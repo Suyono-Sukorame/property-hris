@@ -6,6 +6,7 @@ import {
   ActiveNavModule,
   PropertySite,
   Employee,
+  EmployeeDocument,
   AttendanceRecord,
   PayrollRecord,
   PayrollStatus,
@@ -74,7 +75,12 @@ interface HRISContextType {
   handleEditAttendance: (recordId: string, updates: Partial<AttendanceRecord>) => void;
   handleAddEmployee: (newEmp: Employee) => void;
   handleUpdateEmployee: (updatedEmp: Employee) => void;
-  handleDeleteEmployee: (empId: string, permanent?: boolean) => void;
+  handleDeleteEmployee: (
+    empId: string,
+    permanent?: boolean,
+    details?: { reason?: string; effectiveDate?: string; notes?: string; blockLogin?: boolean }
+  ) => Promise<void> | void;
+  handleUpdateEmployeeDocuments: (employeeId: string, docs: EmployeeDocument[]) => Promise<void>;
   handleUpdateApprovalStatus: (itemId: string, newStatus: 'Disetujui' | 'Ditolak', reviewNote: string) => void;
   handleQuickApprove: (id: string) => void;
   handleAddNewApproval: (newItem: ApprovalItem) => void;
@@ -265,6 +271,12 @@ export function HRISProvider({ children }: { children: ReactNode }) {
             initials: e.initials,
             avatarColor: e.avatar_color,
             photoUrl: e.photo_url || undefined,
+            documents: Array.isArray(e.documents) ? e.documents : [],
+            contractEndDate: e.contract_end_date || undefined,
+            k3CertificateExpiry: e.k3_certificate_expiry || undefined,
+            deactivationReason: e.deactivation_reason || undefined,
+            deactivationDate: e.deactivation_date || undefined,
+            deactivationNotes: e.deactivation_notes || undefined,
           }))
         );
       }
@@ -834,6 +846,9 @@ export function HRISProvider({ children }: { children: ReactNode }) {
           emergency_contact: finalEmp.emergencyContact,
           join_date: finalEmp.joinDate,
           initials: finalEmp.initials,
+          contract_end_date: finalEmp.contractEndDate || null,
+          k3_certificate_expiry: finalEmp.k3CertificateExpiry || null,
+          documents: finalEmp.documents || [],
         })
         .eq('id', finalEmp.id);
     } catch (e) {
@@ -849,29 +864,88 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Delete / Deactivate Employee
-  const handleDeleteEmployee = async (empId: string, permanent: boolean = false) => {
+  // Update Employee Documents
+  const handleUpdateEmployeeDocuments = async (employeeId: string, docs: EmployeeDocument[]) => {
+    setEmployees((prev) =>
+      prev.map((e) => (e.id === employeeId ? { ...e, documents: docs } : e))
+    );
+
+    try {
+      await supabase
+        .from('employees')
+        .update({
+          documents: docs,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', employeeId);
+    } catch (e) {
+      console.error('Failed to sync employee documents to Supabase:', e);
+    }
+
+    showDynamicAlert({
+      type: 'CHECK_IN',
+      title: 'Berkas Dokumen Disimpan! 📄',
+      subtitle: `Total ${docs.length} berkas tersimpan dalam format WebP HD`,
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+    });
+  };
+
+  // Delete / Deactivate Employee with Details
+  const handleDeleteEmployee = async (
+    empId: string,
+    permanent: boolean = false,
+    details?: { reason?: string; effectiveDate?: string; notes?: string; blockLogin?: boolean }
+  ) => {
     const empToDelete = employees.find((e) => e.id === empId);
 
     if (permanent) {
       setEmployees((prev) => prev.filter((e) => e.id !== empId));
       try {
         await supabase.from('employees').delete().eq('id', empId);
+        // Also remove login profile if exists
+        await supabase.from('user_profiles').delete().eq('employee_id', empId);
       } catch (e) {
         console.error('Failed to delete employee from Supabase:', e);
       }
     } else {
-      // Soft Deactivate
+      // Soft Deactivate with reason and date
+      const reason = details?.reason || 'Pengunduran Diri (Resign)';
+      const effectiveDate = details?.effectiveDate || new Date().toISOString().slice(0, 10);
+      const notes = details?.notes || '';
+
       setEmployees((prev) =>
-        prev.map((e) => (e.id === empId ? { ...e, status: 'Nonaktif' } : e))
+        prev.map((e) =>
+          e.id === empId
+            ? {
+                ...e,
+                status: 'Nonaktif',
+                deactivationReason: reason,
+                deactivationDate: effectiveDate,
+                deactivationNotes: notes,
+              }
+            : e
+        )
       );
+
       try {
         await supabase
           .from('employees')
           .update({
             status: 'Nonaktif',
+            deactivation_reason: reason,
+            deactivation_date: effectiveDate,
+            deactivation_notes: notes,
+            updated_at: new Date().toISOString(),
           })
           .eq('id', empId);
+
+        // If blockLogin is checked, revoke user profile access
+        if (details?.blockLogin) {
+          await supabase
+            .from('user_profiles')
+            .delete()
+            .eq('employee_id', empId);
+        }
       } catch (e) {
         console.error('Failed to deactivate employee in Supabase:', e);
       }
@@ -882,7 +956,9 @@ export function HRISProvider({ children }: { children: ReactNode }) {
       title: permanent ? 'Karyawan Dihapus Permanen 🗑️' : 'Karyawan Dinonaktifkan ⏸️',
       subtitle: empToDelete?.name || empId,
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-      meta: permanent ? 'Data dihapus permanen dari sistem' : 'Status berhasil diubah ke Nonaktif',
+      meta: permanent
+        ? 'Data dihapus permanen dari sistem'
+        : `Status: Nonaktif (${details?.reason || 'Arsip'})`,
     });
   };
 
@@ -1455,6 +1531,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     handleAddEmployee,
     handleUpdateEmployee,
     handleDeleteEmployee,
+    handleUpdateEmployeeDocuments,
     handleUpdateApprovalStatus,
     handleQuickApprove,
     handleAddNewApproval,
