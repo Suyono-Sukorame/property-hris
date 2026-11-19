@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   ActiveNavModule,
@@ -8,6 +8,7 @@ import {
   Employee,
   AttendanceRecord,
   PayrollRecord,
+  PayrollStatus,
   ApprovalItem,
   SystemSettings,
 } from '@/types/hris';
@@ -77,7 +78,14 @@ interface HRISContextType {
   handleUpdateApprovalStatus: (itemId: string, newStatus: 'Disetujui' | 'Ditolak', reviewNote: string) => void;
   handleQuickApprove: (id: string) => void;
   handleAddNewApproval: (newItem: ApprovalItem) => void;
-  handleBatchProcessPayroll: () => void;
+  // Payroll Enterprise
+  activePayrollPeriod: string;
+  setActivePayrollPeriod: (period: string) => void;
+  availablePayrollPeriods: string[];
+  handleBatchProcessPayroll: (selectedRecordIds?: string[], disbursementDate?: string, transferNote?: string) => Promise<void>;
+  handleUpdatePayrollStatus: (recordId: string, newStatus: PayrollStatus, updates?: Partial<PayrollRecord>) => Promise<void>;
+  handleUploadTransferProof: (recordId: string, proofUrl: string, note?: string) => Promise<void>;
+  handleGenerateNewPayrollPeriod: (newPeriod: string) => Promise<void>;
   updateSystemSettings: (newSettings: Partial<SystemSettings>) => Promise<void>;
   handleUpdateSiteRadius: (siteId: string, radius: number) => void;
   handleAddProject: (project: Partial<PropertySite>) => void;
@@ -159,6 +167,7 @@ export function HRISProvider({ children }: { children: ReactNode }) {
   const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(INITIAL_ATTENDANCE_RECORDS);
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>(INITIAL_PAYROLL_RECORDS);
+  const [activePayrollPeriod, setActivePayrollPeriod] = useState<string>('Oktober 2026');
   const [approvals, setApprovals] = useState<ApprovalItem[]>(INITIAL_APPROVALS);
   const [systemSettings, setSystemSettings] = useState<SystemSettings>(DEFAULT_SYSTEM_SETTINGS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -315,11 +324,15 @@ export function HRISProvider({ children }: { children: ReactNode }) {
             potonganBPJSKes: Number(p.potongan_bpjs_kes),
             potonganPPh21: Number(p.potongan_pph21),
             potonganKeterlambatan: Number(p.potongan_keterlambatan),
+            potonganKasbon: Number(p.potongan_kasbon || 0),
+            potonganAlpa: Number(p.potongan_alpa || 0),
             totalDeductions: Number(p.total_deductions),
             gajiBersih: Number(p.gaji_bersih),
             status: p.status,
             disbursementDate: p.disbursement_date,
             paymentMethod: p.payment_method,
+            transferProofUrl: p.transfer_proof_url || undefined,
+            transferNote: p.transfer_note || undefined,
           }))
         );
       }
@@ -979,29 +992,177 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleBatchProcessPayroll = async () => {
-    // Calculate late deductions from attendance records before batch processing using dynamic settings
+  const availablePayrollPeriods = useMemo(() => {
+    const list: string[] = [];
+    payrollRecords.forEach((r) => {
+      if (r.period && !list.includes(r.period)) list.push(r.period);
+    });
+    if (list.length === 0) list.push('Oktober 2026');
+    return list;
+  }, [payrollRecords]);
+
+  const handleBatchProcessPayroll = async (
+    selectedRecordIds?: string[],
+    customDisbursementDate?: string,
+    transferNote?: string
+  ) => {
     const lateDeductionPerMinute = systemSettings.lateDeductionPerMinute || 5000;
+    const overtimeRatePerHour = systemSettings.overtimeRatePerHour || 80000;
+    const finalDisbursementDate =
+      customDisbursementDate ||
+      new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const recordsToUpdate: PayrollRecord[] = [];
 
     setPayrollRecords((prev) =>
       prev.map((r) => {
-        // Sum all late minutes for this employee from current attendance data
+        // If selectedRecordIds is passed, only update those. If not, update all eligible non-'Dibayar'
+        const isTarget = selectedRecordIds ? selectedRecordIds.includes(r.id) : r.status !== 'Dibayar';
+        if (!isTarget) return r;
+
+        // 1. Calculate late deduction
         const totalLateMinutes = attendanceRecords
           .filter((a) => a.employeeId === r.employeeId && a.lateMinutes > 0)
           .reduce((sum, a) => sum + a.lateMinutes, 0);
-
         const potonganKeterlambatan = totalLateMinutes * lateDeductionPerMinute;
-        const newTotalDeductions = r.potonganBPJSTK + r.potonganBPJSKes + r.potonganPPh21 + potonganKeterlambatan;
-        const newGajiBersih = r.totalEarnings - newTotalDeductions;
 
-        return {
+        // 2. Calculate approved kasbon from approvals
+        const approvedKasbon = approvals
+          .filter(
+            (ap) =>
+              ap.employeeId === r.employeeId &&
+              ap.type.toLowerCase().includes('kasbon') &&
+              ap.status === 'Disetujui'
+          )
+          .reduce((sum, ap) => sum + (ap.costEstimate || 0), 0);
+
+        // 3. Calculate approved overtime hours from approvals
+        const approvedOvertimeHours = approvals
+          .filter(
+            (ap) =>
+              ap.employeeId === r.employeeId &&
+              ap.type.toLowerCase().includes('lembur') &&
+              ap.status === 'Disetujui'
+          )
+          .reduce((sum, ap) => {
+            const parsed = parseFloat(ap.duration || '0');
+            return sum + (isNaN(parsed) ? 0 : parsed);
+          }, 0);
+
+        const lemburHours = Math.max(r.lemburHours, approvedOvertimeHours);
+        const upahLembur = lemburHours > 0 ? lemburHours * overtimeRatePerHour : r.upahLembur;
+
+        // 4. Recalculate totals
+        const totalEarnings =
+          r.gajiPokok +
+          r.tunjanganJabatan +
+          r.tunjanganProyekLapangan +
+          r.tunjanganK3 +
+          r.uangMakanTransport +
+          upahLembur;
+
+        const potonganKasbon = approvedKasbon > 0 ? approvedKasbon : (r.potonganKasbon || 0);
+        const totalDeductions =
+          r.potonganBPJSTK +
+          r.potonganBPJSKes +
+          r.potonganPPh21 +
+          potonganKeterlambatan +
+          potonganKasbon +
+          (r.potonganAlpa || 0);
+
+        const gajiBersih = Math.max(0, totalEarnings - totalDeductions);
+
+        const updatedRecord: PayrollRecord = {
           ...r,
+          upahLembur,
+          lemburHours,
+          totalEarnings,
           potonganKeterlambatan,
-          totalDeductions: newTotalDeductions,
-          gajiBersih: newGajiBersih > 0 ? newGajiBersih : 0,
+          potonganKasbon,
+          totalDeductions,
+          gajiBersih,
           status: 'Dibayar' as const,
-          disbursementDate: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+          disbursementDate: finalDisbursementDate,
+          transferNote: transferNote || r.transferNote || 'Transfer Payroll Massal',
         };
+
+        recordsToUpdate.push(updatedRecord);
+        return updatedRecord;
+      })
+    );
+
+    // Persist all calculated fields to Supabase
+    try {
+      for (const rec of recordsToUpdate) {
+        await supabase
+          .from('payroll_records')
+          .update({
+            status: 'Dibayar',
+            disbursement_date: rec.disbursementDate,
+            upah_lembur: rec.upahLembur,
+            lembur_hours: rec.lemburHours,
+            total_earnings: rec.totalEarnings,
+            potongan_keterlambatan: rec.potonganKeterlambatan,
+            potongan_kasbon: rec.potonganKasbon || 0,
+            total_deductions: rec.totalDeductions,
+            gaji_bersih: rec.gajiBersih,
+            transfer_note: rec.transferNote,
+          })
+          .eq('id', rec.id);
+      }
+    } catch (e) {
+      console.error('Failed to batch update payroll in Supabase:', e);
+    }
+  };
+
+  const handleUpdatePayrollStatus = async (
+    recordId: string,
+    newStatus: PayrollStatus,
+    updates?: Partial<PayrollRecord>
+  ) => {
+    setPayrollRecords((prev) =>
+      prev.map((r) => {
+        if (r.id === recordId) {
+          return {
+            ...r,
+            ...updates,
+            status: newStatus,
+          };
+        }
+        return r;
+      })
+    );
+
+    try {
+      const payload: any = {
+        status: newStatus,
+      };
+      if (updates?.disbursementDate) payload.disbursement_date = updates.disbursementDate;
+      if (updates?.transferNote) payload.transfer_note = updates.transferNote;
+      if (updates?.transferProofUrl) payload.transfer_proof_url = updates.transferProofUrl;
+      if (updates?.gajiBersih !== undefined) payload.gaji_bersih = updates.gajiBersih;
+
+      await supabase.from('payroll_records').update(payload).eq('id', recordId);
+    } catch (e) {
+      console.error('Failed to update individual payroll status in Supabase:', e);
+    }
+  };
+
+  const handleUploadTransferProof = async (
+    recordId: string,
+    proofUrl: string,
+    note?: string
+  ) => {
+    setPayrollRecords((prev) =>
+      prev.map((r) => {
+        if (r.id === recordId) {
+          return {
+            ...r,
+            transferProofUrl: proofUrl,
+            transferNote: note !== undefined ? note : r.transferNote,
+          };
+        }
+        return r;
       })
     );
 
@@ -1009,12 +1170,113 @@ export function HRISProvider({ children }: { children: ReactNode }) {
       await supabase
         .from('payroll_records')
         .update({
-          status: 'Dibayar',
-          disbursement_date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+          transfer_proof_url: proofUrl,
+          transfer_note: note,
         })
-        .neq('status', 'Dibayar');
+        .eq('id', recordId);
     } catch (e) {
-      console.error('Failed to batch update payroll in Supabase:', e);
+      console.error('Failed to upload transfer proof to Supabase:', e);
+    }
+  };
+
+  const handleGenerateNewPayrollPeriod = async (newPeriod: string) => {
+    const activeEmps = employees.filter((e) => e.status !== 'Nonaktif');
+    const now = new Date();
+    const periodSlug = newPeriod.replace(/\s+/g, '').slice(0, 6).toUpperCase();
+    const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const newRecords: PayrollRecord[] = activeEmps.map((emp, idx) => {
+      const seq = String(idx + 1).padStart(3, '0');
+      const recId = `PAY-${yearMonth}-${periodSlug}-${seq}`;
+      const baseSalary = emp.baseSalary;
+      const transportMeal = emp.transportMealAllowance;
+      const siteAllowance = emp.siteAllowance;
+      const k3Allowance = emp.k3Allowance;
+      const totalEarnings = baseSalary + siteAllowance + k3Allowance + transportMeal;
+
+      const bpjsRatePercent = (systemSettings.bpjsRate || 3.0) / 100;
+      const potonganBPJSTK = Math.round(baseSalary * bpjsRatePercent);
+      const potonganBPJSKes = Math.round(baseSalary * 0.01);
+      const potonganPPh21 = Math.round(baseSalary * 0.05); // Estimasi PPh21 rata-rata tarif efektif
+      const totalDeductions = potonganBPJSTK + potonganBPJSKes + potonganPPh21;
+      const gajiBersih = Math.max(0, totalEarnings - totalDeductions);
+
+      return {
+        id: recId,
+        period: newPeriod,
+        employeeId: emp.id,
+        employeeName: emp.name,
+        nik: emp.nik,
+        jobCode: emp.jobCode,
+        division: emp.division,
+        siteName: emp.siteName,
+        gajiPokok: baseSalary,
+        tunjanganJabatan: 0,
+        tunjanganProyekLapangan: siteAllowance,
+        tunjanganK3: k3Allowance,
+        uangMakanTransport: transportMeal,
+        upahLembur: 0,
+        lemburHours: 0,
+        totalEarnings,
+        potonganBPJSTK,
+        potonganBPJSKes,
+        potonganPPh21,
+        potonganKeterlambatan: 0,
+        potonganKasbon: 0,
+        potonganAlpa: 0,
+        totalDeductions,
+        gajiBersih,
+        status: 'Draft' as const,
+        disbursementDate: `28 ${newPeriod}`,
+        paymentMethod: emp.bankAccount,
+      };
+    });
+
+    setPayrollRecords((prev) => [...newRecords, ...prev]);
+    setActivePayrollPeriod(newPeriod);
+
+    showDynamicAlert({
+      type: 'CHECK_IN',
+      title: `Periode Baru Dibuat! 🎉`,
+      subtitle: `${newPeriod} · ${newRecords.length} Slip Gaji Siap Dikelola`,
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+    });
+
+    // Sync to Supabase
+    try {
+      const dbRows = newRecords.map((r) => ({
+        id: r.id,
+        period: r.period,
+        employee_id: r.employeeId,
+        employee_name: r.employeeName,
+        nik: r.nik,
+        job_code: r.jobCode,
+        division: r.division,
+        site_name: r.siteName,
+        gaji_pokok: r.gajiPokok,
+        tunjangan_jabatan: r.tunjanganJabatan,
+        tunjangan_proyek_lapangan: r.tunjanganProyekLapangan,
+        tunjangan_k3: r.tunjanganK3,
+        uang_makan_transport: r.uangMakanTransport,
+        upah_lembur: r.upahLembur,
+        lembur_hours: r.lemburHours,
+        total_earnings: r.totalEarnings,
+        potongan_bpjstk: r.potonganBPJSTK,
+        potongan_bpjs_kes: r.potonganBPJSKes,
+        potongan_pph21: r.potonganPPh21,
+        potongan_keterlambatan: r.potonganKeterlambatan,
+        potongan_kasbon: r.potonganKasbon || 0,
+        potongan_alpa: r.potonganAlpa || 0,
+        total_deductions: r.totalDeductions,
+        gaji_bersih: r.gajiBersih,
+        status: r.status,
+        disbursement_date: r.disbursementDate,
+        payment_method: r.paymentMethod,
+      }));
+
+      await supabase.from('payroll_records').insert(dbRows);
+    } catch (e) {
+      console.warn('Supabase insert new payroll period fallback to local:', e);
     }
   };
 
@@ -1196,7 +1458,14 @@ export function HRISProvider({ children }: { children: ReactNode }) {
     handleUpdateApprovalStatus,
     handleQuickApprove,
     handleAddNewApproval,
+    // Payroll Enterprise
+    activePayrollPeriod,
+    setActivePayrollPeriod,
+    availablePayrollPeriods,
     handleBatchProcessPayroll,
+    handleUpdatePayrollStatus,
+    handleUploadTransferProof,
+    handleGenerateNewPayrollPeriod,
     updateSystemSettings: handleUpdateSystemSettings,
     handleUpdateSiteRadius,
     handleAddProject,

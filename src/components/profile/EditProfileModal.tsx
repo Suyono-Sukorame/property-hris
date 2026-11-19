@@ -258,25 +258,25 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 </span>
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div className="p-2 rounded-lg bg-slate-100/70 border border-slate-200/60 text-slate-600">
-                    <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold flex items-center gap-1">
+                    <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1">
                       <Shield className="w-2.5 h-2.5 text-slate-400" /> Role
                     </span>
                     <span className="font-semibold text-slate-800">{user.roleLabel}</span>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-100/70 border border-slate-200/60 text-slate-600">
-                    <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold flex items-center gap-1">
+                    <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1">
                       <Building2 className="w-2.5 h-2.5 text-slate-400" /> Lokasi Proyek
                     </span>
                     <span className="font-semibold text-slate-800 truncate block">{user.siteName || 'Griya Bumi Raya'}</span>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-100/70 border border-slate-200/60 text-slate-600">
-                    <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold flex items-center gap-1">
+                    <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1">
                       <Briefcase className="w-2.5 h-2.5 text-slate-400" /> Divisi
                     </span>
                     <span className="font-semibold text-slate-800">{user.division || 'Manajemen'}</span>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-100/70 border border-slate-200/60 text-slate-600">
-                    <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold flex items-center gap-1">
+                    <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1">
                       <Hash className="w-2.5 h-2.5 text-slate-400" /> ID Akun
                     </span>
                     <span className="font-mono font-semibold text-slate-800">{user.employeeId || user.id}</span>

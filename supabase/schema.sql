@@ -104,11 +104,15 @@ CREATE TABLE payroll_records (
   potongan_bpjs_kes NUMERIC(15, 2) NOT NULL DEFAULT 0,
   potongan_pph21 NUMERIC(15, 2) NOT NULL DEFAULT 0,
   potongan_keterlambatan NUMERIC(15, 2) NOT NULL DEFAULT 0,
+  potongan_kasbon NUMERIC(15, 2) NOT NULL DEFAULT 0,
+  potongan_alpa NUMERIC(15, 2) NOT NULL DEFAULT 0,
   total_deductions NUMERIC(15, 2) NOT NULL DEFAULT 0,
   gaji_bersih NUMERIC(15, 2) NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'Draft',
   disbursement_date TEXT NOT NULL,
   payment_method TEXT NOT NULL,
+  transfer_proof_url TEXT,
+  transfer_note TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

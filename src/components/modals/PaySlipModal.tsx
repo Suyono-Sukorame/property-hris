@@ -1,18 +1,28 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PayrollRecord } from '@/types/hris';
+import Image from 'next/image';
+import { PayrollRecord, PayrollStatus } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
 import { StatusBadge, PrintLetterhead, PrintSignatureBlock } from '@/components/ui';
 import { printDocument } from '@/lib/print';
-import { X, Printer, CheckCircle, Mail, Building2 } from 'lucide-react';
+import { X, Printer, CheckCircle, Mail, Building2, Receipt, CheckCircle2 } from 'lucide-react';
 
 interface PaySlipModalProps {
   record: PayrollRecord | null;
   onClose: () => void;
+  onUpdateStatus?: (recordId: string, newStatus: PayrollStatus) => void;
+  onOpenTransferProof?: (record: PayrollRecord) => void;
+  canManage?: boolean;
 }
 
-export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) => {
+export const PaySlipModal: React.FC<PaySlipModalProps> = ({
+  record,
+  onClose,
+  onUpdateStatus,
+  onOpenTransferProof,
+  canManage = true,
+}) => {
   const [emailSent, setEmailSent] = useState(false);
 
   if (!record) return null;
@@ -38,7 +48,7 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
           <div className="flex items-center gap-2 min-w-0">
             <Building2 className="w-4 h-4 text-[#80d5cb] shrink-0" />
             <h2 className="text-xs uppercase tracking-wider font-semibold text-slate-200 truncate">
-              Pratinjau Slip Gaji Karyawan
+              Pratinjau Slip Gaji Karyawan · {record.period}
             </h2>
           </div>
           <button
@@ -50,7 +60,7 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
           </button>
         </div>
 
-        {/* Scrollable Printable Sheet Container (Starts from top without getting cut off) */}
+        {/* Scrollable Printable Sheet Container */}
         <div id="printable-slip" data-print-root className="flex-1 overflow-y-auto p-4 sm:p-8 bg-white text-slate-900 text-xs">
           {/* Header Kop Perusahaan */}
           <PrintLetterhead
@@ -190,6 +200,24 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
                   </div>
                   <span className="font-mono font-medium text-slate-900">{FORMAT_IDR(record.potonganKeterlambatan)}</span>
                 </div>
+                {((record.potonganKasbon || 0) > 0) && (
+                  <div className="px-3.5 py-2 flex justify-between bg-amber-50/40">
+                    <div>
+                      <span className="text-slate-700 font-medium">Potongan Kasbon / Pinjaman</span>
+                      <span className="text-[9px] text-amber-600 block">Approval Pimpinan Disetujui</span>
+                    </div>
+                    <span className="font-mono font-medium text-amber-700">-{FORMAT_IDR(record.potonganKasbon || 0)}</span>
+                  </div>
+                )}
+                {((record.potonganAlpa || 0) > 0) && (
+                  <div className="px-3.5 py-2 flex justify-between bg-rose-50/40">
+                    <div>
+                      <span className="text-slate-700 font-medium">Potongan Ketidakhadiran (Alpa)</span>
+                      <span className="text-[9px] text-rose-600 block">Tanpa Keterangan Sah</span>
+                    </div>
+                    <span className="font-mono font-medium text-rose-700">-{FORMAT_IDR(record.potonganAlpa || 0)}</span>
+                  </div>
+                )}
                 <div className="px-3.5 py-2.5 bg-rose-50/40 flex justify-between items-center font-bold text-slate-900 border-t border-slate-200">
                   <span>Total Potongan</span>
                   <span className="font-mono text-rose-600 text-xs sm:text-sm">{FORMAT_IDR(record.totalDeductions)}</span>
@@ -218,6 +246,34 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
               </div>
             </div>
           </div>
+
+          {/* Transfer Proof Information (if uploaded) */}
+          {(record.transferProofUrl || record.transferNote) && (
+            <div className="my-4 p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <Receipt className="w-3.5 h-3.5 text-[#0f766e]" />
+                  Bukti Pencairan & Referensi Transfer
+                </span>
+                {record.transferNote && (
+                  <span className="text-[10px] text-slate-600 font-mono font-medium">
+                    {record.transferNote}
+                  </span>
+                )}
+              </div>
+              {record.transferProofUrl && (
+                <div className="relative w-44 h-28 rounded-lg overflow-hidden border border-slate-200 bg-white">
+                  <Image
+                    src={record.transferProofUrl}
+                    alt="Resi Transfer Bank"
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Legal Notes & Signatures (3 Pihak: Admin Keuangan, Karyawan, Direktur) */}
           <PrintSignatureBlock
@@ -260,7 +316,7 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
               type="button"
               onClick={handleSendEmail}
               disabled={emailSent}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
             >
               {emailSent ? (
                 <>
@@ -277,6 +333,37 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
           </div>
 
           <div className="flex items-center gap-2">
+            {canManage && onOpenTransferProof && (
+              <button
+                type="button"
+                onClick={() => onOpenTransferProof(record)}
+                className="px-3 py-1.5 sm:py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+              >
+                <Receipt className="w-3.5 h-3.5 text-slate-600" />
+                <span>{record.transferProofUrl ? 'Resi Transfer' : 'Lampirkan Resi'}</span>
+              </button>
+            )}
+
+            {canManage && onUpdateStatus && record.status === 'Draft' && (
+              <button
+                type="button"
+                onClick={() => onUpdateStatus(record.id, 'Disetujui')}
+                className="px-3.5 py-1.5 sm:py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors cursor-pointer"
+              >
+                Setujui Slip
+              </button>
+            )}
+
+            {canManage && onUpdateStatus && record.status === 'Disetujui' && (
+              <button
+                type="button"
+                onClick={() => onUpdateStatus(record.id, 'Dibayar')}
+                className="px-3.5 py-1.5 sm:py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer"
+              >
+                Tandai Dibayar
+              </button>
+            )}
+
             <button
               type="button"
               onClick={onClose}

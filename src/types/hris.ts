@@ -110,11 +110,15 @@ export interface PayrollRecord {
   potonganBPJSKes: number;
   potonganPPh21: number;
   potonganKeterlambatan: number;
+  potonganKasbon?: number;
+  potonganAlpa?: number;
   totalDeductions: number;
   gajiBersih: number;
   status: PayrollStatus;
   disbursementDate: string;
   paymentMethod: string;
+  transferProofUrl?: string;
+  transferNote?: string;
 }
 
 export interface ApprovalStep {

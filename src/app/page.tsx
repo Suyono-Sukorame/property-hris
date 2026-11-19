@@ -74,7 +74,14 @@ function HRISApp() {
     handleUpdateApprovalStatus,
     handleQuickApprove,
     handleAddNewApproval,
+    // Payroll Enterprise
+    activePayrollPeriod,
+    setActivePayrollPeriod,
+    availablePayrollPeriods,
     handleBatchProcessPayroll,
+    handleUpdatePayrollStatus,
+    handleUploadTransferProof,
+    handleGenerateNewPayrollPeriod,
     systemSettings,
     updateSystemSettings,
     handleUpdateSiteRadius,
@@ -262,9 +269,16 @@ function HRISApp() {
             <PayrollView
               payrollRecords={filteredPayroll}
               sites={sites}
+              employees={employees}
               selectedSiteFilter={selectedSiteFilter}
               onOpenPaySlip={setSelectedPayrollForSlip}
               onBatchProcessPayroll={handleBatchProcessPayroll}
+              onUpdatePayrollStatus={handleUpdatePayrollStatus}
+              onUploadTransferProof={handleUploadTransferProof}
+              onGenerateNewPeriod={handleGenerateNewPayrollPeriod}
+              activePeriod={activePayrollPeriod}
+              onSelectPeriod={setActivePayrollPeriod}
+              availablePeriods={availablePayrollPeriods}
               isEmployeeView={isEmployee}
             />
           )}
@@ -325,6 +339,8 @@ function HRISApp() {
       <PaySlipModal
         record={selectedPayrollForSlip}
         onClose={() => setSelectedPayrollForSlip(null)}
+        onUpdateStatus={handleUpdatePayrollStatus}
+        canManage={!isEmployee}
       />
 
       <ApprovalDetailModal
