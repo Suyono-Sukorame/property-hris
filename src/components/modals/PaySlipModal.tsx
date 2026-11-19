@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import React, { useState } from 'react';
 import { PayrollRecord } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
-import { StatusBadge } from '@/components/ui';
+import { StatusBadge, PrintLetterhead, PrintSignatureBlock } from '@/components/ui';
+import { printDocument } from '@/lib/print';
 import { X, Printer, CheckCircle, Mail, Building2 } from 'lucide-react';
 
 interface PaySlipModalProps {
@@ -18,7 +18,7 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
   if (!record) return null;
 
   const handlePrint = () => {
-    window.print();
+    printDocument('printable-slip');
   };
 
   const handleSendEmail = () => {
@@ -51,45 +51,15 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
         </div>
 
         {/* Scrollable Printable Sheet Container (Starts from top without getting cut off) */}
-        <div id="printable-slip" className="flex-1 overflow-y-auto p-4 sm:p-8 bg-white text-slate-900 text-xs">
+        <div id="printable-slip" data-print-root className="flex-1 overflow-y-auto p-4 sm:p-8 bg-white text-slate-900 text-xs">
           {/* Header Kop Perusahaan */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-5 sm:pb-6 border-b-2 border-slate-900 gap-3 sm:gap-4">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-slate-200 shadow-xs">
-                  <Image
-                    src="/property-hris.png"
-                    alt="Logo PT Bumi Raya Propertindo"
-                    width={36}
-                    height={36}
-                    priority
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h1 className="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 uppercase">
-                  PT Bumi Raya Propertindo Tbk
-                </h1>
-              </div>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 mt-1">
-                Kawasan Gedung Menara Bumi Raya Lt. 3-5, Jl. Jend. Ahmad Yani Km. 4.5 No. 21, Banjarmasin, Kalimantan Selatan 70238
-              </p>
-              <p className="text-[9px] sm:text-[10px] text-slate-400">
-                Divisi Human Capital & Payroll Operasional Properti · Dokumen Rahasia (Confidential)
-              </p>
-            </div>
-
-            <div className="text-left sm:text-right shrink-0">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-slate-400 block">
-                Slip No: {record.id}
-              </span>
-              <div className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight mt-0.5">
-                SLIP GAJI KARYAWAN
-              </div>
-              <div className="text-[11px] text-slate-600 font-medium">
-                Periode: <strong className="text-slate-900">{record.period}</strong>
-              </div>
-            </div>
-          </div>
+          <PrintLetterhead
+            alwaysVisible
+            title="SLIP GAJI KARYAWAN"
+            docNumber={`Slip No: ${record.id}`}
+            period={record.period}
+            classification="DOKUMEN RAHASIA"
+          />
 
           {/* Employee Metadata Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 my-5 sm:my-6 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-200">
@@ -249,28 +219,30 @@ export const PaySlipModal: React.FC<PaySlipModalProps> = ({ record, onClose }) =
             </div>
           </div>
 
-          {/* Legal Notes & Signatures */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-5 border-t border-slate-200 text-center">
-            <div>
-              <p className="text-[11px] text-slate-500 mb-10">
-                Dihitung & Divalidasi oleh,<br />
-                <strong className="text-slate-800">Finance & Payroll Officer</strong>
-              </p>
-              <div className="w-36 mx-auto border-b border-slate-400 mb-1" />
-              <p className="font-semibold text-slate-900 text-xs">Ratna Kumalasari, S.Psi.</p>
-              <p className="text-[10px] text-slate-400">Head of Human Capital & Payroll</p>
-            </div>
-
-            <div>
-              <p className="text-[11px] text-slate-500 mb-10">
-                Disetujui oleh,<br />
-                <strong className="text-slate-800">Direksi Operasional Properti</strong>
-              </p>
-              <div className="w-36 mx-auto border-b border-slate-400 mb-1" />
-              <p className="font-semibold text-slate-900 text-xs">Ir. Bagus Wicaksono, M.T.</p>
-              <p className="text-[10px] text-slate-400">Senior Project Director</p>
-            </div>
-          </div>
+          {/* Legal Notes & Signatures (3 Pihak: Admin Keuangan, Karyawan, Direktur) */}
+          <PrintSignatureBlock
+            alwaysVisible
+            dateStr={record.disbursementDate || '31 Oktober 2026'}
+            creator={{
+              roleTitle: 'Dihitung & Divalidasi oleh,',
+              name: 'Dewi Anggraini',
+              positionTitle: 'Admin & Keuangan',
+              customNote: 'Staff Keuangan & Payroll',
+            }}
+            employee={{
+              roleTitle: 'Diterima oleh Karyawan,',
+              name: record.employeeName,
+              positionTitle: record.division,
+              customNote: `NIK: ${record.nik}`,
+            }}
+            approver={{
+              roleTitle: 'Disetujui oleh,',
+              name: 'Navyzar',
+              positionTitle: 'Pemilik / Direktur Utama',
+              customNote: 'Pimpinan PT Bumi Raya Propertindo',
+            }}
+            className="pt-4 mt-4"
+          />
         </div>
 
         {/* Modal Bottom Fixed Action Footer */}

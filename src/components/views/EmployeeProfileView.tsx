@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { Employee } from '@/types/hris';
-import { StatusBadge, SelfieThumbnail } from '@/components/ui';
+import { StatusBadge, SelfieThumbnail, PrintLetterhead, PrintSignatureBlock } from '@/components/ui';
+import { printDocument } from '@/lib/print';
 import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
 import {
   ArrowLeft,
@@ -80,17 +81,30 @@ export const EmployeeProfileView: React.FC<EmployeeProfileViewProps> = ({
   };
 
   const handlePrint = () => {
-    window.print();
+    printDocument('printable-employee-profile');
   };
+
+  const printTitle =
+    activeTab === 'CARD'
+      ? 'FORMULIR BIODATA PERSONIL'
+      : activeTab === 'JOBDESC'
+        ? 'URAIAN JABATAN & SURAT TUGAS'
+        : 'TARGET KINERJA KARYAWAN';
 
   // Format clean phone for WhatsApp
   const cleanPhone = employee.phone.replace(/[^0-9]/g, '');
   const waPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone;
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-5xl mx-auto pb-10">
+    <div id="printable-employee-profile" className="space-y-4 sm:space-y-6 max-w-5xl mx-auto pb-10" data-print-root>
+      <PrintLetterhead
+        title={printTitle}
+        docNumber={`HR-${employee.id}-${new Date().getFullYear()}`}
+        classification="DOKUMEN INTERNAL"
+      />
+
       {/* 1. Sticky Navigation Top Bar */}
-      <div className="bg-white/95 p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 backdrop-blur-md">
+      <div className="bg-white/95 p-3 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 backdrop-blur-md print:hidden">
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
@@ -247,7 +261,7 @@ export const EmployeeProfileView: React.FC<EmployeeProfileViewProps> = ({
       </div>
 
       {/* 3. Segmented Navigation Switcher */}
-      <div className="bg-white p-1.5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-1 overflow-x-auto">
+      <div className="bg-white p-1.5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-1 overflow-x-auto print:hidden">
         <button
           type="button"
           onClick={() => setActiveTab('CARD')}
@@ -501,7 +515,7 @@ export const EmployeeProfileView: React.FC<EmployeeProfileViewProps> = ({
           </div>
 
           {/* Sign-off Sheet Simulation */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs pt-4 text-xs grid grid-cols-2 gap-4 text-center">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs pt-4 text-xs grid grid-cols-2 gap-4 text-center print:hidden">
             <div>
               <p className="text-slate-500 mb-10">Disiapkan & Diterima Oleh Karyawan:</p>
               <p className="font-bold text-slate-900 underline">{employee.name}</p>
@@ -558,6 +572,25 @@ export const EmployeeProfileView: React.FC<EmployeeProfileViewProps> = ({
           </div>
         </div>
       )}
+
+      <PrintSignatureBlock
+        creator={{
+          roleTitle: 'Disiapkan oleh,',
+          name: 'HR & Administrasi',
+          positionTitle: 'Administrasi Personalia',
+        }}
+        employee={{
+          roleTitle: 'Diketahui oleh karyawan,',
+          name: employee.name,
+          positionTitle: employee.title,
+          customNote: `NIK: ${employee.nik}`,
+        }}
+        approver={{
+          roleTitle: 'Disetujui oleh,',
+          name: 'Pimpinan Perusahaan',
+          positionTitle: 'Direktur Utama',
+        }}
+      />
     </div>
   );
 };

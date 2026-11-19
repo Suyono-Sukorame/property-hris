@@ -2,6 +2,8 @@ export { StatusBadge } from './StatusBadge';
 export { FormField } from './FormField';
 export { Input, type InputProps } from './Input';
 export { SectionCard, type SectionCardProps } from './SectionCard';
+export { PrintLetterhead, type PrintLetterheadProps } from './PrintLetterhead';
+export { PrintSignatureBlock, type PrintSignatureBlockProps } from './PrintSignatureBlock';
 export { AvatarUpload } from './AvatarUpload';
 export { Button } from './Button';
 export { Modal } from './Modal';

@@ -2,7 +2,8 @@
 import React from 'react';
 import { PropertySite, Employee, AttendanceRecord } from '@/types/hris';
 import { FORMAT_IDR } from '@/data/mockData';
-import { PageHeader, KPICard } from '@/components/ui';
+import { PageHeader, KPICard, PrintLetterhead, PrintSignatureBlock } from '@/components/ui';
+import { printDocument } from '@/lib/print';
 import {
   BarChart3,
   ShieldCheck,
@@ -10,7 +11,6 @@ import {
   Users,
   HardHat,
   Printer,
-  Download,
   AlertCircle,
   FileCheck2,
 } from 'lucide-react';
@@ -49,8 +49,17 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   const avgLateMinutes = terlambatCount > 0 ? Math.round(totalLateMinutes / terlambatCount) : 0;
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* 1. Standard Page Header */}
+    <div id="printable-reports" className="space-y-4 sm:space-y-6" data-print-root>
+      {/* Print: Kop Surat Resmi (hanya muncul saat cetak) */}
+      <PrintLetterhead
+        title="LAPORAN KETENAGAKERJAAN & K3"
+        docNumber={`RPT-${new Date().getFullYear()}-Q4`}
+        period="Triwulan IV 2026"
+        classification="LAPORAN INTERNAL RESMI"
+      />
+
+      {/* 1. Standard Page Header (tersembunyi saat cetak) */}
+      <div className="print:hidden">
       <PageHeader
         title="Laporan Ketenagakerjaan & K3"
         subtitle="Data terintegrasi dari seluruh lokasi proyek konstruksi perumahan dan kantor pusat."
@@ -63,7 +72,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         actions={
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => printDocument('printable-reports')}
             className="h-9 inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5 text-slate-500" />
@@ -71,6 +80,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </button>
         }
       />
+      </div>{/* /print:hidden PageHeader */}
 
       {/* Safety & Compliance Strip */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
@@ -147,6 +157,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                         ({percent}%)
                       </span>
                     </div>
+
                   </div>
 
                   <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
@@ -207,6 +218,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             </p>
           </div>
         </div>
+
       </div>
 
       {/* Live Attendance Summary from actual records */}
@@ -252,6 +264,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             </span>
           </div>
         </div>
+
+        <PrintSignatureBlock
+          creator={{
+            roleTitle: 'Disusun oleh,',
+            name: 'HR & Administrasi',
+            positionTitle: 'Administrasi Personalia',
+          }}
+          approver={{
+            roleTitle: 'Mengetahui,',
+            name: 'Pimpinan Perusahaan',
+            positionTitle: 'Direktur Utama',
+          }}
+        />
       </div>
     </div>
   );

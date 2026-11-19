@@ -3,7 +3,8 @@
 import Image from 'next/image';
 import React, { useState } from 'react';
 import { Employee } from '@/types/hris';
-import { StatusBadge } from '@/components/ui';
+import { StatusBadge, PrintLetterhead, PrintSignatureBlock } from '@/components/ui';
+import { printDocument } from '@/lib/print';
 import { JOB_DESCRIPTIONS } from '@/data/jobDescriptions';
 import {
   X, ShieldCheck, MapPin, Phone, Mail, Award, Printer,
@@ -56,7 +57,13 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
   };
 
   const handlePrint = () => {
-    window.print();
+    const targetId =
+      activeTab === 'CARD'
+        ? 'printable-employee-id-card'
+        : activeTab === 'JOBDESC'
+          ? 'printable-jobdesc'
+          : 'printable-employee-kpi';
+    printDocument(targetId);
   };
 
   return (
@@ -145,7 +152,8 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
               TAB 1: ID CARD & SITE PASS
               ========================================================================= */}
           {activeTab === 'CARD' && (
-            <div id="printable-idcard" className="space-y-4">
+            <>
+            <div id="printable-idcard" className="space-y-4 print:hidden">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pb-4 border-b border-slate-100">
                 {/* Avatar Box with architectural stamp */}
                 <div className="relative shrink-0">
@@ -274,13 +282,57 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
                 </span>
               </div>
             </div>
+            <div id="printable-employee-id-card" className="hidden print:block" data-print-root>
+              <div className="print-card">
+                <div className="print-card-content flex items-center gap-2.5">
+                  <div className="w-13 h-13 shrink-0 rounded-md border border-slate-300 overflow-hidden">
+                    <Image
+                      src="/property-hris.png"
+                      alt=""
+                      width={52}
+                      height={52}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[5.5pt] font-bold uppercase tracking-wide text-slate-500">
+                      PT Bumi Raya Propertindo
+                    </p>
+                    <p className="mt-0.5 truncate text-[9pt] font-extrabold leading-tight text-slate-900">
+                      {employee.name}
+                    </p>
+                    <p className="mt-0.5 truncate text-[6pt] font-semibold text-slate-700">
+                      {employee.title}
+                    </p>
+                    <p className="mt-1 text-[5.5pt] text-slate-700">
+                      NIK: <strong>{employee.nik}</strong>
+                    </p>
+                    <p className="truncate text-[5.5pt] text-slate-700">
+                      {employee.siteName}
+                    </p>
+                    <p className="mt-0.5 font-mono text-[5pt] text-slate-500">
+                      {employee.jobCode} · {employee.contractType}
+                    </p>
+                  </div>
+                  <div className="flex h-12 w-10 shrink-0 items-center justify-center rounded border border-slate-300 bg-slate-100 text-[11pt] font-extrabold text-slate-700">
+                    {employee.initials}
+                  </div>
+                </div>
+              </div>
+            </div>
+            </>
           )}
 
           {/* =========================================================================
               TAB 2: URAIAN TUGAS (JOBDESC DETAIL)
               ========================================================================= */}
           {activeTab === 'JOBDESC' && (
-            <div id="printable-jobdesc" className="space-y-4">
+            <div id="printable-jobdesc" className="space-y-4" data-print-root>
+              <PrintLetterhead
+                title="URAIAN JABATAN & SURAT TUGAS"
+                docNumber={`JD-${employee.jobCode}-${new Date().getFullYear()}`}
+                classification="DOKUMEN INTERNAL"
+              />
               {/* Header Badge Ringkasan Jabatan */}
               <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -383,8 +435,7 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
                 </div>
               </div>
 
-              {/* Sign-off Sheet Simulation for Official Document */}
-              <div className="pt-4 border-t border-slate-200 text-[11px] grid grid-cols-2 gap-4 text-center">
+              <div className="pt-4 border-t border-slate-200 text-[11px] grid grid-cols-2 gap-4 text-center print:hidden">
                 <div>
                   <p className="text-slate-500 mb-8">Disiapkan & Diterima Oleh Karyawan:</p>
                   <p className="font-bold text-slate-900 underline">{employee.name}</p>
@@ -393,9 +444,27 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
                 <div>
                   <p className="text-slate-500 mb-8">Disetujui Oleh Atasan Langsung:</p>
                   <p className="font-bold text-slate-900 underline">{jobdesc.reportsTo}</p>
-                  <p className="text-slate-400 text-[10px]">PT Bumi Raya Propertindo Tbk</p>
+                  <p className="text-slate-400 text-[10px]">PT Bumi Raya Propertindo</p>
                 </div>
               </div>
+              <PrintSignatureBlock
+                creator={{
+                  roleTitle: 'Disiapkan oleh,',
+                  name: 'HR & Administrasi',
+                  positionTitle: 'Administrasi Personalia',
+                }}
+                employee={{
+                  roleTitle: 'Diterima oleh karyawan,',
+                  name: employee.name,
+                  positionTitle: employee.title,
+                  customNote: `NIK: ${employee.nik}`,
+                }}
+                approver={{
+                  roleTitle: 'Disetujui oleh atasan langsung,',
+                  name: jobdesc.reportsTo,
+                  positionTitle: 'Atasan Langsung',
+                }}
+              />
             </div>
           )}
 
@@ -403,7 +472,12 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
               TAB 3: KPI TARGETS
               ========================================================================= */}
           {activeTab === 'KPI' && (
-            <div className="space-y-4">
+            <div id="printable-employee-kpi" className="space-y-4" data-print-root>
+              <PrintLetterhead
+                title="TARGET KINERJA KARYAWAN"
+                docNumber={`KPI-${employee.jobCode}-${new Date().getFullYear()}`}
+                classification="DOKUMEN INTERNAL"
+              />
               <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between">
                 <div>
                   <h4 className="font-bold text-xs text-emerald-900">
@@ -441,6 +515,24 @@ export const EmployeeIDCardModal: React.FC<EmployeeIDCardModalProps> = ({
                   </div>
                 ))}
               </div>
+              <PrintSignatureBlock
+                creator={{
+                  roleTitle: 'Disiapkan oleh,',
+                  name: 'HR & Administrasi',
+                  positionTitle: 'Administrasi Personalia',
+                }}
+                employee={{
+                  roleTitle: 'Diketahui oleh karyawan,',
+                  name: employee.name,
+                  positionTitle: employee.title,
+                  customNote: `NIK: ${employee.nik}`,
+                }}
+                approver={{
+                  roleTitle: 'Disetujui oleh,',
+                  name: 'Pimpinan Perusahaan',
+                  positionTitle: 'Direktur Utama',
+                }}
+              />
             </div>
           )}
         </div>
